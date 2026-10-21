@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldContainer
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
@@ -57,12 +58,12 @@ fun BismillahHeader(
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       Text(
-        text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
         style = MaterialTheme.typography.headlineMedium.copy(
-          fontFamily = ScheherazadeFontFamily,
+          fontFamily = AmiriFontFamily,
           fontSize = 28.sp,
-          lineHeight = 42.sp,
-          fontWeight = FontWeight.Bold,
+          lineHeight = 52.sp,
+          fontWeight = FontWeight.Normal,
           color = MaterialTheme.colorScheme.primary,
           textAlign = TextAlign.Center
         )

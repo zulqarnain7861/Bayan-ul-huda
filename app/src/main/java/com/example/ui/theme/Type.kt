@@ -9,20 +9,30 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 
 /**
- * Authentic bundled Arabic font families:
- * - ScheherazadeFontFamily: Traditional Naskh calligraphy for Opening Bismillah, emblems & Surah headers
- * - AmiriFontFamily: Classical Naskh manuscript typography for Quranic verses, Hadith texts & Tafsirs
+ * Authentic bundled full Arabic & Uthmani Quranic font families:
+ * - ScheherazadeFontFamily: SIL Scheherazade New full Arabic calligraphy Naskh (Regular & Bold)
+ * - AmiriFontFamily: Khaled Hosny's Amiri Quran (Uthmani Mushaf calligraphy) & Amiri Classical Naskh
+ * - AmiriClassicalFontFamily: Full Amiri Regular & Bold Naskh typeface
  */
 val ScheherazadeFontFamily = FontFamily(
   Font(R.font.scheherazade_new, FontWeight.Normal),
-  Font(R.font.scheherazade_new, FontWeight.SemiBold),
-  Font(R.font.scheherazade_new, FontWeight.Bold)
+  Font(R.font.scheherazade_new, FontWeight.Medium),
+  Font(R.font.scheherazade_new_bold, FontWeight.SemiBold),
+  Font(R.font.scheherazade_new_bold, FontWeight.Bold)
 )
 
 val AmiriFontFamily = FontFamily(
+  Font(R.font.amiri_quran, FontWeight.Normal),
+  Font(R.font.amiri_quran, FontWeight.Medium),
+  Font(R.font.amiri_quran, FontWeight.SemiBold),
+  Font(R.font.amiri_quran, FontWeight.Bold)
+)
+
+val AmiriClassicalFontFamily = FontFamily(
   Font(R.font.amiri, FontWeight.Normal),
-  Font(R.font.amiri, FontWeight.SemiBold),
-  Font(R.font.amiri, FontWeight.Bold)
+  Font(R.font.amiri, FontWeight.Medium),
+  Font(R.font.amiri_bold, FontWeight.SemiBold),
+  Font(R.font.amiri_bold, FontWeight.Bold)
 )
 
 val Typography =

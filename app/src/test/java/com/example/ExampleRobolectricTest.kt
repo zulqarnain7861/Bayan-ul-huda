@@ -53,6 +53,7 @@ class ExampleRobolectricTest {
   @Test
   fun `verify bundled arabic fonts and navigation routes and 7 day guest mode`() {
     val context = ApplicationProvider.getApplicationContext<Context>()
+    assertTrue(R.font.amiri_quran != 0)
     assertTrue(R.font.amiri != 0)
     assertTrue(R.font.scheherazade_new != 0)
     assertNotNull(AmiriFontFamily)
@@ -248,12 +249,24 @@ class ExampleRobolectricTest {
     assertEquals(1, translations.size)
     assertEquals("Sahih International", translations.first().editionTitle)
 
-    // Verify all 114 surahs / 6236 verses in offline asset bundle
+    // Verify all 114 surahs / 6236 verses in offline asset bundle and Bismillah handling
     var totalAssetAyahs = 0
     for (s in 1..114) {
-      totalAssetAyahs += OfflineQuranAssetLoader.loadSurahFromAssets(context, s).size
+      val surahAyahs = OfflineQuranAssetLoader.loadSurahFromAssets(context, s)
+      totalAssetAyahs += surahAyahs.size
+      val v1 = surahAyahs.first().textArabic
+      if (s == 1) {
+        assertTrue(v1.startsWith("بِسْمِ"))
+      } else {
+        // Surahs 2..114 (including Surah 9 At-Tawbah) must NOT have duplicate Bismillah inside Verse 1
+        assertFalse("Surah $s Verse 1 should not contain duplicate prepended Bismillah", v1.startsWith("بِسْمِ"))
+        assertTrue("Surah $s Verse 1 must not be empty", v1.isNotBlank())
+      }
     }
     assertEquals(6236, totalAssetAyahs)
+    assertEquals("الٓمٓ", OfflineQuranAssetLoader.loadSurahFromAssets(context, 2).first().textArabic)
+    assertEquals("ٱلرَّحْمَٰنُ", OfflineQuranAssetLoader.loadSurahFromAssets(context, 55).first().textArabic)
+    assertEquals("قُلْ هُوَ ٱللَّهُ أَحَدٌ", OfflineQuranAssetLoader.loadSurahFromAssets(context, 112).first().textArabic)
 
     // Verify diagnostic audit report honesty (no fabricated 100% claims) + security guard entry
     val repo = IslamicRepository(

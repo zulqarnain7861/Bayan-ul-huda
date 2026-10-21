@@ -1,6 +1,7 @@
 package com.example.data.remote
 
 import com.example.data.local.ExtendedHadithDataProvider
+import com.example.data.local.OfflineQuranAssetLoader
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
 import com.example.data.local.entities.PrayerScheduleEntity
@@ -42,7 +43,8 @@ object IslamicRemoteService {
         val urObj = urAyahs.getJSONObject(i)
         val trObj = trAyahs.getJSONObject(i)
         val verseNum = arObj.getInt("numberInSurah")
-        val arText = SecurityIntegrityGuard.sanitizeSacredText(arObj.getString("text"))
+        val rawAr = SecurityIntegrityGuard.sanitizeSacredText(arObj.getString("text"))
+        val arText = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(surahNumber, verseNum, rawAr)
         if (!SecurityIntegrityGuard.isValidQuranVersePayload(surahNumber, verseNum, arText)) continue
 
         result.add(

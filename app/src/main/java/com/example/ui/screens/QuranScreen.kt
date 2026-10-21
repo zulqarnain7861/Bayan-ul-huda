@@ -81,6 +81,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.local.ExtendedHadithDataProvider
+import com.example.data.local.OfflineQuranAssetLoader
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.BookmarkEntity
 import com.example.data.local.entities.HadithEntity
@@ -818,12 +819,18 @@ fun TafsirModalSheet(
         modifier = Modifier.fillMaxWidth()
       ) {
         Column(modifier = Modifier.padding(14.dp)) {
+          val cleanTafsirArabic = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(
+            surahNumber = ayah.surahNumber,
+            verseNumber = ayah.verseNumber,
+            rawArabic = tafsirResult.arabicText
+          )
           Text(
-            text = tafsirResult.arabicText,
+            text = cleanTafsirArabic,
             style = MaterialTheme.typography.headlineSmall.copy(
               fontFamily = AmiriFontFamily,
-              fontSize = 22.sp,
-              lineHeight = 36.sp,
+              fontWeight = FontWeight.Normal,
+              fontSize = 24.sp,
+              lineHeight = 46.sp,
               textAlign = TextAlign.Right
             ),
             modifier = Modifier.fillMaxWidth()
@@ -1116,13 +1123,19 @@ fun AyahCardItem(
 
       Spacer(modifier = Modifier.height(14.dp))
 
-      // Arabic Uthmani Text in Amiri Classical Naskh Font
+      // Arabic Uthmani Text in Amiri Quran Uthmani Mushaf Font (without duplicate Bismillah on Verse 1)
+      val cleanVerseArabic = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(
+        surahNumber = ayah.surahNumber,
+        verseNumber = ayah.verseNumber,
+        rawArabic = ayah.textArabic
+      )
       Text(
-        text = ayah.textArabic,
+        text = cleanVerseArabic,
         style = MaterialTheme.typography.headlineMedium.copy(
           fontFamily = AmiriFontFamily,
+          fontWeight = FontWeight.Normal,
           fontSize = arabicFontSizeSp.sp,
-          lineHeight = (arabicFontSizeSp * 1.65f).sp,
+          lineHeight = (arabicFontSizeSp * 2.0f).sp,
           textAlign = TextAlign.Right,
           color = MaterialTheme.colorScheme.onSurface
         ),

@@ -14,6 +14,34 @@ object OfflineQuranAssetLoader {
 
   private const val ASSET_FILE_NAME = "quran_complete_v1.dat"
 
+  private val LEADING_BISMILLAH_PREFIXES = listOf(
+    "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ",
+    "بِّسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ",
+    "بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ",
+    "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ "
+  )
+
+  /**
+   * Removes only the extra prepended Bismillah at the start of Verse 1 for Surahs 2..114 (excluding Surah 9 At-Tawbah),
+   * because the upper Bismillah header is already displayed above the Surah.
+   * Never modifies Surah 1 (where Bismillah is Verse 1) or cuts any words of the 1st verse itself.
+   */
+  fun stripDuplicateBismillahPrefix(surahNumber: Int, verseNumber: Int, rawArabic: String): String {
+    val cleaned = rawArabic.removePrefix("\uFEFF").trim()
+    if (surahNumber == 1 || surahNumber == 9 || verseNumber != 1) {
+      return cleaned
+    }
+    for (prefix in LEADING_BISMILLAH_PREFIXES) {
+      if (cleaned.startsWith(prefix)) {
+        val remainder = cleaned.substring(prefix.length).trim()
+        if (remainder.isNotEmpty()) {
+          return remainder
+        }
+      }
+    }
+    return cleaned
+  }
+
   suspend fun loadAll6236AyahsIntoRoom(
     context: Context,
     ayahDao: AyahDao,
@@ -41,7 +69,7 @@ object OfflineQuranAssetLoader {
         val obj = jsonArray.getJSONObject(i)
         val surahNum = obj.getInt("s")
         val verseNum = obj.getInt("v")
-        val arabic = obj.getString("ar")
+        val arabic = stripDuplicateBismillahPrefix(surahNum, verseNum, obj.getString("ar"))
         val english = obj.getString("en")
         val urdu = obj.getString("ur")
         val translit = obj.optString("tr", "")
@@ -130,13 +158,14 @@ object OfflineQuranAssetLoader {
       for (i in 0 until jsonArray.length()) {
         val obj = jsonArray.getJSONObject(i)
         if (obj.getInt("s") == targetSurahNumber) {
+          val vNum = obj.getInt("v")
           list.add(
             AyahEntity(
               surahNumber = targetSurahNumber,
-              verseNumber = obj.getInt("v"),
+              verseNumber = vNum,
               juzNumber = obj.optInt("j", 1),
               pageNumber = obj.optInt("p", 1),
-              textArabic = obj.getString("ar"),
+              textArabic = stripDuplicateBismillahPrefix(targetSurahNumber, vNum, obj.getString("ar")),
               translationEnglish = obj.getString("en"),
               translationUrdu = obj.getString("ur"),
               transliteration = obj.optString("tr", "")

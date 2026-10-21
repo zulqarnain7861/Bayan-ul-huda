@@ -77,7 +77,10 @@ class IslamicRepository(
       surahDao.insertSurahs(InitialDataLoader.getAll114Surahs())
     }
     // Ensure all 6,236 Quran verses and translations across all 114 Surahs are indexed in Room
-    if (ayahDao.getAyahCount() < 6000) {
+    // Also refresh if an older cached version still had duplicate Bismillah prepended to Surah 2 Verse 1
+    val surah2Verse1 = ayahDao.getAyah(2, 1)
+    val hasLegacyDuplicateBismillah = surah2Verse1?.textArabic?.contains("بِسْمِ") == true
+    if (ayahDao.getAyahCount() < 6000 || hasLegacyDuplicateBismillah) {
       val loadedAll = OfflineQuranAssetLoader.loadAll6236AyahsIntoRoom(
         context = appContext,
         ayahDao = ayahDao,
