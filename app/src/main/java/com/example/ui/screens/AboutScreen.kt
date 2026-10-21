@@ -1,0 +1,892 @@
+package com.example.ui.screens
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.data.local.SourceRegistry
+import com.example.data.local.VerificationStatus
+import com.example.data.prayer.AppThemeMode
+import com.example.data.repository.DiagnosticAuditReport
+import com.example.ui.audio.Reciter
+import com.example.ui.audio.availableReciters
+import com.example.ui.theme.EmeraldPrimary
+import com.example.ui.theme.GoldPrimary
+import com.example.ui.theme.ScheherazadeFontFamily
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun AboutScreen(
+  currentReciter: Reciter,
+  themeMode: AppThemeMode = AppThemeMode.LIGHT,
+  auditReport: DiagnosticAuditReport? = null,
+  sourceRegistryList: List<SourceRegistry> = emptyList(),
+  onSelectThemeMode: (AppThemeMode) -> Unit = {},
+  onRefreshAuditReport: () -> Unit = {},
+  onSelectReciter: (Reciter) -> Unit,
+  onOpenErrorReport: () -> Unit,
+  userEmail: String? = null,
+  userName: String? = null,
+  isGuestMode: Boolean = false,
+  remainingGuestDays: Int = 7,
+  onSignOut: () -> Unit = {},
+  modifier: Modifier = Modifier
+) {
+  val context = LocalContext.current
+  val developerName = "Zulqarnain Ahmad Sheikh"
+  val developerEmail = "sheikhzulqar@gmail.com"
+  val instagramUsername = "@zulqarnainah"
+  val instagramUrl = "https://www.instagram.com/zulqarnainah/"
+  var showDiagnosticAuditExpanded by remember { mutableStateOf(true) }
+
+  LazyColumn(
+    modifier = modifier
+      .fillMaxSize()
+      .padding(horizontal = 16.dp),
+    contentPadding = PaddingValues(vertical = 16.dp),
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    // App Header Card
+    item {
+      ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+          containerColor = MaterialTheme.colorScheme.surface
+        )
+      ) {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+          Box(
+            modifier = Modifier
+              .size(64.dp)
+              .clip(CircleShape)
+              .background(EmeraldPrimary),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.MenuBook,
+              contentDescription = null,
+              tint = GoldPrimary,
+              modifier = Modifier.size(36.dp)
+            )
+          }
+
+          Spacer(modifier = Modifier.height(12.dp))
+
+          Text(
+            text = "Bayan al-Huda",
+            style = MaterialTheme.typography.headlineMedium.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary
+            )
+          )
+          Text(
+            text = "بَيَانُ الهُدَى • Quran, Hadith & Salah Library",
+            style = MaterialTheme.typography.titleSmall.copy(
+              fontFamily = ScheherazadeFontFamily,
+              fontSize = 18.sp,
+              color = GoldPrimary,
+              fontWeight = FontWeight.Bold
+            )
+          )
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          Text(
+            text = "Version 1.1.0 (Production Release)",
+            style = MaterialTheme.typography.labelSmall.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          )
+        }
+      }
+    }
+
+    // Three Appearance Themes Card (Light, Eye-Comfort, Dark, Auto Day/Night)
+    item {
+      Card(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("appearance_theme_selector_card"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Palette, contentDescription = null, tint = EmeraldPrimary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "Appearance & Reading Theme",
+              style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+              )
+            )
+          }
+          Spacer(modifier = Modifier.height(6.dp))
+          Text(
+            text = "Choose Daytime Light, Nighttime Dark, Warm Low-Glare Eye-Comfort, or Automatic Day/Night switching.",
+            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+          )
+          Spacer(modifier = Modifier.height(10.dp))
+
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            AppThemeMode.entries.forEach { mode ->
+              FilterChip(
+                selected = themeMode == mode,
+                onClick = { onSelectThemeMode(mode) },
+                label = { Text(mode.label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = EmeraldPrimary,
+                  selectedLabelColor = Color.White
+                ),
+                modifier = Modifier.testTag("theme_chip_${mode.name.lowercase()}")
+              )
+            }
+          }
+        }
+      }
+    }
+
+    // Developer Source & API Audit Dashboard (Section 5 Requirement — No Secrets Exposed)
+    item {
+      Card(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("source_and_api_audit_dashboard_card"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+              Icon(Icons.Default.FactCheck, contentDescription = null, tint = EmeraldPrimary)
+              Spacer(modifier = Modifier.width(8.dp))
+              Column {
+                Text(
+                  text = "Source & API Audit Dashboard",
+                  style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                  )
+                )
+                Text(
+                  text = "Developer Diagnostics • Honest Coverage & Room Schema Audit",
+                  style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.Bold)
+                )
+              }
+            }
+            Row {
+              IconButton(
+                onClick = onRefreshAuditReport,
+                modifier = Modifier.testTag("refresh_audit_dashboard_btn")
+              ) {
+                Icon(Icons.Default.Refresh, contentDescription = "Run Live Verification")
+              }
+              OutlinedButton(
+                onClick = { showDiagnosticAuditExpanded = !showDiagnosticAuditExpanded },
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+              ) {
+                Text(if (showDiagnosticAuditExpanded) "Hide" else "Inspect", fontSize = 11.sp)
+              }
+            }
+          }
+
+          if (showDiagnosticAuditExpanded) {
+            Spacer(modifier = Modifier.height(10.dp))
+            if (auditReport == null) {
+              Text(
+                text = "Loading Room SQLite & API verification metrics...",
+                style = MaterialTheme.typography.bodySmall
+              )
+            } else {
+              // Room SQLite Entity Counts Summary
+              Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                  Text(
+                    text = "Room SQLite Database Entities (Verified Local Counts)",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                      fontWeight = FontWeight.Bold,
+                      color = MaterialTheme.colorScheme.primary
+                    )
+                  )
+                  Spacer(modifier = Modifier.height(4.dp))
+                  Text(
+                    text = "• Surahs Table (surahs): ${auditReport.totalSurahsLocal} / 114 Surahs\n" +
+                      "• Verses Table (ayahs): ${auditReport.totalAyahsLocal} / 6,236 Ayahs\n" +
+                      "• Translations Table (translations): ${auditReport.totalTranslationsLocal} Verified Records (Sahih International & Urdu)\n" +
+                      "• Hadith Collections Table (hadith_collections): ${auditReport.totalHadithCollectionsLocal} Collections\n" +
+                      "• Hadiths Table (hadiths): ${auditReport.totalHadithsLocal} Locally Cached Narrations (+ On-Demand API)\n" +
+                      "• Prayer Schedules Table (prayer_schedules): ${auditReport.totalPrayerSchedulesCached} Cached Schedules\n" +
+                      "• Last Verified: ${auditReport.generatedAtFormatted}",
+                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp)
+                  )
+                }
+              }
+
+              Spacer(modifier = Modifier.height(12.dp))
+
+              // Per-Source Audit Entries
+              auditReport.sourceEntries.forEach { entry ->
+                Surface(
+                  shape = RoundedCornerShape(12.dp),
+                  color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                ) {
+                  Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      horizontalArrangement = Arrangement.SpaceBetween,
+                      verticalAlignment = Alignment.Top
+                    ) {
+                      Text(
+                        text = entry.sourceName,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                          fontWeight = FontWeight.Bold,
+                          color = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.weight(1f)
+                      )
+                      Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = EmeraldPrimary.copy(alpha = 0.14f)
+                      ) {
+                        Text(
+                          text = entry.statusBadge,
+                          modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                          style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = EmeraldPrimary
+                          )
+                        )
+                      }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                      text = "Docs: ${entry.officialDocsUrl}",
+                      style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                      text = "Books & Languages: ${entry.availableBooksAndLanguages}",
+                      style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                    )
+                    Text(
+                      text = "Records: ${entry.localCachedRecords} stored locally / ${entry.totalCanonicalRecords} canonical total",
+                      style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                      text = "Pagination: ${entry.paginationStatus}",
+                      style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                    )
+                    Text(
+                      text = "Translation Audit: ${entry.missingTranslationsReport}",
+                      style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                    )
+                    Text(
+                      text = "Edition Numbering: ${entry.editionNumberingReport}",
+                      style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                    )
+                    Text(
+                      text = "Coverage Notes: ${entry.coverageGapNotes}",
+                      style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                      )
+                    )
+                  }
+                }
+              }
+
+              Spacer(modifier = Modifier.height(10.dp))
+              HorizontalDivider()
+              Spacer(modifier = Modifier.height(8.dp))
+
+              // Kutub al-Sittah & Hadith Collections Coverage Table
+              Text(
+                text = "Hadith Collections Coverage (Kutub al-Sittah + Primary Collections):",
+                style = MaterialTheme.typography.labelLarge.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary
+                )
+              )
+              Spacer(modifier = Modifier.height(6.dp))
+              auditReport.collectionAudits.forEach { col ->
+                Row(
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                      text = "${col.nameEnglish} (${col.nameArabic})",
+                      style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                      text = "${col.darussalamEditionName} • ${col.inBookEditionName}",
+                      style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                      )
+                    )
+                  }
+                  Text(
+                    text = "${col.locallyCachedCount} cached / ${col.totalCanonicalHadiths} API",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                      fontWeight = FontWeight.Bold,
+                      color = GoldPrimary
+                    )
+                  )
+                }
+              }
+
+              if (sourceRegistryList.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                  text = "Room Database-Backed Source Registry (source_registry Table):",
+                  style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                  )
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                sourceRegistryList.forEach { src ->
+                  Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(vertical = 4.dp)
+                  ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                      Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                      ) {
+                        Text(
+                          text = src.title,
+                          style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                          modifier = Modifier.weight(1f)
+                        )
+                        Surface(
+                          shape = RoundedCornerShape(6.dp),
+                          color = if (src.verificationStatus == VerificationStatus.VERIFIED) EmeraldPrimary.copy(alpha = 0.16f) else GoldPrimary.copy(alpha = 0.16f)
+                        ) {
+                          Text(
+                            text = src.verificationStatus.name,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                              fontSize = 9.sp,
+                              fontWeight = FontWeight.Bold,
+                              color = if (src.verificationStatus == VerificationStatus.VERIFIED) EmeraldPrimary else GoldPrimary
+                            )
+                          )
+                        }
+                      }
+                      Spacer(modifier = Modifier.height(2.dp))
+                      Text(
+                        text = "Tradition: ${src.tradition} • Language: ${src.language}",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      )
+                      Text(
+                        text = "License: ${src.license}",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, color = GoldPrimary)
+                      )
+                      Text(
+                        text = "Records: ${src.totalImportedRecords} imported / ${src.totalAvailableRecords} available (Status: ${src.importStatus.name})",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
+                      )
+                      if (src.translationLanguages.isNotBlank()) {
+                        Text(
+                          text = "Translations: ${src.translationLanguages}",
+                          style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
+                        )
+                      }
+                      if (src.officialUrl.isNotBlank()) {
+                        Text(
+                          text = "Official Source: ${src.officialUrl}",
+                          style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Cloud Sync / 7-Day Guest Access Status Card
+    item {
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Text(
+            text = if (isGuestMode && userEmail == null) {
+              "Guest Access ($remainingGuestDays of 7 Days Remaining)"
+            } else {
+              "Cloud Sync Account (Firebase)"
+            },
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary
+            )
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+            text = if (isGuestMode && userEmail == null) {
+              "Active 7-Day Guest Session (Offline Local SQLite Storage)"
+            } else if (!userName.isNullOrBlank()) {
+              "$userName (${userEmail ?: "Signed in"})"
+            } else {
+              userEmail ?: "Signed in with Google"
+            },
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+          )
+          Text(
+            text = if (isGuestMode && userEmail == null) {
+              "Your bookmarks and study notes are stored locally on your device. Sign in with Google at any time to sync permanently to the cloud."
+            } else {
+              "Your Quran bookmarks and study notes are automatically synced with Firestore."
+            },
+            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+          )
+          Spacer(modifier = Modifier.height(12.dp))
+          Button(
+            onClick = onSignOut,
+            modifier = Modifier.testTag("sign_out_button")
+          ) {
+            Text(if (isGuestMode && userEmail == null) "Sign in with Google / Switch Account" else "Sign Out")
+          }
+        }
+      }
+    }
+
+    // Developer Identity & Contact Us
+    item {
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Text(
+            text = "Developer Identity",
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary
+            )
+          )
+
+          Spacer(modifier = Modifier.height(12.dp))
+
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Person, contentDescription = null, tint = EmeraldPrimary)
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+              Text(text = "Lead Developer & Maintainer", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+              Text(text = developerName, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+            }
+          }
+
+          Spacer(modifier = Modifier.height(14.dp))
+
+          // Email action
+          Surface(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable {
+                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                  data = Uri.parse("mailto:$developerEmail")
+                  putExtra(Intent.EXTRA_SUBJECT, "Bayan al-Huda Feedback / Inquiry")
+                }
+                try {
+                  context.startActivity(Intent.createChooser(emailIntent, "Send Email"))
+                } catch (e: Exception) {
+                  Toast.makeText(context, "No email client found", Toast.LENGTH_SHORT).show()
+                }
+              },
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Email, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(text = developerEmail, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+              }
+              IconButton(
+                onClick = {
+                  val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                  clipboard.setPrimaryClip(ClipData.newPlainText("Developer Email", developerEmail))
+                  Toast.makeText(context, "Email copied to clipboard", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.size(28.dp)
+              ) {
+                Icon(Icons.Default.ContentCopy, contentDescription = "Copy Email", modifier = Modifier.size(16.dp))
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
+
+          // Instagram action
+          Surface(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramUrl))
+                try {
+                  context.startActivity(intent)
+                } catch (e: Exception) {
+                  Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                }
+              },
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text(
+                text = "IG",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+              )
+              Spacer(modifier = Modifier.width(10.dp))
+              Column {
+                Text(text = "Instagram Profile", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                Text(text = instagramUsername, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Audio Reciter Selection
+    item {
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.VolumeUp, contentDescription = null, tint = EmeraldPrimary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "Default Quran Reciter (Qari)",
+              style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+              )
+            )
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          availableReciters.forEach { reciter ->
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onSelectReciter(reciter) }
+                .padding(vertical = 4.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              RadioButton(
+                selected = reciter.id == currentReciter.id,
+                onClick = { onSelectReciter(reciter) },
+                colors = RadioButtonDefaults.colors(selectedColor = GoldPrimary)
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(
+                text = reciter.name,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                  fontWeight = if (reciter.id == currentReciter.id) FontWeight.Bold else FontWeight.Normal
+                )
+              )
+            }
+          }
+        }
+      }
+    }
+
+    // Actions: Share App & Report Content Error
+    item {
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Text(
+            text = "Actions & Integrity",
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary
+            )
+          )
+
+          Spacer(modifier = Modifier.height(10.dp))
+
+          // Share App
+          Surface(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable {
+                val shareIntent = Intent().apply {
+                  action = Intent.ACTION_SEND
+                  putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Experience Bayan al-Huda — Complete Quran, Hadith & Five Daily Salah App with verified Uthmani script and Sahih International translations by Zulqarnain Ahmad Sheikh."
+                  )
+                  type = "text/plain"
+                }
+                context.startActivity(Intent.createChooser(shareIntent, "Share Bayan al-Huda"))
+              },
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(Icons.Default.Share, contentDescription = null, tint = EmeraldPrimary)
+              Spacer(modifier = Modifier.width(10.dp))
+              Text(text = "Share Bayan al-Huda App", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          // Report Content Error
+          Surface(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable(onClick = onOpenErrorReport),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(Icons.Default.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+              Spacer(modifier = Modifier.width(10.dp))
+              Text(
+                text = "Report Content / Translation Error",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+              )
+            }
+          }
+        }
+      }
+    }
+
+    // Sacred Sources & Licencing Attribution
+    item {
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Text(
+            text = "Sacred Sources & Attribution",
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary
+            )
+          )
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Text(
+            text = "• Quran Text: Verified Uthmani Script (Tanzil / Quran Foundation standards)\n" +
+              "• English Quran Translation: Sahih International (Explicitly attributed to Quran verses)\n" +
+              "• Urdu Quran Translation: Maulana Fateh Muhammad Jalandhry\n" +
+              "• Hadith Collections: Kutub al-Sittah (Sahih al-Bukhari, Sahih Muslim, Sunan Abu Dawud, Jami` at-Tirmidhi, Sunan an-Nasa'i, Sunan Ibn Majah) + Muwatta Malik, 40 Nawawi & Riyad as-Salihin with separate Darussalam and In-Book numbering.\n" +
+              "• Prayer Times: AlAdhan Prayer-Time API + Offline Astronomical Calculation.\n" +
+              "• Zero AI Text Alteration: Missing fields are explicitly reported as 'Not available in this source'.",
+            style = MaterialTheme.typography.bodySmall.copy(
+              lineHeight = 18.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+fun ReportErrorDialog(
+  initialContext: String,
+  onDismiss: () -> Unit
+) {
+  val context = LocalContext.current
+  var refText by remember { mutableStateOf(initialContext) }
+  var errorDetails by remember { mutableStateOf("") }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Report Content Error", fontWeight = FontWeight.Bold) },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+          text = "Help us maintain sacred text integrity. Please identify the Surah/Hadith reference and provide specific details.",
+          style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+        OutlinedTextField(
+          value = refText,
+          onValueChange = { refText = it },
+          label = { Text("Reference (Surah / Hadith)") },
+          singleLine = true,
+          modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+          value = errorDetails,
+          onValueChange = { errorDetails = it },
+          label = { Text("Description of suspected error") },
+          minLines = 3,
+          maxLines = 6,
+          modifier = Modifier.fillMaxWidth()
+        )
+      }
+    },
+    confirmButton = {
+      Button(
+        onClick = {
+          if (errorDetails.isNotBlank()) {
+            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+              data = Uri.parse("mailto:sheikhzulqar@gmail.com")
+              putExtra(Intent.EXTRA_SUBJECT, "Bayan al-Huda: Content Error Report [$refText]")
+              putExtra(Intent.EXTRA_TEXT, "Reference: $refText\n\nIssue Details:\n$errorDetails\n\nApp Version: 1.1.0")
+            }
+            try {
+              context.startActivity(Intent.createChooser(emailIntent, "Send Error Report"))
+            } catch (e: Exception) {
+              Toast.makeText(context, "No email app found", Toast.LENGTH_SHORT).show()
+            }
+            onDismiss()
+          }
+        }
+      ) {
+        Text("Submit Report")
+      }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismiss) {
+        Text("Cancel")
+      }
+    }
+  )
+}

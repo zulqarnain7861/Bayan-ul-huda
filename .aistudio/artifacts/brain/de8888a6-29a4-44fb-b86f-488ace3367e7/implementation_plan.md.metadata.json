@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for Jetpack Compose Navigation Controller (NavHost & NavHostController) across Home, Quran, Hadith, Search, and Library with state preservation and deep-linking, authentic bundled Arabic typography (Amiri for Quranic Naskh and Scheherazade New for opening calligraphy), and 7-day Guest Mode with local storage plus Google Sign-In cloud sync.",
+  "updatedAt":  "2026-10-21T16:26:37.729671798Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
