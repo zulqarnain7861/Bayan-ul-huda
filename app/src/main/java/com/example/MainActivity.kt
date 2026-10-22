@@ -398,7 +398,11 @@ fun BayanApp(
           onOpenOfflineDownloads = {
             navController.navigate(BayanNavRoutes.DOWNLOADS) { launchSingleTop = true }
           },
-          allHadithsForTafsir = viewModel.allHadithsForLinks
+          allHadithsForTafsir = viewModel.allHadithsForLinks,
+          isReadingMode = uiState.isReadingMode,
+          onToggleReadingMode = { viewModel.toggleReadingMode() },
+          isContinuousMushafFlow = uiState.isContinuousMushafFlow,
+          onToggleContinuousMushafFlow = { viewModel.toggleContinuousMushafFlow() }
         )
       }
 

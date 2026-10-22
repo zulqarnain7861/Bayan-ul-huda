@@ -2094,6 +2094,10 @@ class DownloadManager(
       }
     }
 
+    fun setInstanceForTesting(manager: DownloadManager?) {
+      INSTANCE = manager
+    }
+
     fun sha256Hex(bytes: ByteArray): String {
       val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
       return digest.joinToString("") { "%02x".format(it) }

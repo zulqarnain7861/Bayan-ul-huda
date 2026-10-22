@@ -77,12 +77,46 @@ class AudioPlayerManager(private val context: Context) {
       }.getOrNull()
 
       if (offlineFile != null && offlineFile.exists()) {
-        startOfflineRecitationFallback(
-          surah = surah,
-          ayah = ayah,
-          surahName = surahName,
-          customOfflineStatus = "${_audioState.value.reciter.name} • Playing Downloaded Offline Audio (${offlineFile.name})"
-        )
+        val offlineStatusLabel =
+          "${_audioState.value.reciter.name} • Playing Downloaded Offline Audio (${offlineFile.name})"
+        val playedViaNativeMediaPlayer = if (offlineFile.length() > 4096L) {
+          runCatching {
+            mediaPlayer = MediaPlayer().apply {
+              setAudioAttributes(
+                AudioAttributes.Builder()
+                  .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                  .setUsage(AudioAttributes.USAGE_MEDIA)
+                  .build()
+              )
+              setDataSource(offlineFile.absolutePath)
+              prepare()
+              start()
+            }
+            _audioState.value = _audioState.value.copy(
+              isVisible = true,
+              isBuffering = false,
+              isPlaying = true,
+              surahNumber = surah,
+              ayahNumber = ayah,
+              surahName = surahName,
+              currentPositionMs = 0,
+              durationMs = (mediaPlayer?.duration ?: 8000).coerceAtLeast(1000),
+              statusMessage = offlineStatusLabel
+            )
+            startProgressTracking()
+            true
+          }.getOrDefault(false)
+        } else {
+          false
+        }
+        if (!playedViaNativeMediaPlayer) {
+          startOfflineRecitationFallback(
+            surah = surah,
+            ayah = ayah,
+            surahName = surahName,
+            customOfflineStatus = offlineStatusLabel
+          )
+        }
         return
       }
 

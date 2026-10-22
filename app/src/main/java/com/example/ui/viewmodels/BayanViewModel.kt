@@ -74,6 +74,8 @@ data class BayanUiState(
   // Quran reader state
   val selectedSurah: SurahEntity? = null,
   val isReaderOpen: Boolean = false,
+  val isReadingMode: Boolean = false,
+  val isContinuousMushafFlow: Boolean = false,
   val highlightedVerseNumber: Int? = null,
   val showEnglish: Boolean = true,
   val showUrdu: Boolean = true,
@@ -402,8 +404,24 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   fun closeSurahReader() {
-    _uiState.value = _uiState.value.copy(isReaderOpen = false, highlightedVerseNumber = null)
+    _uiState.value = _uiState.value.copy(
+      isReaderOpen = false,
+      isReadingMode = false,
+      highlightedVerseNumber = null
+    )
     audioPlayerManager.stop()
+  }
+
+  fun toggleReadingMode() {
+    _uiState.value = _uiState.value.copy(isReadingMode = !_uiState.value.isReadingMode)
+  }
+
+  fun setReadingMode(enabled: Boolean) {
+    _uiState.value = _uiState.value.copy(isReadingMode = enabled)
+  }
+
+  fun toggleContinuousMushafFlow() {
+    _uiState.value = _uiState.value.copy(isContinuousMushafFlow = !_uiState.value.isContinuousMushafFlow)
   }
 
   fun toggleEnglishTranslation() {

@@ -57,12 +57,15 @@ class Priority11And12AcceptanceTest {
   @Before
   fun setUp() = runBlocking {
     context = ApplicationProvider.getApplicationContext()
+    File(context.filesDir, "offline_packages").deleteRecursively()
+    context.getSharedPreferences("bayan_offline_download_prefs", Context.MODE_PRIVATE).edit().clear().commit()
     db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
       .allowMainThreadQueries()
       .build()
     db.surahDao().insertSurahs(InitialDataLoader.getAll114Surahs())
     db.hadithDao().insertHadiths(InitialDataLoader.getFoundationalHadiths())
     downloadManager = DownloadManager(context = context, database = db)
+    DownloadManager.setInstanceForTesting(downloadManager)
     downloadManager.ensureDefaultLicencesSeeded()
     evidenceEngine = EvidenceVerificationEngine(
       context = context,
@@ -73,6 +76,9 @@ class Priority11And12AcceptanceTest {
 
   @After
   fun tearDown() {
+    DownloadManager.setInstanceForTesting(null)
+    File(context.filesDir, "offline_packages").deleteRecursively()
+    context.getSharedPreferences("bayan_offline_download_prefs", Context.MODE_PRIVATE).edit().clear().commit()
     db.close()
   }
 

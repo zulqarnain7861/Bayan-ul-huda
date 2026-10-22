@@ -421,4 +421,42 @@ class ExampleRobolectricTest {
       inMemoryDb.close()
     }
   }
+
+  @Test
+  fun `verify Quran Reader Reading Mode state transitions and canonical text preservation`() {
+    val application = ApplicationProvider.getApplicationContext<android.app.Application>()
+    val viewModel = com.example.ui.viewmodels.BayanViewModel(application)
+
+    // Initially Reading Mode and Continuous Mushaf Flow are false
+    assertFalse(viewModel.uiState.value.isReadingMode)
+    assertFalse(viewModel.uiState.value.isContinuousMushafFlow)
+
+    // Open Surah Ar-Ra'd (Surah 13) in reader
+    val surahArRad = InitialDataLoader.getAll114Surahs().first { it.number == 13 }
+    viewModel.openSurahReader(surahArRad)
+    assertTrue(viewModel.uiState.value.isReaderOpen)
+    assertEquals(13, viewModel.uiState.value.selectedSurah?.number)
+
+    // Toggle Reading Mode ON
+    viewModel.toggleReadingMode()
+    assertTrue(viewModel.uiState.value.isReadingMode)
+
+    // Toggle Continuous Mushaf Flow ON and OFF
+    viewModel.toggleContinuousMushafFlow()
+    assertTrue(viewModel.uiState.value.isContinuousMushafFlow)
+    viewModel.toggleContinuousMushafFlow()
+    assertFalse(viewModel.uiState.value.isContinuousMushafFlow)
+
+    // Verify Surah Ar-Ra'd 13:1 canonical text and dagger alif (\u0670) remain untouched
+    val arRadAyahs = OfflineQuranAssetLoader.loadSurahFromAssets(application, 13)
+    val arRadAyah1 = arRadAyahs.first { it.verseNumber == 1 }
+    assertTrue(arRadAyah1.textArabic.startsWith("الٓـمّٓرٰ"))
+    assertTrue(arRadAyah1.textArabic.contains('\u0670'))
+
+    // Closing Surah Reader resets Reading Mode
+    viewModel.closeSurahReader()
+    assertFalse(viewModel.uiState.value.isReaderOpen)
+    assertFalse(viewModel.uiState.value.isReadingMode)
+  }
 }
+

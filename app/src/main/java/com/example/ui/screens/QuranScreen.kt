@@ -1,11 +1,17 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,8 +40,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.NoteAdd
@@ -63,6 +72,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -74,12 +84,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.data.local.ExtendedHadithDataProvider
 import com.example.data.local.OfflineQuranAssetLoader
 import com.example.data.local.entities.AyahEntity
@@ -121,6 +137,10 @@ fun QuranScreen(
   onAddNote: (String) -> Unit,
   onOpenOfflineDownloads: () -> Unit = {},
   allHadithsForTafsir: List<HadithEntity> = ExtendedHadithDataProvider.getExtendedHadiths(),
+  isReadingMode: Boolean = false,
+  onToggleReadingMode: () -> Unit = {},
+  isContinuousMushafFlow: Boolean = false,
+  onToggleContinuousMushafFlow: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   if (isReaderOpen && selectedSurah != null) {
@@ -144,6 +164,10 @@ fun QuranScreen(
       onBookmarkAyah = onBookmarkAyah,
       onAddNote = onAddNote,
       allHadithsForTafsir = allHadithsForTafsir,
+      isReadingMode = isReadingMode,
+      onToggleReadingMode = onToggleReadingMode,
+      isContinuousMushafFlow = isContinuousMushafFlow,
+      onToggleContinuousMushafFlow = onToggleContinuousMushafFlow,
       modifier = modifier
     )
   } else {
@@ -412,180 +436,378 @@ fun SurahReaderView(
   onBookmarkAyah: (AyahEntity, String) -> Unit,
   onAddNote: (String) -> Unit,
   allHadithsForTafsir: List<HadithEntity>,
+  isReadingMode: Boolean = false,
+  onToggleReadingMode: () -> Unit = {},
+  isContinuousMushafFlow: Boolean = false,
+  onToggleContinuousMushafFlow: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  BackHandler { onBack() }
+  var localReadingMode by remember(isReadingMode) { mutableStateOf(isReadingMode) }
+  var localMushafFlow by remember(isContinuousMushafFlow) { mutableStateOf(isContinuousMushafFlow) }
+
+  val toggleReadingModeInternal = {
+    localReadingMode = !localReadingMode
+    onToggleReadingMode()
+  }
+  val toggleMushafFlowInternal = {
+    localMushafFlow = !localMushafFlow
+    onToggleContinuousMushafFlow()
+  }
+
+  BackHandler {
+    if (localReadingMode) {
+      toggleReadingModeInternal()
+    } else {
+      onBack()
+    }
+  }
+
   val context = LocalContext.current
+  val view = LocalView.current
   val listState = rememberLazyListState()
   val coroutineScope = rememberCoroutineScope()
+
+  // Immersive full-screen system bar control when Reading Mode is active
+  DisposableEffect(localReadingMode) {
+    val window = (context as? Activity)?.window
+    if (window != null) {
+      runCatching {
+        val insetsController = WindowCompat.getInsetsController(window, view)
+        if (localReadingMode) {
+          insetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+          insetsController.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+          insetsController.show(WindowInsetsCompat.Type.systemBars())
+        }
+      }
+    }
+    onDispose {
+      val activityWindow = (context as? Activity)?.window
+      if (activityWindow != null) {
+        runCatching {
+          WindowCompat.getInsetsController(activityWindow, view)
+            .show(WindowInsetsCompat.Type.systemBars())
+        }
+      }
+    }
+  }
 
   var showSettingsSheet by remember { mutableStateOf(false) }
   var selectedAyahForTafsir by remember { mutableStateOf<AyahEntity?>(null) }
   var focusedVerseIndex by remember(surah.number) { mutableIntStateOf(0) }
   var verseJumpText by remember(surah.number) { mutableStateOf("") }
 
-  Column(modifier = modifier.fillMaxSize()) {
-    // Reader Toolbar with Prev / Next Surah
-    TopAppBar(
-      title = {
-        Column {
-          Text(
-            text = "${surah.number}. ${surah.nameEnglish} • ${surah.nameArabic}",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-          )
-          Text(
-            text = "${surah.revelationType} • ${surah.totalVerses} Verses • Juz ${surah.juzStart}",
-            style = MaterialTheme.typography.labelSmall.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          )
+  Column(
+    modifier = modifier
+      .fillMaxSize()
+      .then(
+        if (localReadingMode) {
+          Modifier.testTag("reading_mode_immersive_container")
+        } else {
+          Modifier
         }
-      },
-      navigationIcon = {
-        IconButton(onClick = onBack, modifier = Modifier.testTag("surah_reader_back_button")) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-        }
-      },
-      actions = {
-        IconButton(
-          onClick = onPreviousSurah,
-          enabled = surah.number > 1,
-          modifier = Modifier.testTag("prev_surah_button")
-        ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Surah")
-        }
-        IconButton(
-          onClick = onNextSurah,
-          enabled = surah.number < 114,
-          modifier = Modifier.testTag("next_surah_button")
-        ) {
-          Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Surah")
-        }
-        IconButton(
-          onClick = { showSettingsSheet = true },
-          modifier = Modifier.testTag("reader_settings_button")
-        ) {
-          Icon(Icons.Default.FormatSize, contentDescription = "Font & Display Settings")
-        }
-      },
-      colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surface
       )
-    )
-
-    // Quick translation toggle bar + Verse Jump / Prev-Next Ayah controls
-    Surface(
-      color = MaterialTheme.colorScheme.surfaceVariant,
-      modifier = Modifier.fillMaxWidth()
+  ) {
+    // Standard Navigation Elements (Hidden in Reading Mode)
+    AnimatedVisibility(
+      visible = !localReadingMode,
+      enter = fadeIn(),
+      exit = fadeOut()
     ) {
-      Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(6.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          FilterChip(
-            selected = showEnglish,
-            onClick = onToggleEnglish,
-            label = { Text("Saheeh Intl", fontSize = 11.sp) },
-            colors = FilterChipDefaults.filterChipColors(
-              selectedContainerColor = EmeraldPrimary,
-              selectedLabelColor = Color.White
-            )
-          )
-          FilterChip(
-            selected = showUrdu,
-            onClick = onToggleUrdu,
-            label = { Text("Urdu", fontSize = 11.sp) },
-            colors = FilterChipDefaults.filterChipColors(
-              selectedContainerColor = EmeraldPrimary,
-              selectedLabelColor = Color.White
-            )
-          )
-          FilterChip(
-            selected = showTransliteration,
-            onClick = onToggleTransliteration,
-            label = { Text("Transliteration", fontSize = 11.sp) },
-            colors = FilterChipDefaults.filterChipColors(
-              selectedContainerColor = EmeraldPrimary,
-              selectedLabelColor = Color.White
-            )
-          )
-        }
-
-        if (ayahs.isNotEmpty()) {
-          Spacer(modifier = Modifier.height(4.dp))
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            OutlinedButton(
-              onClick = {
-                focusedVerseIndex = (focusedVerseIndex - 1).coerceAtLeast(0)
-                coroutineScope.launch {
-                  listState.animateScrollToItem(focusedVerseIndex)
-                }
-              },
-              enabled = focusedVerseIndex > 0,
-              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-              modifier = Modifier.testTag("prev_ayah_button")
-            ) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(14.dp))
-              Spacer(modifier = Modifier.width(4.dp))
-              Text("Prev Ayah", fontSize = 11.sp)
+      Column(modifier = Modifier.fillMaxWidth()) {
+        // Reader Toolbar with Prev / Next Surah & Reading Mode Toggle
+        TopAppBar(
+          title = {
+            Column {
+              Text(
+                text = "${surah.number}. ${surah.nameEnglish} • ${surah.nameArabic}",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+              )
+              Text(
+                text = "${surah.revelationType} • ${surah.totalVerses} Verses • Juz ${surah.juzStart}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              )
             }
+          },
+          navigationIcon = {
+            IconButton(onClick = onBack, modifier = Modifier.testTag("surah_reader_back_button")) {
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+          },
+          actions = {
+            IconButton(
+              onClick = toggleReadingModeInternal,
+              modifier = Modifier
+                .size(48.dp)
+                .testTag("reading_mode_toggle_button")
+            ) {
+              Icon(
+                imageVector = Icons.Default.Fullscreen,
+                contentDescription = "Enter Reading Mode",
+                tint = EmeraldPrimary
+              )
+            }
+            IconButton(
+              onClick = onPreviousSurah,
+              enabled = surah.number > 1,
+              modifier = Modifier.testTag("prev_surah_button")
+            ) {
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Surah")
+            }
+            IconButton(
+              onClick = onNextSurah,
+              enabled = surah.number < 114,
+              modifier = Modifier.testTag("next_surah_button")
+            ) {
+              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Surah")
+            }
+            IconButton(
+              onClick = { showSettingsSheet = true },
+              modifier = Modifier.testTag("reader_settings_button")
+            ) {
+              Icon(Icons.Default.FormatSize, contentDescription = "Font & Display Settings")
+            }
+          },
+          colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface
+          )
+        )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              OutlinedTextField(
-                value = verseJumpText,
-                onValueChange = { input ->
-                  verseJumpText = input.filter { it.isDigit() }
-                  val vNum = verseJumpText.toIntOrNull()
-                  if (vNum != null && vNum in 1..ayahs.size) {
-                    focusedVerseIndex = vNum - 1
-                    coroutineScope.launch {
-                      listState.animateScrollToItem(focusedVerseIndex)
-                    }
-                  }
+        // Quick translation toggle bar + Reading Mode chip + Verse Jump / Prev-Next Ayah controls
+        Surface(
+          color = MaterialTheme.colorScheme.surfaceVariant,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(6.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              FilterChip(
+                selected = showEnglish,
+                onClick = onToggleEnglish,
+                label = { Text("Saheeh Intl", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = EmeraldPrimary,
+                  selectedLabelColor = Color.White
+                )
+              )
+              FilterChip(
+                selected = showUrdu,
+                onClick = onToggleUrdu,
+                label = { Text("Urdu", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = EmeraldPrimary,
+                  selectedLabelColor = Color.White
+                )
+              )
+              FilterChip(
+                selected = showTransliteration,
+                onClick = onToggleTransliteration,
+                label = { Text("Transliteration", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = EmeraldPrimary,
+                  selectedLabelColor = Color.White
+                )
+              )
+              FilterChip(
+                selected = localReadingMode,
+                onClick = toggleReadingModeInternal,
+                label = { Text("Reading Mode", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                leadingIcon = {
+                  Icon(
+                    imageVector = Icons.Default.MenuBook,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                  )
                 },
-                placeholder = { Text("Ayah # (1-${ayahs.size})", fontSize = 11.sp) },
-                singleLine = true,
-                modifier = Modifier
-                  .width(128.dp)
-                  .height(46.dp)
-                  .testTag("jump_to_ayah_input")
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = GoldPrimary,
+                  selectedLabelColor = Color.Black
+                ),
+                modifier = Modifier.testTag("reading_mode_chip")
               )
             }
 
-            OutlinedButton(
-              onClick = {
-                focusedVerseIndex = (focusedVerseIndex + 1).coerceAtMost((ayahs.size - 1).coerceAtLeast(0))
-                coroutineScope.launch {
-                  listState.animateScrollToItem(focusedVerseIndex)
+            if (ayahs.isNotEmpty()) {
+              Spacer(modifier = Modifier.height(4.dp))
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                OutlinedButton(
+                  onClick = {
+                    focusedVerseIndex = (focusedVerseIndex - 1).coerceAtLeast(0)
+                    coroutineScope.launch {
+                      listState.animateScrollToItem(focusedVerseIndex)
+                    }
+                  },
+                  enabled = focusedVerseIndex > 0,
+                  contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                  modifier = Modifier.testTag("prev_ayah_button")
+                ) {
+                  Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(14.dp))
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text("Prev Ayah", fontSize = 11.sp)
                 }
-              },
-              enabled = focusedVerseIndex < ayahs.size - 1,
-              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-              modifier = Modifier.testTag("next_ayah_button")
-            ) {
-              Text("Next Ayah", fontSize = 11.sp)
-              Spacer(modifier = Modifier.width(4.dp))
-              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  OutlinedTextField(
+                    value = verseJumpText,
+                    onValueChange = { input ->
+                      verseJumpText = input.filter { it.isDigit() }
+                      val vNum = verseJumpText.toIntOrNull()
+                      if (vNum != null && vNum in 1..ayahs.size) {
+                        focusedVerseIndex = vNum - 1
+                        coroutineScope.launch {
+                          listState.animateScrollToItem(focusedVerseIndex)
+                        }
+                      }
+                    },
+                    placeholder = { Text("Ayah # (1-${ayahs.size})", fontSize = 11.sp) },
+                    singleLine = true,
+                    modifier = Modifier
+                      .width(128.dp)
+                      .height(46.dp)
+                      .testTag("jump_to_ayah_input")
+                  )
+                }
+
+                OutlinedButton(
+                  onClick = {
+                    focusedVerseIndex = (focusedVerseIndex + 1).coerceAtMost((ayahs.size - 1).coerceAtLeast(0))
+                    coroutineScope.launch {
+                      listState.animateScrollToItem(focusedVerseIndex)
+                    }
+                  },
+                  enabled = focusedVerseIndex < ayahs.size - 1,
+                  contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                  modifier = Modifier.testTag("next_ayah_button")
+                ) {
+                  Text("Next Ayah", fontSize = 11.sp)
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
+                }
+              }
             }
           }
         }
       }
     }
 
-    // Ayah List
+    // Minimal Floating Recitation Bar when in Full-Screen Reading Mode
+    AnimatedVisibility(
+      visible = localReadingMode,
+      enter = fadeIn(),
+      exit = fadeOut()
+    ) {
+      Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+        tonalElevation = 2.dp,
+        border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.35f)),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("reading_mode_header")
+      ) {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "${surah.nameArabic} • ${surah.nameEnglish}",
+              style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = ScheherazadeFontFamily,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+              )
+            )
+            Text(
+              text = "Immersive Reading Mode • Increased Line Spacing (2.45x)",
+              style = MaterialTheme.typography.labelSmall.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            )
+          }
+
+          Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            FilterChip(
+              selected = localMushafFlow,
+              onClick = toggleMushafFlowInternal,
+              label = {
+                Text(
+                  text = if (localMushafFlow) "Mushaf Page" else "Verse View",
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.SemiBold
+                )
+              },
+              colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = EmeraldPrimary,
+                selectedLabelColor = Color.White
+              ),
+              modifier = Modifier
+                .heightIn(min = 48.dp)
+                .testTag("reading_mode_mushaf_flow_toggle")
+            )
+
+            OutlinedButton(
+              onClick = toggleReadingModeInternal,
+              contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+              border = BorderStroke(1.dp, EmeraldPrimary),
+              modifier = Modifier
+                .heightIn(min = 48.dp)
+                .testTag("exit_reading_mode_button")
+            ) {
+              Icon(
+                imageVector = Icons.Default.CloseFullscreen,
+                contentDescription = "Exit Reading Mode",
+                tint = EmeraldPrimary,
+                modifier = Modifier.size(16.dp)
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(
+                text = "Exit Reading Mode",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = EmeraldPrimary
+              )
+            }
+          }
+        }
+      }
+    }
+
+    // Ayah List / Full-Screen Immersive Recitation View
+    val effectiveArabicFontSizeSp = if (localReadingMode) {
+      (arabicFontSizeSp + 4f).coerceAtMost(42f)
+    } else {
+      arabicFontSizeSp
+    }
+    val verticalItemSpacing = if (localReadingMode) 24.dp else 16.dp
+    val horizontalListPadding = if (localReadingMode) 20.dp else 16.dp
+
     LazyColumn(
       state = listState,
       modifier = Modifier
         .fillMaxSize()
-        .padding(horizontal = 16.dp),
-      contentPadding = PaddingValues(top = 12.dp, bottom = 96.dp),
-      verticalArrangement = Arrangement.spacedBy(16.dp)
+        .padding(horizontal = horizontalListPadding)
+        .testTag("surah_ayah_lazy_column"),
+      contentPadding = PaddingValues(
+        top = if (localReadingMode) 20.dp else 12.dp,
+        bottom = if (localReadingMode) 112.dp else 96.dp
+      ),
+      verticalArrangement = Arrangement.spacedBy(verticalItemSpacing)
     ) {
       if (surah.number != 9 && surah.number != 1) {
         item {
@@ -615,6 +837,16 @@ fun SurahReaderView(
             }
           }
         }
+      } else if (localReadingMode && localMushafFlow) {
+        // Continuous Mushaf Page Recitation Flow (all verses flowing with generous 2.45x line spacing)
+        item {
+          ContinuousMushafRecitationCard(
+            surah = surah,
+            ayahs = ayahs,
+            arabicFontSizeSp = effectiveArabicFontSizeSp,
+            onPlayAyah = { ayah -> onPlayAyahRecitation(ayah, surah.nameEnglish) }
+          )
+        }
       } else {
         items(ayahs, key = { "${it.surahNumber}_${it.verseNumber}" }) { ayah ->
           val isBookmarked = bookmarks.any { it.itemKey == "ayah_${ayah.surahNumber}_${ayah.verseNumber}" }
@@ -626,7 +858,7 @@ fun SurahReaderView(
             showEnglish = showEnglish,
             showUrdu = showUrdu,
             showTransliteration = showTransliteration,
-            arabicFontSizeSp = arabicFontSizeSp,
+            arabicFontSizeSp = effectiveArabicFontSizeSp,
             translationFontSizeSp = translationFontSizeSp,
             onPlay = { onPlayAyahRecitation(ayah, surah.nameEnglish) },
             onOpenTafsir = { selectedAyahForTafsir = ayah },
@@ -637,34 +869,38 @@ fun SurahReaderView(
               clipboard.setPrimaryClip(ClipData.newPlainText("Ayah", text))
               Toast.makeText(context, "Ayah copied to clipboard", Toast.LENGTH_SHORT).show()
             },
-            onAddNote = { onAddNote("${surah.nameEnglish} ${ayah.surahNumber}:${ayah.verseNumber}") }
+            onAddNote = { onAddNote("${surah.nameEnglish} ${ayah.surahNumber}:${ayah.verseNumber}") },
+            isReadingMode = localReadingMode
           )
         }
 
-        // Surah Footer with Previous / Next Surah buttons
-        item {
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            OutlinedButton(
-              onClick = onPreviousSurah,
-              enabled = surah.number > 1
+        // Surah Footer with Previous / Next Surah buttons (Hidden in Reading Mode)
+        if (!localReadingMode) {
+          item {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
+                .testTag("surah_footer_navigation"),
+              horizontalArrangement = Arrangement.SpaceBetween
             ) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-              Spacer(modifier = Modifier.width(6.dp))
-              Text("Surah ${(surah.number - 1).coerceAtLeast(1)}")
-            }
-            Button(
-              onClick = onNextSurah,
-              enabled = surah.number < 114,
-              colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
-            ) {
-              Text("Surah ${(surah.number + 1).coerceAtMost(114)}")
-              Spacer(modifier = Modifier.width(6.dp))
-              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+              OutlinedButton(
+                onClick = onPreviousSurah,
+                enabled = surah.number > 1
+              ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Surah ${(surah.number - 1).coerceAtLeast(1)}")
+              }
+              Button(
+                onClick = onNextSurah,
+                enabled = surah.number < 114,
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+              ) {
+                Text("Surah ${(surah.number + 1).coerceAtMost(114)}")
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+              }
             }
           }
         }
@@ -1078,18 +1314,39 @@ fun AyahCardItem(
   onBookmark: () -> Unit,
   onCopy: () -> Unit,
   onAddNote: () -> Unit,
+  isReadingMode: Boolean = false,
   modifier: Modifier = Modifier
 ) {
+  val lineHeightMultiplier = if (isReadingMode) 2.45f else 2.0f
+  val cardHorizontalPadding = if (isReadingMode) 24.dp else 16.dp
+  val cardVerticalPadding = if (isReadingMode) 26.dp else 16.dp
+
   ElevatedCard(
     modifier = modifier
       .fillMaxWidth()
+      .then(
+        if (isReadingMode) {
+          Modifier.border(
+            width = 1.dp,
+            color = GoldPrimary.copy(alpha = 0.28f),
+            shape = RoundedCornerShape(20.dp)
+          )
+        } else {
+          Modifier
+        }
+      )
       .testTag("ayah_card_${ayah.surahNumber}_${ayah.verseNumber}"),
-    shape = RoundedCornerShape(16.dp),
+    shape = RoundedCornerShape(if (isReadingMode) 20.dp else 16.dp),
     colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.5.dp)
+    elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isReadingMode) 0.5.dp else 1.5.dp)
   ) {
-    Column(modifier = Modifier.padding(16.dp)) {
-      // Header: Verse number + Tafsir button & Action icons
+    Column(
+      modifier = Modifier.padding(
+        horizontal = cardHorizontalPadding,
+        vertical = cardVerticalPadding
+      )
+    ) {
+      // Header: In Reading Mode, hide secondary navigation/action buttons for distraction-free recitation
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1097,57 +1354,66 @@ fun AyahCardItem(
       ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
           AyahNumberBadge(verseNumber = ayah.verseNumber)
-          Spacer(modifier = Modifier.width(8.dp))
-          Surface(
-            modifier = Modifier
-              .clickable(onClick = onOpenTafsir)
-              .testTag("ayah_tafsir_button_${ayah.surahNumber}_${ayah.verseNumber}"),
-            shape = RoundedCornerShape(8.dp),
-            color = EmeraldPrimary.copy(alpha = 0.12f)
-          ) {
-            Row(
-              modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-              verticalAlignment = Alignment.CenterVertically
+          if (!isReadingMode) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+              modifier = Modifier
+                .clickable(onClick = onOpenTafsir)
+                .testTag("ayah_tafsir_button_${ayah.surahNumber}_${ayah.verseNumber}"),
+              shape = RoundedCornerShape(8.dp),
+              color = EmeraldPrimary.copy(alpha = 0.12f)
             ) {
-              Icon(
-                imageVector = Icons.Default.AutoStories,
-                contentDescription = "Read Tafsir & Linked Hadith",
-                tint = EmeraldPrimary,
-                modifier = Modifier.size(15.dp)
-              )
-              Spacer(modifier = Modifier.width(5.dp))
-              Text(
-                text = "8 Tafsirs & Hadith",
-                style = MaterialTheme.typography.labelSmall.copy(
-                  fontWeight = FontWeight.Bold,
-                  color = EmeraldPrimary
+              Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Icon(
+                  imageVector = Icons.Default.AutoStories,
+                  contentDescription = "Read Tafsir & Linked Hadith",
+                  tint = EmeraldPrimary,
+                  modifier = Modifier.size(15.dp)
                 )
-              )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                  text = "8 Tafsirs & Hadith",
+                  style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = EmeraldPrimary
+                  )
+                )
+              }
             }
           }
         }
 
-        Row {
-          IconButton(onClick = onPlay, modifier = Modifier.size(36.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          IconButton(
+            onClick = onPlay,
+            modifier = Modifier
+              .size(if (isReadingMode) 48.dp else 36.dp)
+              .testTag("ayah_play_button_${ayah.surahNumber}_${ayah.verseNumber}")
+          ) {
             Icon(Icons.Default.VolumeUp, contentDescription = "Play Audio", tint = EmeraldPrimary)
           }
-          IconButton(onClick = onBookmark, modifier = Modifier.size(36.dp)) {
-            Icon(
-              imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-              contentDescription = "Bookmark",
-              tint = GoldPrimary
-            )
-          }
-          IconButton(onClick = onCopy, modifier = Modifier.size(36.dp)) {
-            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-          IconButton(onClick = onAddNote, modifier = Modifier.size(36.dp)) {
-            Icon(Icons.Default.NoteAdd, contentDescription = "Note", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+          if (!isReadingMode) {
+            IconButton(onClick = onBookmark, modifier = Modifier.size(36.dp)) {
+              Icon(
+                imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                contentDescription = "Bookmark",
+                tint = GoldPrimary
+              )
+            }
+            IconButton(onClick = onCopy, modifier = Modifier.size(36.dp)) {
+              Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            IconButton(onClick = onAddNote, modifier = Modifier.size(36.dp)) {
+              Icon(Icons.Default.NoteAdd, contentDescription = "Note", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
           }
         }
       }
 
-      Spacer(modifier = Modifier.height(14.dp))
+      Spacer(modifier = Modifier.height(if (isReadingMode) 20.dp else 14.dp))
 
       // Arabic Uthmani Text in Amiri Quran Uthmani Mushaf Font (without duplicate Bismillah on Verse 1)
       val cleanVerseArabic = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(
@@ -1161,14 +1427,21 @@ fun AyahCardItem(
           fontFamily = AmiriFontFamily,
           fontWeight = FontWeight.Normal,
           fontSize = arabicFontSizeSp.sp,
-          lineHeight = (arabicFontSizeSp * 2.0f).sp,
+          lineHeight = (arabicFontSizeSp * lineHeightMultiplier).sp,
           textAlign = TextAlign.Right,
-          color = MaterialTheme.colorScheme.onSurface
+          color = MaterialTheme.colorScheme.onSurface,
+          platformStyle = PlatformTextStyle(includeFontPadding = true),
+          lineHeightStyle = LineHeightStyle(
+            alignment = LineHeightStyle.Alignment.Center,
+            trim = LineHeightStyle.Trim.None
+          )
         ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("ayah_arabic_text_${ayah.surahNumber}_${ayah.verseNumber}")
       )
 
-      if (showTransliteration && ayah.transliteration.isNotEmpty()) {
+      if (!isReadingMode && showTransliteration && ayah.transliteration.isNotEmpty()) {
         Spacer(modifier = Modifier.height(10.dp))
         Text(
           text = ayah.transliteration,
@@ -1180,7 +1453,7 @@ fun AyahCardItem(
         )
       }
 
-      if (showEnglish && ayah.translationEnglish.isNotEmpty()) {
+      if (!isReadingMode && showEnglish && ayah.translationEnglish.isNotEmpty()) {
         Spacer(modifier = Modifier.height(10.dp))
         Text(
           text = ayah.translationEnglish,
@@ -1192,7 +1465,7 @@ fun AyahCardItem(
         )
       }
 
-      if (showUrdu && ayah.translationUrdu.isNotEmpty()) {
+      if (!isReadingMode && showUrdu && ayah.translationUrdu.isNotEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
           text = ayah.translationUrdu,
@@ -1208,3 +1481,114 @@ fun AyahCardItem(
     }
   }
 }
+
+@Composable
+fun ContinuousMushafRecitationCard(
+  surah: SurahEntity,
+  ayahs: List<AyahEntity>,
+  arabicFontSizeSp: Float,
+  onPlayAyah: (AyahEntity) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  val continuousArabicText = remember(surah.number, ayahs) {
+    buildString {
+      ayahs.forEachIndexed { index, ayah ->
+        val cleanVerseArabic = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(
+          surahNumber = ayah.surahNumber,
+          verseNumber = ayah.verseNumber,
+          rawArabic = ayah.textArabic
+        )
+        append(cleanVerseArabic)
+        append(" ﴿")
+        append(toArabicIndicDigits(ayah.verseNumber))
+        append("﴾ ")
+        if (index < ayahs.lastIndex) {
+          append(" ")
+        }
+      }
+    }
+  }
+
+  Surface(
+    modifier = modifier
+      .fillMaxWidth()
+      .border(
+        width = 1.5.dp,
+        color = GoldPrimary.copy(alpha = 0.55f),
+        shape = RoundedCornerShape(22.dp)
+      )
+      .testTag("continuous_mushaf_flow_card"),
+    shape = RoundedCornerShape(22.dp),
+    color = MaterialTheme.colorScheme.surface,
+    tonalElevation = 1.dp
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp, vertical = 28.dp)
+    ) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = "سُورَةُ ${surah.nameArabic} • Mushaf Recitation View",
+          style = MaterialTheme.typography.titleMedium.copy(
+            fontFamily = ScheherazadeFontFamily,
+            fontWeight = FontWeight.Bold,
+            color = EmeraldPrimary
+          )
+        )
+        if (ayahs.isNotEmpty()) {
+          OutlinedButton(
+            onClick = { onPlayAyah(ayahs.first()) },
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier
+              .heightIn(min = 48.dp)
+              .testTag("mushaf_play_first_ayah_button")
+          ) {
+            Icon(
+              imageVector = Icons.Default.VolumeUp,
+              contentDescription = "Recite Surah",
+              tint = EmeraldPrimary,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Recite", fontSize = 12.sp, color = EmeraldPrimary)
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(20.dp))
+
+      Text(
+        text = continuousArabicText,
+        style = MaterialTheme.typography.headlineMedium.copy(
+          fontFamily = AmiriFontFamily,
+          fontWeight = FontWeight.Normal,
+          fontSize = arabicFontSizeSp.sp,
+          lineHeight = (arabicFontSizeSp * 2.45f).sp,
+          textAlign = TextAlign.Right,
+          color = MaterialTheme.colorScheme.onSurface,
+          platformStyle = PlatformTextStyle(includeFontPadding = true),
+          lineHeightStyle = LineHeightStyle(
+            alignment = LineHeightStyle.Alignment.Center,
+            trim = LineHeightStyle.Trim.None
+          )
+        ),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("continuous_mushaf_arabic_text")
+      )
+    }
+  }
+}
+
+private fun toArabicIndicDigits(number: Int): String {
+  val arabicDigits = charArrayOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
+  return number.toString().map { ch ->
+    if (ch in '0'..'9') arabicDigits[ch - '0'] else ch
+  }.joinToString("")
+}
+
