@@ -95,6 +95,8 @@ fun HomeScreen(
   onNavigateToQuran: () -> Unit,
   onNavigateToHadith: () -> Unit,
   onNavigateToLibrary: () -> Unit = {},
+  onNavigateToDownloads: () -> Unit = {},
+  onNavigateToEvidence: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -167,6 +169,26 @@ fun HomeScreen(
             Spacer(modifier = Modifier.width(4.dp))
             Text("32 Books", fontSize = 11.sp, fontWeight = FontWeight.Bold)
           }
+        }
+      }
+      Spacer(modifier = Modifier.height(10.dp))
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        FilledTonalButton(
+          onClick = onNavigateToDownloads,
+          modifier = Modifier.weight(1f).testTag("home_open_offline_downloads_btn"),
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Text("Offline Download Manager", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
+        OutlinedButton(
+          onClick = onNavigateToEvidence,
+          modifier = Modifier.weight(1f).testTag("home_open_islam_with_evidence_btn"),
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Text("Islam with Evidence", fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
       }
       Spacer(modifier = Modifier.height(16.dp))

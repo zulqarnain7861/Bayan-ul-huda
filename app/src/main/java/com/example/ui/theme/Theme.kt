@@ -66,6 +66,44 @@ private val EyeComfortColorScheme =
     outline = EyeComfortBorder,
   )
 
+private val RoyalEmeraldColorScheme =
+  darkColorScheme(
+    primary = GoldLight,
+    onPrimary = RoyalEmeraldBackground,
+    primaryContainer = EmeraldLight,
+    onPrimaryContainer = GoldContainer,
+    secondary = GoldPrimary,
+    onSecondary = Color.Black,
+    secondaryContainer = RoyalEmeraldSurfaceVariant,
+    onSecondaryContainer = GoldLight,
+    background = RoyalEmeraldBackground,
+    onBackground = RoyalEmeraldTextPrimary,
+    surface = RoyalEmeraldSurface,
+    onSurface = RoyalEmeraldTextPrimary,
+    surfaceVariant = RoyalEmeraldSurfaceVariant,
+    onSurfaceVariant = RoyalEmeraldTextSecondary,
+    outline = RoyalEmeraldBorder,
+  )
+
+private val MadinahParchmentColorScheme =
+  lightColorScheme(
+    primary = ParchmentPrimary,
+    onPrimary = Color(0xFFFFFBF2),
+    primaryContainer = ParchmentSurfaceVariant,
+    onPrimaryContainer = ParchmentTextPrimary,
+    secondary = ParchmentSecondary,
+    onSecondary = Color.White,
+    secondaryContainer = EmeraldContainer,
+    onSecondaryContainer = OnEmeraldContainer,
+    background = ParchmentBackground,
+    onBackground = ParchmentTextPrimary,
+    surface = ParchmentSurface,
+    onSurface = ParchmentTextPrimary,
+    surfaceVariant = ParchmentSurfaceVariant,
+    onSurfaceVariant = ParchmentTextSecondary,
+    outline = ParchmentBorder,
+  )
+
 @Composable
 fun MyApplicationTheme(
   themeMode: AppThemeMode = AppThemeMode.LIGHT,
@@ -77,6 +115,8 @@ fun MyApplicationTheme(
     AppThemeMode.LIGHT -> LightColorScheme
     AppThemeMode.DARK -> DarkColorScheme
     AppThemeMode.EYE_COMFORT -> EyeComfortColorScheme
+    AppThemeMode.ROYAL_EMERALD -> RoyalEmeraldColorScheme
+    AppThemeMode.MADINAH_PARCHMENT -> MadinahParchmentColorScheme
     AppThemeMode.AUTO -> {
       val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
       val isNightHour = hour < 6 || hour >= 19

@@ -70,6 +70,22 @@ class AudioPlayerManager(private val context: Context) {
     try {
       releasePlayersOnly()
 
+      val reciterId = _audioState.value.reciter.id
+      val offlineFile = runCatching {
+        com.example.data.download.DownloadManager.getInstance(context)
+          .findVerifiedOfflineAudioFile(reciterId, surah, ayah)
+      }.getOrNull()
+
+      if (offlineFile != null && offlineFile.exists()) {
+        startOfflineRecitationFallback(
+          surah = surah,
+          ayah = ayah,
+          surahName = surahName,
+          customOfflineStatus = "${_audioState.value.reciter.name} • Playing Downloaded Offline Audio (${offlineFile.name})"
+        )
+        return
+      }
+
       val formattedSurah = surah.toString().padStart(3, '0')
       val formattedAyah = ayah.toString().padStart(3, '0')
       val reciterFolder = _audioState.value.reciter.subfolder
@@ -147,7 +163,12 @@ class AudioPlayerManager(private val context: Context) {
     }
   }
 
-  private fun startOfflineRecitationFallback(surah: Int, ayah: Int, surahName: String) {
+  private fun startOfflineRecitationFallback(
+    surah: Int,
+    ayah: Int,
+    surahName: String,
+    customOfflineStatus: String? = null
+  ) {
     fallbackJob?.cancel()
     stopProgressTracking()
     try {
@@ -166,7 +187,7 @@ class AudioPlayerManager(private val context: Context) {
       surahName = surahName,
       currentPositionMs = 0,
       durationMs = totalDurationMs,
-      statusMessage = "${_audioState.value.reciter.name} (Offline Recitation Cadence)"
+      statusMessage = customOfflineStatus ?: "${_audioState.value.reciter.name} (Offline Recitation Cadence)"
     )
 
     progressJob = scope.launch(Dispatchers.IO) {

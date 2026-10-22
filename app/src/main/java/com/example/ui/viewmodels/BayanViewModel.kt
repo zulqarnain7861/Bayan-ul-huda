@@ -110,6 +110,8 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     null
   }
   val audioPlayerManager = AudioPlayerManager(application)
+  val downloadManager = com.example.data.download.DownloadManager.getInstance(application)
+  val evidenceEngine = com.example.data.evidence.EvidenceVerificationEngine(application)
 
   private val _uiState = MutableStateFlow(
     BayanUiState(
@@ -286,7 +288,9 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     val next = when (current) {
       AppThemeMode.LIGHT -> AppThemeMode.EYE_COMFORT
       AppThemeMode.EYE_COMFORT -> AppThemeMode.DARK
-      AppThemeMode.DARK -> AppThemeMode.AUTO
+      AppThemeMode.DARK -> AppThemeMode.ROYAL_EMERALD
+      AppThemeMode.ROYAL_EMERALD -> AppThemeMode.MADINAH_PARCHMENT
+      AppThemeMode.MADINAH_PARCHMENT -> AppThemeMode.AUTO
       AppThemeMode.AUTO -> AppThemeMode.LIGHT
     }
     setThemeMode(next)

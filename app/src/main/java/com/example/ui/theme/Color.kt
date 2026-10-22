@@ -43,6 +43,24 @@ val EyeComfortTextPrimary = Color(0xFF2B2317)
 val EyeComfortTextSecondary = Color(0xFF594A36)
 val EyeComfortBorder = Color(0xFFCBB894)
 
+// 4. Royal Emerald Theme: Deep Haramain Sanctuary Green & Burnished Gold
+val RoyalEmeraldBackground = Color(0xFF072118)
+val RoyalEmeraldSurface = Color(0xFF0C2E22)
+val RoyalEmeraldSurfaceVariant = Color(0xFF133D2E)
+val RoyalEmeraldTextPrimary = Color(0xFFF6F2E6)
+val RoyalEmeraldTextSecondary = Color(0xFFC5D6CD)
+val RoyalEmeraldBorder = Color(0xFF235743)
+
+// 5. Madinah Parchment Theme: Illuminated Manuscript Ivory & Copper-Gold
+val ParchmentBackground = Color(0xFFFAF3E3)
+val ParchmentSurface = Color(0xFFF2E6CE)
+val ParchmentSurfaceVariant = Color(0xFFE6D6B8)
+val ParchmentPrimary = Color(0xFF5C3A14)
+val ParchmentSecondary = Color(0xFF15523A)
+val ParchmentTextPrimary = Color(0xFF24190B)
+val ParchmentTextSecondary = Color(0xFF5E492F)
+val ParchmentBorder = Color(0xFFD1BC97)
+
 // Accents & Badges
 val SahihBadgeColor = Color(0xFF1D784A)
 val HasanBadgeColor = Color(0xFF9E780E)

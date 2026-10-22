@@ -58,6 +58,30 @@ interface HadithDao {
   @Query("SELECT COUNT(*) FROM hadiths")
   suspend fun getHadithCount(): Int
 
+  @Query("SELECT * FROM hadiths WHERE collectionKey = :collectionKey AND hadithNumber = :hadithNumber LIMIT 1")
+  suspend fun getHadithByNumber(collectionKey: String, hadithNumber: Int): HadithEntity?
+
+  @Query("""
+    SELECT * FROM hadiths 
+    WHERE CAST(hadithNumber AS TEXT) = :query
+       OR darussalamReference LIKE '%' || :query || '%'
+       OR inBookReference LIKE '%' || :query || '%'
+       OR reference LIKE '%' || :query || '%'
+       OR collectionName LIKE '%' || :query || '%'
+       OR collectionKey LIKE '%' || :query || '%'
+       OR arabicText LIKE '%' || :query || '%' 
+       OR englishText LIKE '%' || :query || '%' 
+       OR urduText LIKE '%' || :query || '%'
+       OR transliteration LIKE '%' || :query || '%'
+       OR narrator LIKE '%' || :query || '%'
+       OR bookName LIKE '%' || :query || '%'
+       OR chapterName LIKE '%' || :query || '%'
+       OR linkedQuranVerses LIKE '%' || :query || '%'
+    ORDER BY collectionKey ASC, hadithNumber ASC
+    LIMIT 200
+  """)
+  suspend fun searchHadithsSnapshot(query: String): List<HadithEntity>
+
   @Query("SELECT COUNT(*) FROM hadiths WHERE collectionKey = :collectionKey")
   suspend fun getHadithCountForCollection(collectionKey: String): Int
 

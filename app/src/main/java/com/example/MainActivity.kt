@@ -50,8 +50,10 @@ import com.example.ui.components.TopIslamicBar
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.AddNoteDialog
 import com.example.ui.screens.AuthScreen
+import com.example.ui.screens.DownloadCenterScreen
 import com.example.ui.screens.HadithScreen
 import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.IslamWithEvidenceScreen
 import com.example.ui.screens.LibraryScreen
 import com.example.ui.screens.OpeningExperienceScreen
 import com.example.ui.screens.QuranScreen
@@ -70,6 +72,8 @@ object BayanNavRoutes {
   const val SEARCH = "search"
   const val LIBRARY = "library"
   const val ABOUT = "about"
+  const val DOWNLOADS = "downloads"
+  const val EVIDENCE = "evidence"
 }
 
 data class BottomNavDestination(
@@ -114,6 +118,7 @@ fun BayanApp(
   val notes by viewModel.notes.collectAsStateWithLifecycle()
   val searchAyahs by viewModel.searchAyahResults.collectAsStateWithLifecycle()
   val searchHadiths by viewModel.searchHadithResults.collectAsStateWithLifecycle()
+  val syncBadgeState by viewModel.downloadManager.syncBadgeState.collectAsStateWithLifecycle()
 
   var pendingNoteRef by remember { mutableStateOf<String?>(null) }
 
@@ -187,16 +192,25 @@ fun BayanApp(
 
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route ?: BayanNavRoutes.HOME
-  val isAboutOpen = currentRoute == BayanNavRoutes.ABOUT
+  val isSubpageWithBack = currentRoute in setOf(
+    BayanNavRoutes.ABOUT,
+    BayanNavRoutes.DOWNLOADS,
+    BayanNavRoutes.EVIDENCE
+  )
 
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     topBar = {
-      if (isAboutOpen) {
+      if (isSubpageWithBack) {
+        val headerTitle = when (currentRoute) {
+          BayanNavRoutes.DOWNLOADS -> "Offline Download Manager"
+          BayanNavRoutes.EVIDENCE -> "Islam with Evidence"
+          else -> "About, Themes & Source Audit"
+        }
         TopAppBar(
           title = {
             Text(
-              text = "About, Themes & Source Audit",
+              text = headerTitle,
               style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
           },
@@ -212,6 +226,20 @@ fun BayanApp(
       } else if (!(currentRoute == BayanNavRoutes.QURAN && uiState.isReaderOpen)) {
         TopIslamicBar(
           themeMode = uiState.prayerConfig.themeMode,
+          isOfflineMode = syncBadgeState.isOfflineMode,
+          onToggleOfflineMode = {
+            viewModel.downloadManager.setOfflineModeEnabled(!syncBadgeState.isOfflineMode)
+          },
+          onOpenDownloadsClick = {
+            navController.navigate(BayanNavRoutes.DOWNLOADS) {
+              launchSingleTop = true
+            }
+          },
+          onOpenEvidenceClick = {
+            navController.navigate(BayanNavRoutes.EVIDENCE) {
+              launchSingleTop = true
+            }
+          },
           onCycleThemeMode = { viewModel.cycleThemeMode() },
           onSearchClick = { navigateToTab(BayanNavRoutes.SEARCH, MainNavigationTab.SEARCH) },
           onAboutClick = {
@@ -282,7 +310,7 @@ fun BayanApp(
         )
 
         // Main Bottom Navigation Bar controlled by NavHostController
-        if (!(currentRoute == BayanNavRoutes.QURAN && uiState.isReaderOpen) && !isAboutOpen) {
+        if (!(currentRoute == BayanNavRoutes.QURAN && uiState.isReaderOpen) && !isSubpageWithBack) {
           NavigationBar(
             containerColor = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
@@ -335,7 +363,13 @@ fun BayanApp(
           onBookmarkHadith = { hadith -> viewModel.toggleBookmarkHadith(hadith) },
           onNavigateToQuran = { navigateToTab(BayanNavRoutes.QURAN, MainNavigationTab.QURAN) },
           onNavigateToHadith = { navigateToTab(BayanNavRoutes.HADITH, MainNavigationTab.HADITH) },
-          onNavigateToLibrary = { navigateToTab(BayanNavRoutes.LIBRARY, MainNavigationTab.LIBRARY) }
+          onNavigateToLibrary = { navigateToTab(BayanNavRoutes.LIBRARY, MainNavigationTab.LIBRARY) },
+          onNavigateToDownloads = {
+            navController.navigate(BayanNavRoutes.DOWNLOADS) { launchSingleTop = true }
+          },
+          onNavigateToEvidence = {
+            navController.navigate(BayanNavRoutes.EVIDENCE) { launchSingleTop = true }
+          }
         )
       }
 
@@ -361,6 +395,9 @@ fun BayanApp(
           onPlayAyahRecitation = { ayah, sName -> viewModel.playAyahRecitation(ayah, sName) },
           onBookmarkAyah = { ayah, sName -> viewModel.toggleBookmarkAyah(ayah, sName) },
           onAddNote = { ref -> pendingNoteRef = ref },
+          onOpenOfflineDownloads = {
+            navController.navigate(BayanNavRoutes.DOWNLOADS) { launchSingleTop = true }
+          },
           allHadithsForTafsir = viewModel.allHadithsForLinks
         )
       }
@@ -388,7 +425,13 @@ fun BayanApp(
           },
           onDismissQuranVersePreview = { viewModel.dismissPreviewedQuranVerse() },
           onBookmarkHadith = { viewModel.toggleBookmarkHadith(it) },
-          onAddNote = { ref -> pendingNoteRef = ref }
+          onAddNote = { ref -> pendingNoteRef = ref },
+          onOpenOfflineDownloads = {
+            navController.navigate(BayanNavRoutes.DOWNLOADS) { launchSingleTop = true }
+          },
+          onOpenEvidenceVerification = {
+            navController.navigate(BayanNavRoutes.EVIDENCE) { launchSingleTop = true }
+          }
         )
       }
 
@@ -420,7 +463,35 @@ fun BayanApp(
           notes = notes,
           onRemoveBookmark = { viewModel.removeBookmarkByKey(it) },
           onSaveNote = { ref, title, content -> viewModel.saveNote(ref, title, content) },
-          onDeleteNote = { viewModel.deleteNote(it) }
+          onDeleteNote = { viewModel.deleteNote(it) },
+          downloadManager = viewModel.downloadManager,
+          currentThemeMode = uiState.prayerConfig.themeMode,
+          onSelectThemeMode = { viewModel.setThemeMode(it) },
+          onPlayDownloadedAudio = { s, v, name -> viewModel.audioPlayerManager.playAyah(s, v, name) }
+        )
+      }
+
+      composable(BayanNavRoutes.DOWNLOADS) {
+        DownloadCenterScreen(
+          downloadManager = viewModel.downloadManager,
+          currentThemeMode = uiState.prayerConfig.themeMode,
+          onSelectThemeMode = { viewModel.setThemeMode(it) },
+          onPlayDownloadedAudio = { s, v, name -> viewModel.audioPlayerManager.playAyah(s, v, name) }
+        )
+      }
+
+      composable(BayanNavRoutes.EVIDENCE) {
+        IslamWithEvidenceScreen(
+          evidenceEngine = viewModel.evidenceEngine,
+          onOpenQuranReference = { surahNum, verseNum ->
+            viewModel.openOrPreviewQuranReference("$surahNum:$verseNum", openFullSurahReader = true)
+            navigateToTab(BayanNavRoutes.QURAN, MainNavigationTab.QURAN)
+          },
+          onOpenHadithReference = { colKey, hadithNum ->
+            viewModel.selectHadithCollection(colKey)
+            viewModel.lookupHadithByNumber(hadithNum, colKey)
+            navigateToTab(BayanNavRoutes.HADITH, MainNavigationTab.HADITH)
+          }
         )
       }
 

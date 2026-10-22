@@ -21,21 +21,52 @@ object OfflineQuranAssetLoader {
     "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ "
   )
 
+  private val MUQATTAAT_SMALL_ALIF_FIXES = mapOf(
+    10 to ("الٓر" to "الٓرٰ"),
+    11 to ("الٓر" to "الٓرٰ"),
+    12 to ("الٓر" to "الٓرٰ"),
+    13 to ("الٓمٓر" to "الٓـمّٓرٰ"),
+    14 to ("الٓر" to "الٓرٰ"),
+    15 to ("الٓر" to "الٓرٰ"),
+    19 to ("كٓهيعٓصٓ" to "كٓهٰيٰعٓصٓ"),
+    20 to ("طه" to "طٰهٰ"),
+    26 to ("طسٓمٓ" to "طٰسّٓمٓ"),
+    27 to ("طسٓ" to "طٰسٓ"),
+    28 to ("طسٓمٓ" to "طٰسّٓمٓ"),
+    36 to ("يسٓ" to "يٰسٓ"),
+    40 to ("حمٓ" to "حٰمٓ"),
+    41 to ("حمٓ" to "حٰمٓ"),
+    42 to ("حمٓ" to "حٰمٓ"),
+    43 to ("حمٓ" to "حٰمٓ"),
+    44 to ("حمٓ" to "حٰمٓ"),
+    45 to ("حمٓ" to "حٰمٓ"),
+    46 to ("حمٓ" to "حٰمٓ")
+  )
+
   /**
    * Removes only the extra prepended Bismillah at the start of Verse 1 for Surahs 2..114 (excluding Surah 9 At-Tawbah),
-   * because the upper Bismillah header is already displayed above the Surah.
-   * Never modifies Surah 1 (where Bismillah is Verse 1) or cuts any words of the 1st verse itself.
+   * because the upper Bismillah header is already displayed above the Surah, and ensures Uthmani Muqatta'at
+   * small alif (e.g., الٓـمّٓرٰ in Surah Ar-Ra'd 13:1) is accurately preserved.
    */
   fun stripDuplicateBismillahPrefix(surahNumber: Int, verseNumber: Int, rawArabic: String): String {
-    val cleaned = rawArabic.removePrefix("\uFEFF").trim()
-    if (surahNumber == 1 || surahNumber == 9 || verseNumber != 1) {
-      return cleaned
+    var cleaned = rawArabic.removePrefix("\uFEFF").trim()
+    if (surahNumber != 1 && surahNumber != 9 && verseNumber == 1) {
+      for (prefix in LEADING_BISMILLAH_PREFIXES) {
+        if (cleaned.startsWith(prefix)) {
+          val remainder = cleaned.substring(prefix.length).trim()
+          if (remainder.isNotEmpty()) {
+            cleaned = remainder
+            break
+          }
+        }
+      }
     }
-    for (prefix in LEADING_BISMILLAH_PREFIXES) {
-      if (cleaned.startsWith(prefix)) {
-        val remainder = cleaned.substring(prefix.length).trim()
-        if (remainder.isNotEmpty()) {
-          return remainder
+    if (verseNumber == 1) {
+      MUQATTAAT_SMALL_ALIF_FIXES[surahNumber]?.let { (oldTok, newTok) ->
+        if (cleaned == oldTok) {
+          cleaned = newTok
+        } else if (cleaned.startsWith("$oldTok ")) {
+          cleaned = newTok + cleaned.substring(oldTok.length)
         }
       }
     }

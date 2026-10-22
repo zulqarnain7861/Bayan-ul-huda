@@ -47,6 +47,8 @@ enum class AppThemeMode(val label: String, val description: String) {
   LIGHT("Light Theme", "Warm Cream & Emerald for daytime clarity"),
   DARK("Dark Theme", "Deep Night Obsidian & Soft Gold for nighttime"),
   EYE_COMFORT("Eye-Comfort", "Warm Sepia Low-Glare Amber for extended reading"),
+  ROYAL_EMERALD("Royal Emerald", "Deep Haramain Sanctuary Emerald & Burnished Gold"),
+  MADINAH_PARCHMENT("Madinah Parchment", "Illuminated Manuscript Ivory & Classical Gold"),
   AUTO("Auto Day/Night", "Automatically switches based on time & system")
 }
 

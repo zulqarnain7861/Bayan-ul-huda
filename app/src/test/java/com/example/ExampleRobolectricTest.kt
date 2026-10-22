@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.auth.AuthManager
+import com.example.data.local.AppDatabase
 import com.example.data.local.BayanDatabase
 import com.example.data.local.ExtendedHadithDataProvider
 import com.example.data.local.InitialDataLoader
@@ -340,7 +341,7 @@ class ExampleRobolectricTest {
   @Test
   fun `verify SourceRegistry Room entity schema DAO and repository seeding`() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
-    val inMemoryDb = Room.inMemoryDatabaseBuilder(context, BayanDatabase::class.java)
+    val inMemoryDb = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
       .allowMainThreadQueries()
       .build()
 

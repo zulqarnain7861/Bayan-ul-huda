@@ -119,6 +119,7 @@ fun QuranScreen(
   onPlayAyahRecitation: (AyahEntity, String) -> Unit,
   onBookmarkAyah: (AyahEntity, String) -> Unit,
   onAddNote: (String) -> Unit,
+  onOpenOfflineDownloads: () -> Unit = {},
   allHadithsForTafsir: List<HadithEntity> = ExtendedHadithDataProvider.getExtendedHadiths(),
   modifier: Modifier = Modifier
 ) {
@@ -149,6 +150,7 @@ fun QuranScreen(
     SurahCatalogView(
       surahs = surahs,
       onOpenSurah = onOpenSurah,
+      onOpenOfflineDownloads = onOpenOfflineDownloads,
       modifier = modifier
     )
   }
@@ -158,6 +160,7 @@ fun QuranScreen(
 fun SurahCatalogView(
   surahs: List<SurahEntity>,
   onOpenSurah: (SurahEntity) -> Unit,
+  onOpenOfflineDownloads: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -195,12 +198,35 @@ fun SurahCatalogView(
       )
     }
 
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 6.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = "Select Surahs, Ayahs, Translations, Tafsirs & Audio",
+        style = MaterialTheme.typography.labelSmall.copy(
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        modifier = Modifier.weight(1f)
+      )
+      Button(
+        onClick = onOpenOfflineDownloads,
+        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+        modifier = Modifier.testTag("quran_download_for_offline_use_button")
+      ) {
+        Text("Download for Offline Use", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+      }
+    }
+
     OutlinedTextField(
       value = searchQuery,
       onValueChange = { searchQuery = it },
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .padding(horizontal = 16.dp, vertical = 4.dp)
         .testTag("surah_catalog_search_input"),
       placeholder = { Text("Search Surah by number (1-114) or name...") },
       singleLine = true,

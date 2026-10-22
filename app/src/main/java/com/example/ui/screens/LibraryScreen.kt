@@ -97,6 +97,10 @@ fun LibraryScreen(
   onRemoveBookmark: (String) -> Unit,
   onSaveNote: (String, String, String) -> Unit,
   onDeleteNote: (Long) -> Unit,
+  downloadManager: com.example.data.download.DownloadManager? = null,
+  currentThemeMode: com.example.data.prayer.AppThemeMode = com.example.data.prayer.AppThemeMode.LIGHT,
+  onSelectThemeMode: (com.example.data.prayer.AppThemeMode) -> Unit = {},
+  onPlayDownloadedAudio: (Int, Int, String) -> Unit = { _, _, _ -> },
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -204,7 +208,19 @@ fun LibraryScreen(
             Text(
               text = "Notes (${notes.size})",
               fontWeight = FontWeight.Bold,
-              fontSize = 12.sp
+              fontSize = 11.sp
+            )
+          }
+        )
+        Tab(
+          selected = selectedTab == 3,
+          onClick = { selectedTab = 3 },
+          modifier = Modifier.testTag("library_tab_offline_downloads"),
+          text = {
+            Text(
+              text = "Offline Library",
+              fontWeight = FontWeight.Bold,
+              fontSize = 11.sp
             )
           }
         )
@@ -592,6 +608,17 @@ fun LibraryScreen(
               }
             }
           }
+        }
+        3 -> {
+          val resolvedManager = downloadManager ?: remember(context) {
+            com.example.data.download.DownloadManager.getInstance(context)
+          }
+          DownloadCenterScreen(
+            downloadManager = resolvedManager,
+            currentThemeMode = currentThemeMode,
+            onSelectThemeMode = onSelectThemeMode,
+            onPlayDownloadedAudio = onPlayDownloadedAudio
+          )
         }
       }
     }

@@ -26,8 +26,14 @@ interface TranslationDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertTranslations(translations: List<TranslationEntity>)
 
+  @Query("SELECT * FROM translations WHERE sourceType = :sourceType AND referenceKey = :referenceKey ORDER BY editionKey ASC")
+  suspend fun getTranslationsForReferenceSnapshot(sourceType: String, referenceKey: String): List<TranslationEntity>
+
   @Query("SELECT COUNT(*) FROM translations")
   suspend fun getTranslationCount(): Int
+
+  @Query("SELECT COUNT(*) FROM translations WHERE editionKey = :editionKey")
+  suspend fun getTranslationCountForEdition(editionKey: String): Int
 
   @Query("SELECT COUNT(*) FROM translations WHERE sourceType = :sourceType AND languageCode = :languageCode")
   suspend fun getTranslationCountByLanguage(sourceType: String, languageCode: String): Int

@@ -111,6 +111,8 @@ fun HadithScreen(
   onDismissQuranVersePreview: () -> Unit = {},
   onBookmarkHadith: (HadithEntity) -> Unit,
   onAddNote: (String) -> Unit,
+  onOpenOfflineDownloads: () -> Unit = {},
+  onOpenEvidenceVerification: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -223,6 +225,27 @@ fun HadithScreen(
             }
           }
         )
+      }
+    }
+
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 4.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      FilledTonalButton(
+        onClick = onOpenOfflineDownloads,
+        modifier = Modifier.weight(1f).testTag("hadith_download_offline_button")
+      ) {
+        Text("Download for Offline Use", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+      }
+      OutlinedButton(
+        onClick = onOpenEvidenceVerification,
+        modifier = Modifier.weight(1f).testTag("hadith_verify_with_evidence_button")
+      ) {
+        Text("Islam with Evidence", fontSize = 11.sp, fontWeight = FontWeight.Bold)
       }
     }
 
