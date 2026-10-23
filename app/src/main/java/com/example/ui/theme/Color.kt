@@ -51,7 +51,7 @@ val RoyalEmeraldTextPrimary = Color(0xFFF6F2E6)
 val RoyalEmeraldTextSecondary = Color(0xFFC5D6CD)
 val RoyalEmeraldBorder = Color(0xFF235743)
 
-// 5. Madinah Parchment Theme: Illuminated Manuscript Ivory & Copper-Gold
+// 5. Warm Paper / Madinah Parchment Theme: Illuminated Manuscript Ivory & Copper-Gold
 val ParchmentBackground = Color(0xFFFAF3E3)
 val ParchmentSurface = Color(0xFFF2E6CE)
 val ParchmentSurfaceVariant = Color(0xFFE6D6B8)
@@ -60,6 +60,23 @@ val ParchmentSecondary = Color(0xFF15523A)
 val ParchmentTextPrimary = Color(0xFF24190B)
 val ParchmentTextSecondary = Color(0xFF5E492F)
 val ParchmentBorder = Color(0xFFD1BC97)
+
+// 6. Pure Black / AMOLED Black Theme: True #000000 OLED Canvas
+val PureBlackBackground = Color(0xFF000000)
+val PureBlackSurface = Color(0xFF070A08)
+val PureBlackSurfaceVariant = Color(0xFF101613)
+val PureBlackTextPrimary = Color(0xFFF5F7F5)
+val PureBlackTextSecondary = Color(0xFFB4C0B9)
+val PureBlackBorder = Color(0xFF1F2B25)
+
+// 7. Blue (Sapphire Sanctuary) Theme: Classical Lapis Lazuli & Gold
+val SapphireBlueBackground = Color(0xFF0A192F)
+val SapphireBlueSurface = Color(0xFF112240)
+val SapphireBlueSurfaceVariant = Color(0xFF1D3359)
+val SapphireBluePrimary = Color(0xFF64B5F6)
+val SapphireBlueTextPrimary = Color(0xFFE6F1FF)
+val SapphireBlueTextSecondary = Color(0xFFA8B2D1)
+val SapphireBlueBorder = Color(0xFF294370)
 
 // Accents & Badges
 val SahihBadgeColor = Color(0xFF1D784A)

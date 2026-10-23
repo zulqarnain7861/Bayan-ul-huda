@@ -33,6 +33,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.local.ExtendedHadithDataProvider
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
 import com.example.data.local.entities.SurahEntity
@@ -65,6 +70,20 @@ fun SearchScreen(
   onOpenHadith: (HadithEntity) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
+  var hadithTraditionScope by remember { mutableStateOf("BOTH") }
+
+  val scopedHadithResults = remember(hadithResults, hadithTraditionScope) {
+    if (hadithTraditionScope == "BOTH") {
+      hadithResults
+    } else {
+      val allowedKeys = ExtendedHadithDataProvider.primaryCollections
+        .filter { it.tradition == hadithTraditionScope }
+        .map { it.key }
+        .toSet()
+      hadithResults.filter { it.collectionKey in allowedKeys }
+    }
+  }
+
   val suggestions = listOf(
     "2:255",
     "36:1",
@@ -145,6 +164,47 @@ fun SearchScreen(
       )
     }
 
+    // Hadith Tradition Scope Filter (Search Sunni Hadith, Shia Hadith, or Both Libraries)
+    if (searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.HADITH) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        FilterChip(
+          selected = hadithTraditionScope == "BOTH",
+          onClick = { hadithTraditionScope = "BOTH" },
+          label = { Text("Search Both Libraries", fontSize = 11.sp) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+          ),
+          modifier = Modifier.testTag("search_hadith_scope_both")
+        )
+        FilterChip(
+          selected = hadithTraditionScope == "SUNNI",
+          onClick = { hadithTraditionScope = "SUNNI" },
+          label = { Text("Sunni Hadith Only", fontSize = 11.sp) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          ),
+          modifier = Modifier.testTag("search_hadith_scope_sunni")
+        )
+        FilterChip(
+          selected = hadithTraditionScope == "SHIA",
+          onClick = { hadithTraditionScope = "SHIA" },
+          label = { Text("Shia Hadith Only", fontSize = 11.sp) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = GoldPrimary,
+            selectedLabelColor = Color.Black
+          ),
+          modifier = Modifier.testTag("search_hadith_scope_shia")
+        )
+      }
+    }
+
     if (searchQuery.isBlank()) {
       // Prompt with suggested topics & direct reference examples
       Column(
@@ -208,7 +268,7 @@ fun SearchScreen(
       val showAyahs = searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.QURAN
       val showHadiths = searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.HADITH
 
-      val totalCount = (if (showAyahs) ayahResults.size else 0) + (if (showHadiths) hadithResults.size else 0)
+      val totalCount = (if (showAyahs) ayahResults.size else 0) + (if (showHadiths) scopedHadithResults.size else 0)
 
       LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -312,10 +372,10 @@ fun SearchScreen(
           }
         }
 
-        if (showHadiths && hadithResults.isNotEmpty()) {
+        if (showHadiths && scopedHadithResults.isNotEmpty()) {
           item {
             Text(
-              text = "Hadith Narrations — Darussalam & In-Book Editions (${hadithResults.size})",
+              text = "Hadith Narrations — Darussalam & In-Book Editions (${scopedHadithResults.size})",
               style = MaterialTheme.typography.titleSmall.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -324,9 +384,20 @@ fun SearchScreen(
             )
           }
 
-          items(hadithResults, key = { "search_hadith_${it.collectionKey}_${it.hadithNumber}" }) { hadith ->
-            val darussalamLabel = hadith.darussalamReference.ifBlank { "Darussalam: #${hadith.hadithNumber}" }
+          items(scopedHadithResults, key = { "search_hadith_${it.collectionKey}_${it.hadithNumber}" }) { hadith ->
+            val isShia = ExtendedHadithDataProvider.isShiaCollection(hadith.collectionKey)
+            val darussalamLabel = if (isShia) {
+              hadith.darussalamReference.ifBlank { "Shia Canonical: #${hadith.hadithNumber}" }
+            } else {
+              hadith.darussalamReference.ifBlank { "Darussalam: #${hadith.hadithNumber}" }
+            }
             val inBookLabel = hadith.inBookReference.ifBlank { "In-Book: Not available in this source" }
+            val collectionMeta = ExtendedHadithDataProvider.primaryCollections.find { it.key == hadith.collectionKey }
+            val traditionLabel = if (collectionMeta?.tradition == "SHIA") {
+              "SHIA • ${collectionMeta.subTradition}"
+            } else {
+              "SUNNI • ${collectionMeta?.subTradition ?: "Ahl al-Sunnah"}"
+            }
 
             Card(
               modifier = Modifier
@@ -342,22 +413,36 @@ fun SearchScreen(
                   verticalAlignment = Alignment.CenterVertically
                 ) {
                   Text(
-                    text = hadith.reference,
+                    text = "${hadith.collectionName} • ${hadith.reference}",
                     style = MaterialTheme.typography.titleSmall.copy(
                       fontWeight = FontWeight.Bold,
                       color = MaterialTheme.colorScheme.primary
                     )
                   )
-                  SahihGradeBadge(grade = hadith.grade)
+                  SahihGradeBadge(grade = hadith.grade.ifBlank { "Not graded in this source" })
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Separate Clickable Edition Numbering Badges
+                // Separate Clickable Edition Numbering + Tradition Badges
                 FlowRow(
                   horizontalArrangement = Arrangement.spacedBy(8.dp),
                   verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                  Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (collectionMeta?.tradition == "SHIA") GoldPrimary.copy(alpha = 0.22f) else EmeraldPrimary.copy(alpha = 0.18f)
+                  ) {
+                    Text(
+                      text = traditionLabel,
+                      modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                      style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (collectionMeta?.tradition == "SHIA") GoldPrimary else EmeraldPrimary
+                      )
+                    )
+                  }
+
                   Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = EmeraldPrimary.copy(alpha = 0.14f),
@@ -393,7 +478,7 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                  text = "Narrator: ${hadith.narrator}",
+                  text = "Narrator: ${hadith.narrator} • Grader: ${hadith.gradingScholar}",
                   style = MaterialTheme.typography.labelSmall.copy(
                     color = MaterialTheme.colorScheme.secondary
                   )

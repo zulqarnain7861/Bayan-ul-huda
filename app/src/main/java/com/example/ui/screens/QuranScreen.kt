@@ -141,8 +141,12 @@ fun QuranScreen(
   onToggleReadingMode: () -> Unit = {},
   isContinuousMushafFlow: Boolean = false,
   onToggleContinuousMushafFlow: () -> Unit = {},
+  currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
+  onSelectReciter: (com.example.ui.audio.Reciter) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
+  var showRecitersSheet by remember { mutableStateOf(false) }
+
   if (isReaderOpen && selectedSurah != null) {
     SurahReaderView(
       surah = selectedSurah,
@@ -168,6 +172,8 @@ fun QuranScreen(
       onToggleReadingMode = onToggleReadingMode,
       isContinuousMushafFlow = isContinuousMushafFlow,
       onToggleContinuousMushafFlow = onToggleContinuousMushafFlow,
+      currentReciter = currentReciter,
+      onOpenRecitersSheet = { showRecitersSheet = true },
       modifier = modifier
     )
   } else {
@@ -175,7 +181,20 @@ fun QuranScreen(
       surahs = surahs,
       onOpenSurah = onOpenSurah,
       onOpenOfflineDownloads = onOpenOfflineDownloads,
+      currentReciter = currentReciter,
+      onOpenRecitersSheet = { showRecitersSheet = true },
       modifier = modifier
+    )
+  }
+
+  if (showRecitersSheet) {
+    QuranRecitersBottomSheet(
+      currentReciter = currentReciter,
+      onSelectReciter = { reciter ->
+        onSelectReciter(reciter)
+        showRecitersSheet = false
+      },
+      onDismiss = { showRecitersSheet = false }
     )
   }
 }
@@ -185,6 +204,8 @@ fun SurahCatalogView(
   surahs: List<SurahEntity>,
   onOpenSurah: (SurahEntity) -> Unit,
   onOpenOfflineDownloads: () -> Unit = {},
+  currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
+  onOpenRecitersSheet: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -226,19 +247,34 @@ fun SurahCatalogView(
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 6.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Text(
-        text = "Select Surahs, Ayahs, Translations, Tafsirs & Audio",
-        style = MaterialTheme.typography.labelSmall.copy(
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        modifier = Modifier.weight(1f)
-      )
+      OutlinedButton(
+        onClick = onOpenRecitersSheet,
+        border = BorderStroke(1.dp, EmeraldPrimary),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        modifier = Modifier.testTag("quran_reciters_button")
+      ) {
+        Icon(
+          imageVector = Icons.Default.VolumeUp,
+          contentDescription = null,
+          tint = EmeraldPrimary,
+          modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+          text = "Reciters • ${currentReciter.name.substringBefore(" ")}",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.Bold,
+          color = EmeraldPrimary
+        )
+      }
+      Spacer(modifier = Modifier.weight(1f))
       Button(
         onClick = onOpenOfflineDownloads,
         colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
         modifier = Modifier.testTag("quran_download_for_offline_use_button")
       ) {
         Text("Download for Offline Use", fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -440,6 +476,8 @@ fun SurahReaderView(
   onToggleReadingMode: () -> Unit = {},
   isContinuousMushafFlow: Boolean = false,
   onToggleContinuousMushafFlow: () -> Unit = {},
+  currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
+  onOpenRecitersSheet: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var localReadingMode by remember(isReadingMode) { mutableStateOf(isReadingMode) }
@@ -1590,5 +1628,220 @@ private fun toArabicIndicDigits(number: Int): String {
   return number.toString().map { ch ->
     if (ch in '0'..'9') arabicDigits[ch - '0'] else ch
   }.joinToString("")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuranRecitersBottomSheet(
+  currentReciter: com.example.ui.audio.Reciter,
+  onSelectReciter: (com.example.ui.audio.Reciter) -> Unit,
+  onDismiss: () -> Unit
+) {
+  val sunniReciters = remember {
+    com.example.ui.audio.availableReciters.filter { it.tradition == "SUNNI" }
+  }
+  val shiaReciters = remember {
+    com.example.ui.audio.availableReciters.filter { it.tradition == "SHIA" }
+  }
+
+  ModalBottomSheet(
+    onDismissRequest = onDismiss
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 20.dp, vertical = 12.dp)
+        .testTag("quran_reciters_modal_sheet")
+    ) {
+      Text(
+        text = "Verified Quran Reciters (القراء المعتمدون)",
+        style = MaterialTheme.typography.titleLarge.copy(
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.primary
+        )
+      )
+      Text(
+        text = "Separate Sunni & Shia Quran Reciters • Canonical Uthmani Recitation Only",
+        style = MaterialTheme.typography.labelMedium.copy(
+          color = GoldPrimary,
+          fontWeight = FontWeight.Bold
+        )
+      )
+
+      Spacer(modifier = Modifier.height(14.dp))
+
+      // Section 1: Verified Sunni Quran Reciters
+      Text(
+        text = "Verified Sunni Quran Reciters (${sunniReciters.size})",
+        style = MaterialTheme.typography.titleSmall.copy(
+          fontWeight = FontWeight.Bold,
+          color = EmeraldPrimary
+        )
+      )
+      Spacer(modifier = Modifier.height(6.dp))
+
+      sunniReciters.forEach { reciter ->
+        val isSelected = reciter.id == currentReciter.id
+        Surface(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onSelectReciter(reciter) }
+            .testTag("reciter_option_${reciter.id}"),
+          shape = RoundedCornerShape(12.dp),
+          color = if (isSelected) EmeraldPrimary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+          border = if (isSelected) BorderStroke(1.5.dp, EmeraldPrimary) else null
+        ) {
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "${reciter.name} • ${reciter.arabicName}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+              )
+              Text(
+                text = "${reciter.style} • ${reciter.verificationStatus}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              )
+            }
+            if (isSelected) {
+              Text(
+                text = "Active",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = EmeraldPrimary
+                )
+              )
+            }
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      // Section 2: Verified Shia Quran Reciters
+      Text(
+        text = "Verified Shia Quran Reciters (${shiaReciters.size})",
+        style = MaterialTheme.typography.titleSmall.copy(
+          fontWeight = FontWeight.Bold,
+          color = GoldPrimary
+        )
+      )
+      Text(
+        text = "Dedicated Quranic Recitation Only (Strictly separate from Duas, Ziyarat & Lectures)",
+        style = MaterialTheme.typography.labelSmall.copy(
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      )
+      Spacer(modifier = Modifier.height(6.dp))
+
+      shiaReciters.forEach { reciter ->
+        val isSelected = reciter.id == currentReciter.id
+        Surface(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onSelectReciter(reciter) }
+            .testTag("reciter_option_${reciter.id}"),
+          shape = RoundedCornerShape(12.dp),
+          color = if (isSelected) GoldPrimary.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+          border = if (isSelected) BorderStroke(1.5.dp, GoldPrimary) else null
+        ) {
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "${reciter.name} • ${reciter.arabicName}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+              )
+              Text(
+                text = "${reciter.style} • ${reciter.verificationStatus}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              )
+            }
+            if (isSelected) {
+              Text(
+                text = "Active",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = GoldPrimary
+                )
+              )
+            }
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+      HorizontalDivider()
+      Spacer(modifier = Modifier.height(10.dp))
+
+      // Section 3: Honest Stream Verification & Availability Notes
+      Text(
+        text = "Stream Verification & Availability Notes",
+        style = MaterialTheme.typography.labelLarge.copy(
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.primary
+        )
+      )
+      Spacer(modifier = Modifier.height(6.dp))
+
+      com.example.ui.audio.reciterAvailabilityNotes.forEach { note ->
+        Surface(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+          shape = RoundedCornerShape(10.dp),
+          color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        ) {
+          Column(modifier = Modifier.padding(10.dp)) {
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text(
+                text = "${note.name} (${note.arabicName})",
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+              )
+              Text(
+                text = note.statusBadge,
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontSize = 10.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = GoldPrimary
+                )
+              )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+              text = note.explanation,
+              style = MaterialTheme.typography.bodySmall.copy(
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            )
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(24.dp))
+    }
+  }
 }
 

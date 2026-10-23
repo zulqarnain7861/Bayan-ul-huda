@@ -104,6 +104,44 @@ private val MadinahParchmentColorScheme =
     outline = ParchmentBorder,
   )
 
+private val PureBlackColorScheme =
+  darkColorScheme(
+    primary = GoldLight,
+    onPrimary = PureBlackBackground,
+    primaryContainer = EmeraldPrimary,
+    onPrimaryContainer = GoldContainer,
+    secondary = GoldPrimary,
+    onSecondary = Color.Black,
+    secondaryContainer = PureBlackSurfaceVariant,
+    onSecondaryContainer = GoldLight,
+    background = PureBlackBackground,
+    onBackground = PureBlackTextPrimary,
+    surface = PureBlackSurface,
+    onSurface = PureBlackTextPrimary,
+    surfaceVariant = PureBlackSurfaceVariant,
+    onSurfaceVariant = PureBlackTextSecondary,
+    outline = PureBlackBorder,
+  )
+
+private val SapphireBlueColorScheme =
+  darkColorScheme(
+    primary = GoldLight,
+    onPrimary = SapphireBlueBackground,
+    primaryContainer = SapphireBlueSurfaceVariant,
+    onPrimaryContainer = GoldContainer,
+    secondary = SapphireBluePrimary,
+    onSecondary = SapphireBlueBackground,
+    secondaryContainer = SapphireBlueSurfaceVariant,
+    onSecondaryContainer = SapphireBlueTextPrimary,
+    background = SapphireBlueBackground,
+    onBackground = SapphireBlueTextPrimary,
+    surface = SapphireBlueSurface,
+    onSurface = SapphireBlueTextPrimary,
+    surfaceVariant = SapphireBlueSurfaceVariant,
+    onSurfaceVariant = SapphireBlueTextSecondary,
+    outline = SapphireBlueBorder,
+  )
+
 @Composable
 fun MyApplicationTheme(
   themeMode: AppThemeMode = AppThemeMode.LIGHT,
@@ -114,9 +152,11 @@ fun MyApplicationTheme(
   val colorScheme = when (themeMode) {
     AppThemeMode.LIGHT -> LightColorScheme
     AppThemeMode.DARK -> DarkColorScheme
+    AppThemeMode.PURE_BLACK -> PureBlackColorScheme
     AppThemeMode.EYE_COMFORT -> EyeComfortColorScheme
     AppThemeMode.ROYAL_EMERALD -> RoyalEmeraldColorScheme
     AppThemeMode.MADINAH_PARCHMENT -> MadinahParchmentColorScheme
+    AppThemeMode.SAPPHIRE_BLUE -> SapphireBlueColorScheme
     AppThemeMode.AUTO -> {
       val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
       val isNightHour = hour < 6 || hour >= 19

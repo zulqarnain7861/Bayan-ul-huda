@@ -19,37 +19,47 @@ enum class MuezzinAudioOption(
   MAKKAH_HARAM(
     id = "makkah_haram",
     title = "Makkah al-Mukarramah (Masjid al-Haram)",
-    subtitle = "Authentic Haramain Azan Recording + Offline Melodic Fallback",
+    subtitle = "Pure Vocal Haramain Azan Recording (No Music)",
     streamUrl = "https://www.islamcan.com/audio/adhan/azan1.mp3"
   ),
   MADINAH_NABAWI(
     id = "madinah_nabawi",
     title = "Al-Madinah al-Munawwarah (Masjid an-Nabawi)",
-    subtitle = "Madinah Classical Azan Recording + Offline Melodic Fallback",
+    subtitle = "Pure Vocal Madinah Classical Azan Recording (No Music)",
     streamUrl = "https://www.islamcan.com/audio/adhan/azan2.mp3"
   ),
   AL_AQSA(
     id = "al_aqsa",
-    title = "Al-Quds (Masjid al-Aqsa Style)",
-    subtitle = "Reverent Maqam Hijaz Azan + Offline Melodic Fallback",
+    title = "Al-Quds (Masjid al-Aqsa Vocal Azan)",
+    subtitle = "Pure Vocal Al-Aqsa Azan Recording (No Music)",
     streamUrl = "https://www.islamcan.com/audio/adhan/azan3.mp3"
   ),
   FAJR_TATHWIB(
     id = "fajr_tathwib",
     title = "Verified Fajr Azan (With As-salatu khayrun minan-nawm)",
-    subtitle = "Includes الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ exclusively for Fajr",
+    subtitle = "Pure Vocal Fajr Azan with الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ (No Music)",
     streamUrl = "https://www.islamcan.com/audio/adhan/azan1.mp3",
     includesFajrTathwib = true
   )
 }
 
 enum class AppThemeMode(val label: String, val description: String) {
-  LIGHT("Light Theme", "Warm Cream & Emerald for daytime clarity"),
-  DARK("Dark Theme", "Deep Night Obsidian & Soft Gold for nighttime"),
-  EYE_COMFORT("Eye-Comfort", "Warm Sepia Low-Glare Amber for extended reading"),
-  ROYAL_EMERALD("Royal Emerald", "Deep Haramain Sanctuary Emerald & Burnished Gold"),
-  MADINAH_PARCHMENT("Madinah Parchment", "Illuminated Manuscript Ivory & Classical Gold"),
-  AUTO("Auto Day/Night", "Automatically switches based on time & system")
+  AUTO("System Default", "Automatically switches based on system & time"),
+  LIGHT("Light", "Warm Cream & Emerald for daytime clarity"),
+  DARK("Dark", "Deep Night Obsidian & Soft Gold for nighttime"),
+  PURE_BLACK("Pure Black (AMOLED)", "True #000000 OLED black for zero-glare night reading"),
+  MADINAH_PARCHMENT("Warm Paper", "Soft Warm Paper & Illuminated Manuscript Ivory"),
+  EYE_COMFORT("Sepia", "Warm Sepia Low-Glare Amber for extended reading"),
+  ROYAL_EMERALD("Green", "Deep Haramain Sanctuary Emerald & Burnished Gold"),
+  SAPPHIRE_BLUE("Blue", "Classical Islamic Lapis Blue & Warm Gold");
+
+  companion object {
+    val SYSTEM_DEFAULT = AUTO
+    val WARM_PAPER = MADINAH_PARCHMENT
+    val SEPIA = EYE_COMFORT
+    val GREEN = ROYAL_EMERALD
+    val BLUE = SAPPHIRE_BLUE
+  }
 }
 
 data class PrayerAndAlarmConfig(

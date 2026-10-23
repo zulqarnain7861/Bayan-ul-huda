@@ -122,16 +122,25 @@ fun HadithScreen(
   var searchQuery by remember { mutableStateOf("") }
   var hadithNumberInput by remember { mutableStateOf("") }
   var selectedBookNumber by remember(selectedCollectionKey) { mutableStateOf(0) }
-
-  // All 26 Hadith Collections (Sunni Kutub al-Sittah, Muwatta, Musnad, Musannaf + Shia Kutub al-Arba'ah & Reference Works)
-  val collections = remember {
-    ExtendedHadithDataProvider.primaryCollections.map {
-      Triple(it.key, it.nameEnglish, it.nameArabic)
-    }
-  }
+  var selectedTraditionFilter by remember { mutableStateOf("SUNNI") }
 
   val activeCollectionMeta = remember(selectedCollectionKey) {
     ExtendedHadithDataProvider.primaryCollections.find { it.key == selectedCollectionKey }
+  }
+
+  // Keep tradition filter aligned if user externally selects a collection
+  val visibleCollectionsMeta = remember(selectedTraditionFilter) {
+    when (selectedTraditionFilter) {
+      "SUNNI" -> ExtendedHadithDataProvider.sunniCollections
+      "SHIA" -> ExtendedHadithDataProvider.shiaCollections
+      else -> ExtendedHadithDataProvider.primaryCollections
+    }
+  }
+
+  val collections = remember(visibleCollectionsMeta) {
+    visibleCollectionsMeta.map {
+      Triple(it.key, it.nameEnglish, it.nameArabic)
+    }
   }
 
   val totalBooksInCollection = (activeCollectionMeta?.totalBooksCount ?: 1).coerceAtLeast(1)
@@ -158,18 +167,29 @@ fun HadithScreen(
       modeFiltered
     } else {
       val q = searchQuery.trim()
-      modeFiltered.filter {
-        it.englishText.contains(q, ignoreCase = true) ||
-          it.urduText.contains(q) ||
-          it.arabicText.contains(q) ||
-          it.narrator.contains(q, ignoreCase = true) ||
-          it.bookName.contains(q, ignoreCase = true) ||
-          it.reference.contains(q, ignoreCase = true) ||
-          it.darussalamReference.contains(q, ignoreCase = true) ||
-          it.inBookReference.contains(q, ignoreCase = true) ||
-          it.transliteration.contains(q, ignoreCase = true) ||
-          it.linkedQuranVerses.contains(q, ignoreCase = true) ||
-          it.hadithNumber.toString() == q
+      val exactNumberMatch = Regex(
+        """^(?:hadith|hadees|darussalam|darasalam|sahih\s*international|sahi\s*international|sahih\s*intl|in-book|in\s*book|canonical|intl|number|no\.?|#|:|\s)*(\d{1,5})$""",
+        RegexOption.IGNORE_CASE
+      ).find(q)?.groupValues?.getOrNull(1)?.toIntOrNull()
+
+      if (exactNumberMatch != null && exactNumberMatch > 0) {
+        modeFiltered.filter {
+          ExtendedHadithDataProvider.matchesExactHadithNumber(it, exactNumberMatch)
+        }
+      } else {
+        modeFiltered.filter {
+          it.englishText.contains(q, ignoreCase = true) ||
+            it.urduText.contains(q) ||
+            it.arabicText.contains(q) ||
+            it.narrator.contains(q, ignoreCase = true) ||
+            it.bookName.contains(q, ignoreCase = true) ||
+            it.chapterName.contains(q, ignoreCase = true) ||
+            it.reference.contains(q, ignoreCase = true) ||
+            it.darussalamReference.contains(q, ignoreCase = true) ||
+            it.inBookReference.contains(q, ignoreCase = true) ||
+            it.transliteration.contains(q, ignoreCase = true) ||
+            it.linkedQuranVerses.contains(q, ignoreCase = true)
+        }
       }
     }
   }
@@ -178,11 +198,11 @@ fun HadithScreen(
     val trimmed = rawInput.trim()
     val num = trimmed.filter { it.isDigit() }.toIntOrNull()
     if (num == null || num <= 0) {
-      Toast.makeText(context, "Enter a valid Hadith number (e.g. 1, 223, 5027)", Toast.LENGTH_SHORT).show()
+      Toast.makeText(context, "Enter a valid Hadith number (e.g. 5, 10, 25, 70, 5027)", Toast.LENGTH_SHORT).show()
       return
     }
     val localIdx = filteredHadiths.indexOfFirst {
-      it.hadithNumber == num || it.inBookReference.endsWith("Hadith $num")
+      ExtendedHadithDataProvider.matchesExactHadithNumber(it, num)
     }
     if (localIdx >= 0) {
       val matched = filteredHadiths[localIdx]
@@ -196,7 +216,77 @@ fun HadithScreen(
   }
 
   Column(modifier = modifier.fillMaxSize()) {
-    // All 26 Hadith Collections Tabs
+    // Prominent Separate Entry Points: Sunni Hadith Library | Shia Hadith Library | Both Libraries
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 6.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      FilterChip(
+        selected = selectedTraditionFilter == "SUNNI",
+        onClick = {
+          selectedTraditionFilter = "SUNNI"
+          if (activeCollectionMeta?.tradition != "SUNNI") {
+            ExtendedHadithDataProvider.sunniCollections.firstOrNull()?.let { onSelectCollection(it.key) }
+          }
+        },
+        label = {
+          Text(
+            text = "Sunni Hadith Library (${ExtendedHadithDataProvider.sunniCollections.size})",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = EmeraldPrimary,
+          selectedLabelColor = Color.White
+        ),
+        modifier = Modifier.testTag("hadith_library_sunni_button")
+      )
+
+      FilterChip(
+        selected = selectedTraditionFilter == "SHIA",
+        onClick = {
+          selectedTraditionFilter = "SHIA"
+          if (activeCollectionMeta?.tradition != "SHIA") {
+            ExtendedHadithDataProvider.shiaCollections.firstOrNull()?.let { onSelectCollection(it.key) }
+          }
+        },
+        label = {
+          Text(
+            text = "Shia Hadith Library (${ExtendedHadithDataProvider.shiaCollections.size})",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = GoldPrimary,
+          selectedLabelColor = Color.Black
+        ),
+        modifier = Modifier.testTag("hadith_library_shia_button")
+      )
+
+      FilterChip(
+        selected = selectedTraditionFilter == "BOTH",
+        onClick = { selectedTraditionFilter = "BOTH" },
+        label = {
+          Text(
+            text = "Both Libraries",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = MaterialTheme.colorScheme.primary,
+          selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+        ),
+        modifier = Modifier.testTag("hadith_library_both_button")
+      )
+    }
+
+    // Hadith Collections Tabs for Selected Library
     ScrollableTabRow(
       selectedTabIndex = collections.indexOfFirst { it.first == selectedCollectionKey }.coerceAtLeast(0),
       containerColor = MaterialTheme.colorScheme.surface,
@@ -225,6 +315,35 @@ fun HadithScreen(
             }
           }
         )
+      }
+    }
+
+    // Tradition, Sub-Tradition & Scholarly Attribution Banner (Never mix Sunni & Shia traditions without labels)
+    activeCollectionMeta?.let { meta ->
+      Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = if (meta.tradition == "SHIA") GoldPrimary.copy(alpha = 0.14f) else EmeraldPrimary.copy(alpha = 0.10f),
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 4.dp)
+          .testTag("hadith_tradition_attribution_banner")
+      ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+          Text(
+            text = "${meta.tradition} HADITH LIBRARY • ${meta.subTradition}",
+            style = MaterialTheme.typography.labelSmall.copy(
+              fontWeight = FontWeight.Bold,
+              color = if (meta.tradition == "SHIA") GoldPrimary else EmeraldPrimary
+            )
+          )
+          Text(
+            text = "Compiler: ${meta.compiler} (${meta.deathHijri}) • ${meta.coverageStatusBadge}",
+            style = MaterialTheme.typography.labelSmall.copy(
+              fontSize = 10.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          )
+        }
       }
     }
 
@@ -919,8 +1038,19 @@ fun HadithCardItem(
   onAddNote: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val darussalamText = hadith.darussalamReference.ifBlank { "Darussalam: #${hadith.hadithNumber}" }
-  val inBookText = hadith.inBookReference.ifBlank { "In-Book: Not available in this source" }
+  val isShia = ExtendedHadithDataProvider.isShiaCollection(hadith.collectionKey)
+  val primaryEditionText = if (isShia) {
+    hadith.darussalamReference.ifBlank { "Shia Canonical: #${hadith.hadithNumber}" }
+  } else {
+    hadith.darussalamReference.ifBlank { "Darussalam: #${hadith.hadithNumber}" }
+  }
+  val secondaryNum = if (hadith.arabicNumber > 0) hadith.arabicNumber else hadith.hadithNumber
+  val inBookText = if (isShia) {
+    hadith.inBookReference.ifBlank { "In-Book: #${hadith.hadithNumber}" }
+  } else {
+    hadith.inBookReference.ifBlank { "Sahih Intl / In-Book: #$secondaryNum" }
+  }
+  val displayGrade = hadith.grade.ifBlank { "Not graded in this source" }
 
   ElevatedCard(
     modifier = modifier
@@ -940,7 +1070,7 @@ fun HadithCardItem(
       ) {
         Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = hadith.reference,
+            text = "${hadith.collectionName} • ${hadith.reference}",
             style = MaterialTheme.typography.titleMedium.copy(
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary
@@ -948,20 +1078,30 @@ fun HadithCardItem(
           )
           if (hadith.bookName.isNotEmpty()) {
             Text(
-              text = hadith.bookName,
+              text = if (hadith.chapterName.isNotBlank()) "${hadith.bookName} — ${hadith.chapterName}" else hadith.bookName,
               style = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               )
             )
           }
+          if (hadith.gradingScholar.isNotBlank()) {
+            Text(
+              text = "Grading Authority: ${hadith.gradingScholar}",
+              style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = EmeraldPrimary
+              )
+            )
+          }
         }
-        SahihGradeBadge(grade = hadith.grade)
+        SahihGradeBadge(grade = displayGrade)
       }
 
       Spacer(modifier = Modifier.height(8.dp))
 
-      // Clickable Separate Edition Numbering Badges (Darussalam # + In-Book Reference)
+      // Clickable Separate Dual Edition Numbering Badges on Top (Darussalam # + Sahih Intl / In-Book Reference)
       FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -974,7 +1114,7 @@ fun HadithCardItem(
             .testTag("darussalam_badge_${hadith.collectionKey}_${hadith.hadithNumber}")
         ) {
           Text(
-            text = darussalamText,
+            text = primaryEditionText,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall.copy(
               fontWeight = FontWeight.Bold,
@@ -991,7 +1131,11 @@ fun HadithCardItem(
             .testTag("inbook_badge_${hadith.collectionKey}_${hadith.hadithNumber}")
         ) {
           Text(
-            text = if (inBookText.startsWith("In-Book:", ignoreCase = true)) inBookText else "In-Book: $inBookText",
+            text = if (inBookText.startsWith("In-Book:", ignoreCase = true) || inBookText.contains("Sahih Intl", ignoreCase = true)) {
+              inBookText
+            } else {
+              "In-Book / Sahih Intl: $inBookText"
+            },
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall.copy(
               fontWeight = FontWeight.Bold,

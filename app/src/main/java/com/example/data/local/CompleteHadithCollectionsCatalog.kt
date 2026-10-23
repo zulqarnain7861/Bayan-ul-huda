@@ -22,7 +22,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 27647,
       totalBooksCount = 50,
       darussalamEditionLabel = "Ar-Risalah / Darussalam #",
-      inBookEditionLabel = "Musnad Companion Section"
+      inBookEditionLabel = "Musnad Companion Section",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "darimi",
@@ -36,7 +39,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 3503,
       totalBooksCount = 24,
       darussalamEditionLabel = "Darimi Canonical #",
-      inBookEditionLabel = "Book & Chapter In-Book"
+      inBookEditionLabel = "Book & Chapter In-Book",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "adab",
@@ -50,7 +56,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 1322,
       totalBooksCount = 57,
       darussalamEditionLabel = "Adab al-Mufrad #1–1322",
-      inBookEditionLabel = "In-Book Reference"
+      inBookEditionLabel = "In-Book Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "bulugh",
@@ -64,7 +73,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 1596,
       totalBooksCount = 16,
       darussalamEditionLabel = "Darussalam #1–1596",
-      inBookEditionLabel = "Fiqh Book & Hadith"
+      inBookEditionLabel = "Fiqh Book & Hadith",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "mishkat",
@@ -78,7 +90,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 5945,
       totalBooksCount = 29,
       darussalamEditionLabel = "Mishkat Canonical #",
-      inBookEditionLabel = "Book & Chapter In-Book"
+      inBookEditionLabel = "Book & Chapter In-Book",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "shamail",
@@ -92,7 +107,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 415,
       totalBooksCount = 56,
       darussalamEditionLabel = "Shama'il Canonical #1–415",
-      inBookEditionLabel = "Chapter & Hadith Reference"
+      inBookEditionLabel = "Chapter & Hadith Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "qudsi",
@@ -106,7 +124,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 40,
       totalBooksCount = 1,
       darussalamEditionLabel = "Hadith Qudsi #1–40",
-      inBookEditionLabel = "Primary Sahih Cross-Ref"
+      inBookEditionLabel = "Primary Sahih Cross-Ref",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "ibnkhuzaymah",
@@ -120,7 +141,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 3079,
       totalBooksCount = 4,
       darussalamEditionLabel = "Al-A'zami Canonical #",
-      inBookEditionLabel = "Volume & Chapter"
+      inBookEditionLabel = "Volume & Chapter",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "ibnhibban",
@@ -134,7 +158,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 7491,
       totalBooksCount = 21,
       darussalamEditionLabel = "Al-Ihsan Canonical #",
-      inBookEditionLabel = "Book & Section"
+      inBookEditionLabel = "Book & Section",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "mustadrak",
@@ -148,7 +175,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 9045,
       totalBooksCount = 50,
       darussalamEditionLabel = "Mustadrak Canonical #",
-      inBookEditionLabel = "Book & Volume Reference"
+      inBookEditionLabel = "Book & Volume Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "abdurrazzaq",
@@ -162,7 +192,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 21033,
       totalBooksCount = 31,
       darussalamEditionLabel = "Al-A'zami Musannaf #",
-      inBookEditionLabel = "Book & Volume Reference"
+      inBookEditionLabel = "Book & Volume Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "ibnabishaybah",
@@ -176,7 +209,64 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 37943,
       totalBooksCount = 38,
       darussalamEditionLabel = "'Awwamah Musannaf #",
-      inBookEditionLabel = "Book & Chapter Reference"
+      inBookEditionLabel = "Book & Chapter Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
+    ),
+    HadithCollectionMeta(
+      key = "daraqutni",
+      nameEnglish = "Sunan al-Daraqutni",
+      nameArabic = "سنن الدارقطني",
+      nameUrdu = "سنن دارقطنی",
+      compiler = "Imam Abu al-Hasan 'Ali ibn 'Umar al-Daraqutni",
+      deathHijri = "385 AH",
+      totalHadithsInfo = "4,898 Legal & Critical Narrations (29 Books)",
+      numberingSystemInfo = "Shu'ayb al-Arna'ut Critical Edition",
+      totalCanonicalCount = 4898,
+      totalBooksCount = 29,
+      darussalamEditionLabel = "Ar-Risalah Canonical #",
+      inBookEditionLabel = "Kitab & Bab Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR",
+      coverageStatusBadge = "Foundational Verified Selection + Catalogue Metadata"
+    ),
+    HadithCollectionMeta(
+      key = "bayhaqi",
+      nameEnglish = "Al-Sunan al-Kubra (Al-Bayhaqi)",
+      nameArabic = "السنن الكبرى للبيهقي",
+      nameUrdu = "السنن الکبریٰ للبیہقی",
+      compiler = "Imam Abu Bakr Ahmad ibn al-Husayn al-Bayhaqi",
+      deathHijri = "458 AH",
+      totalHadithsInfo = "21,812 Legal Narrations & Athar (10 Volumes)",
+      numberingSystemInfo = "Muhammad 'Abd al-Qadir 'Ata Edition",
+      totalCanonicalCount = 21812,
+      totalBooksCount = 10,
+      darussalamEditionLabel = "Sunan al-Kubra #",
+      inBookEditionLabel = "Volume & Kitab Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR",
+      coverageStatusBadge = "Foundational Verified Selection + Catalogue Metadata"
+    ),
+    HadithCollectionMeta(
+      key = "sunni_commentaries",
+      nameEnglish = "Hadith Scholarship & Commentaries (Shuruh & Takharruj)",
+      nameArabic = "شروح الحديث وكتب التخريج (فتح الباري، شرح النووي، تحفة الأحوذي، عون المعبود، السلسلة الصحيحة)",
+      nameUrdu = "شروحِ حدیث اور کتبِ تخریج (فتح الباری، شرح مسلم، تحفۃ الاحوذی، عون المعبود، سلسلۃ الصحیحہ)",
+      compiler = "Ibn Hajar al-'Asqalani, Imam an-Nawawi, Al-Mubarakpuri, Al-'Azimabadi, Shaykh al-Albani",
+      deathHijri = "676–1420 AH",
+      totalHadithsInfo = "Fath al-Bari, Sharh Sahih Muslim, Tuhfat al-Ahwadhi, 'Awn al-Ma'bud, Silsilat al-Sahihah/Da'ifah, Sahih/Da'if al-Jami'",
+      numberingSystemInfo = "Separate Commentary & Critical Grading Reference Category",
+      totalCanonicalCount = 14000,
+      totalBooksCount = 8,
+      darussalamEditionLabel = "Commentary / Takharruj Ref #",
+      inBookEditionLabel = "Work & Volume Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Hadith Scholarship & Commentary)",
+      categoryGroup = "SUNNI_COMMENTARY",
+      coverageStatusBadge = "Separate Commentary & Grading Category (Not Merged as Primary Hadith Books)"
     ),
     HadithCollectionMeta(
       key = "alkafi",
@@ -190,7 +280,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 16199,
       totalBooksCount = 34,
       darussalamEditionLabel = "Al-Kafi Canonical #",
-      inBookEditionLabel = "Volume, Book & Bab"
+      inBookEditionLabel = "Volume, Book & Bab",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari (Al-Kutub al-Arba'ah #1)",
+      categoryGroup = "AL_KUTUB_AL_ARBAA"
     ),
     HadithCollectionMeta(
       key = "faqih",
@@ -204,7 +297,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 5998,
       totalBooksCount = 4,
       darussalamEditionLabel = "As-Saduq Canonical #",
-      inBookEditionLabel = "Volume & Bab Reference"
+      inBookEditionLabel = "Volume & Bab Reference",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari (Al-Kutub al-Arba'ah #2)",
+      categoryGroup = "AL_KUTUB_AL_ARBAA"
     ),
     HadithCollectionMeta(
       key = "tahdhib",
@@ -218,7 +314,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 13590,
       totalBooksCount = 10,
       darussalamEditionLabel = "Tahdhib Canonical #",
-      inBookEditionLabel = "Volume & Kitab Reference"
+      inBookEditionLabel = "Volume & Kitab Reference",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari (Al-Kutub al-Arba'ah #3)",
+      categoryGroup = "AL_KUTUB_AL_ARBAA"
     ),
     HadithCollectionMeta(
       key = "istibsar",
@@ -232,7 +331,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 5511,
       totalBooksCount = 4,
       darussalamEditionLabel = "Al-Istibsar Canonical #",
-      inBookEditionLabel = "Volume & Bab Reference"
+      inBookEditionLabel = "Volume & Bab Reference",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari (Al-Kutub al-Arba'ah #4)",
+      categoryGroup = "AL_KUTUB_AL_ARBAA"
     ),
     HadithCollectionMeta(
       key = "nahjulbalagha",
@@ -246,7 +348,10 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 800,
       totalBooksCount = 3,
       darussalamEditionLabel = "Subhi as-Salih Edition #",
-      inBookEditionLabel = "Section (Sermons / Letters / Hikam)"
+      inBookEditionLabel = "Section (Sermons / Letters / Hikam)",
+      tradition = "SHIA",
+      subTradition = "Twelver / Classical Alid Heritage",
+      categoryGroup = "SHIA_TWELVER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "bihar",
@@ -260,7 +365,80 @@ object CompleteHadithCollectionsCatalog {
       totalCanonicalCount = 110,
       totalBooksCount = 25,
       darussalamEditionLabel = "Al-Wafa' Volume & Hadith #",
-      inBookEditionLabel = "Volume & Bab Reference"
+      inBookEditionLabel = "Volume & Bab Reference",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari Compendium",
+      categoryGroup = "SHIA_TWELVER_MAJOR"
+    ),
+    HadithCollectionMeta(
+      key = "wasail",
+      nameEnglish = "Wasa'il al-Shia & Mustadrak al-Wasa'il",
+      nameArabic = "وسائل الشيعة ومستدرك الوسائل",
+      nameUrdu = "وسائل الشیعہ و مستدرک الوسائل",
+      compiler = "Shaykh al-Hurr al-'Amili (d. 1104 AH) & Mirza Husayn al-Nuri al-Tabarsi (d. 1320 AH)",
+      deathHijri = "1104 / 1320 AH",
+      totalHadithsInfo = "35,868 + 23,514 Legal Narrations (30 + 18 Volumes)",
+      numberingSystemInfo = "Ahl al-Bayt Institute Critical Edition (Abwab al-Fiqh)",
+      totalCanonicalCount = 35868,
+      totalBooksCount = 30,
+      darussalamEditionLabel = "Al-Ahl al-Bayt Edition #",
+      inBookEditionLabel = "Kitab & Bab Reference",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari Fiqh Hadith",
+      categoryGroup = "SHIA_TWELVER_MAJOR"
+    ),
+    HadithCollectionMeta(
+      key = "sajjadiyya",
+      nameEnglish = "Al-Sahifa al-Sajjadiyya",
+      nameArabic = "الصحيفة السجادية",
+      nameUrdu = "صحیفہ سجادیہ",
+      compiler = "Imam 'Ali ibn al-Husayn Zayn al-'Abidin (AS)",
+      deathHijri = "95 AH",
+      totalHadithsInfo = "54 Canonical Supplications & Whispered Prayers",
+      numberingSystemInfo = "Standard Supplication 1–54",
+      totalCanonicalCount = 54,
+      totalBooksCount = 1,
+      darussalamEditionLabel = "Sahifa Supplication #1–54",
+      inBookEditionLabel = "Supplication & Verse",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ahl al-Bayt Devotional Corpus",
+      categoryGroup = "SHIA_TWELVER_MAJOR"
+    ),
+    HadithCollectionMeta(
+      key = "saduq_corpus",
+      nameEnglish = "Shaykh al-Saduq & Classical Imami Corpus (Al-Tawhid, 'Uyun Akhbar al-Rida, Al-Khisal, Al-Amali, Thawab al-A'mal, Ma'ani al-Akhbar)",
+      nameArabic = "جوامع الشيخ الصدوق والطوسي والبرقي (التوحيد، عيون أخبار الرضا، الخصال، الأمالي، المحاسن، تحف العقول، كامل الزيارات، الغيبة، الاحتجاج)",
+      nameUrdu = "مجموعہ کتبِ شیخ صدوق، شیخ طوسی، برقی، تحف العقول اور کامل الزیارات",
+      compiler = "Shaykh al-Saduq, Shaykh al-Tusi, Al-Barqi, Al-Himyari, Ibn Shu'bah al-Harrani, Ibn Qulawayh, Al-Nu'mani, Al-Tabarsi",
+      deathHijri = "274–548 AH",
+      totalHadithsInfo = "Kitab al-Tawhid, 'Uyun Akhbar al-Rida, Al-Khisal, Al-Amali (Saduq & Tusi), Al-Mahasin, Qurb al-Isnad, Tuhaf al-'Uqul, Kamil al-Ziyarat, Thawab al-A'mal, Ma'ani al-Akhbar, Kitab al-Ghayba (Nu'mani & Tusi), Al-Ihtijaj",
+      numberingSystemInfo = "Qom / Najaf Critical Editions",
+      totalCanonicalCount = 12500,
+      totalBooksCount = 15,
+      darussalamEditionLabel = "Qom / Najaf Edition #",
+      inBookEditionLabel = "Work, Bab & Hadith",
+      tradition = "SHIA",
+      subTradition = "Twelver / Ithna 'Ashari Classical Works",
+      categoryGroup = "SHIA_TWELVER_MAJOR",
+      coverageStatusBadge = "Foundational Verified Selection + Complete 15-Work Catalogue Metadata"
+    ),
+    HadithCollectionMeta(
+      key = "zaydi_ismaili",
+      nameEnglish = "Musnad Imam Zayd & Da'a'im al-Islam (Zaydi & Ismaili Corpora)",
+      nameArabic = "مسند الإمام زيد بن علي ودعائم الإسلام للقاضي النعمان",
+      nameUrdu = "مسند امام زید بن علی اور دعائم الاسلام (زیدی و اسماعیلی مجموعہ ہائے حدیث)",
+      compiler = "Imam Zayd ibn 'Ali (d. 122 AH) & Al-Qadi al-Nu'man (d. 363 AH)",
+      deathHijri = "122 / 363 AH",
+      totalHadithsInfo = "Musnad Imam Zayd (Zaydi Tradition) & Da'a'im al-Islam (Ismaili Tradition)",
+      numberingSystemInfo = "Sub-Tradition Labelled Classical Editions",
+      totalCanonicalCount = 2400,
+      totalBooksCount = 2,
+      darussalamEditionLabel = "Critical Edition #",
+      inBookEditionLabel = "Sub-Tradition Book & Chapter",
+      tradition = "SHIA",
+      subTradition = "Zaydi & Ismaili Sub-Traditions",
+      categoryGroup = "SHIA_ZAYDI_ISMAILI",
+      coverageStatusBadge = "Sub-Tradition Clearly Labelled • Foundational Selection"
     )
   )
 
@@ -613,6 +791,66 @@ object CompleteHadithCollectionsCatalog {
     HadithEntity(
       collectionKey = "alkafi",
       collectionName = "Kitab al-Kafi (Al-Kulayni)",
+      bookNumber = 1,
+      bookName = "Book 1: Intellect & Ignorance / Kitab al-'Aql wal-Jahl (كتاب العقل والجهل)",
+      chapterNumber = 1,
+      chapterName = "The Proof of Allah Upon Servants is the Intellect",
+      hadithNumber = 5,
+      darussalamReference = "Al-Kafi Canonical: Usul Vol. 1, #5",
+      inBookReference = "In-Book: Vol. 1, Book 1, Hadith 5",
+      arabicText = "مَا قَسَمَ اللَّهُ لِلْعِبَادِ شَيْئًا أَفْضَلَ مِنَ الْعَقْلِ، فَنَوْمُ الْعَاقِلِ أَفْضَلُ مِنْ سَهَرِ الْجَاهِلِ",
+      transliteration = "Ma qasamallahu lil-'ibadi shay'an afdala minal-'aql, fa-nawmul-'aqili afdalu min saharil-jahil.",
+      englishText = "Imam Ja'far as-Sadiq (AS) said: 'Allah has not distributed among His servants anything more virtuous than the intellect; the sleep of the person of intellect is more virtuous than the night-vigil of the ignorant.'",
+      urduText = "امام جعفر صادق علیہ السلام نے فرمایا: اللہ تعالیٰ نے اپنے بندوں کے درمیان عقل سے بڑھ کر کوئی افضل چیز تقسیم نہیں فرمائی، پس عاقل کا سونا جاہل کے شب بیداری کرنے سے افضل ہے۔",
+      narrator = "Imam Ja'far as-Sadiq (AS)",
+      grade = "Muwaththaq / Hasan (Mir'at al-'Uqul Vol. 1)",
+      gradingScholar = "'Allamah al-Majlisi (Shia Rijal Evaluation)",
+      reference = "Al-Kafi Vol. 1, Book 1, Hadith 5",
+      linkedQuranVerses = "39:9, 67:10"
+    ),
+    HadithEntity(
+      collectionKey = "alkafi",
+      collectionName = "Kitab al-Kafi (Al-Kulayni)",
+      bookNumber = 1,
+      bookName = "Book 1: Intellect & Ignorance / Kitab al-'Aql wal-Jahl (كتاب العقل والجهل)",
+      chapterNumber = 1,
+      chapterName = "Steadfastness of Wisdom and Humility",
+      hadithNumber = 10,
+      darussalamReference = "Al-Kafi Canonical: Usul Vol. 1, #10",
+      inBookReference = "In-Book: Vol. 1, Book 1, Hadith 10",
+      arabicText = "قِوَامُ الْمَرْءِ عَقْلُهُ، وَلَا دِينَ لِمَنْ لَا عَقْلَ لَهُ",
+      transliteration = "Qiwamul-mar'i 'aqluhu, wa la dina liman la 'aqla lah.",
+      englishText = "Imam Ja'far as-Sadiq (AS) said: 'The pillar of a person is his intellect, and there is no complete religion for one who does not use his intellect.'",
+      urduText = "امام جعفر صادق علیہ السلام نے فرمایا: انسان کا قوام اور سہارا اس کی عقل ہے، اور جو عقل سے کام نہیں لیتا اس کا دین کامل نہیں۔",
+      narrator = "Imam Ja'far as-Sadiq (AS)",
+      grade = "Sahih (Mir'at al-'Uqul Vol. 1)",
+      gradingScholar = "'Allamah al-Majlisi (Shia Rijal Evaluation)",
+      reference = "Al-Kafi Vol. 1, Book 1, Hadith 10",
+      linkedQuranVerses = "2:44, 8:22"
+    ),
+    HadithEntity(
+      collectionKey = "alkafi",
+      collectionName = "Kitab al-Kafi (Al-Kulayni)",
+      bookNumber = 1,
+      bookName = "Book 1: Intellect & Ignorance / Kitab al-'Aql wal-Jahl (كتاب العقل والجهل)",
+      chapterNumber = 1,
+      chapterName = "Discernment Between Truth and Falsehood",
+      hadithNumber = 25,
+      darussalamReference = "Al-Kafi Canonical: Usul Vol. 1, #25",
+      inBookReference = "In-Book: Vol. 1, Book 1, Hadith 25",
+      arabicText = "الْعَقْلُ مَا عُبِدَ بِهِ الرَّحْمَنُ وَأُكْتُسِبَ بِهِ الْجِنَانُ",
+      transliteration = "Al-'aqlu ma 'ubida bihir-Rahmanu wa uktusiba bihil-Jinan.",
+      englishText = "Imam Ja'far as-Sadiq (AS) was asked: 'What is the intellect (al-'Aql)?' He replied: 'It is that by which the Most Merciful (Ar-Rahman) is worshipped and by which the Gardens of Paradise are earned.'",
+      urduText = "امام جعفر صادق علیہ السلام سے پوچھا گیا: عقل کیا ہے؟ آپ علیہ السلام نے فرمایا: عقل وہ جوہر ہے جس کے ذریعے رحمٰن کی عبادت کی جاتی ہے اور جس کے ذریعے جنت حاصل کی جاتی ہے۔",
+      narrator = "Imam Ja'far as-Sadiq (AS)",
+      grade = "Not graded in this source",
+      gradingScholar = "Shaykh al-Kulayni (Primary Source Transmission)",
+      reference = "Al-Kafi Vol. 1, Book 1, Hadith 25",
+      linkedQuranVerses = "67:10, 39:18"
+    ),
+    HadithEntity(
+      collectionKey = "alkafi",
+      collectionName = "Kitab al-Kafi (Al-Kulayni)",
       bookNumber = 2,
       bookName = "Book 2: Excellence of Knowledge / Kitab Fadl al-'Ilm (كتاب فضل العلم)",
       chapterNumber = 1,
@@ -759,6 +997,160 @@ object CompleteHadithCollectionsCatalog {
       gradingScholar = "'Allamah al-Majlisi (Also in Musnad al-Bazzar & ad-Darimi)",
       reference = "Bihar al-Anwar Vol. 1, p. 195",
       linkedQuranVerses = "9:122, 39:9"
+    ),
+
+    // ==================== SUNAN AL-DARAQUTNI ====================
+    HadithEntity(
+      collectionKey = "daraqutni",
+      collectionName = "Sunan al-Daraqutni",
+      bookNumber = 1,
+      bookName = "Book 1: Kitab at-Taharah (كتاب الطهارة)",
+      chapterNumber = 1,
+      chapterName = "Purification with Sea Water",
+      hadithNumber = 1,
+      darussalamReference = "Ar-Risalah Canonical: #47",
+      inBookReference = "In-Book: Book 1 (Taharah), Hadith 1",
+      arabicText = "هُوَ الطَّهُورُ مَاؤُهُ الْحِلُّ مَيْتَتُهُ",
+      transliteration = "Huwa at-tahuru ma'uhu al-hillu maytatuh.",
+      englishText = "Regarding the sea, the Messenger of Allah (ﷺ) said: 'Its water is purifying and its dead (seafood) is lawful.'",
+      urduText = "سمندر کے بارے میں رسول اللہ ﷺ نے فرمایا: اس کا پانی پاک کرنے والا ہے اور اس کا مردار (آبی جانور) حلال ہے۔",
+      narrator = "Abu Hurairah (RA)",
+      grade = "Sahih",
+      gradingScholar = "Imam al-Daraqutni & Shu'ayb al-Arna'ut",
+      reference = "Sunan al-Daraqutni 47",
+      linkedQuranVerses = "5:96, 25:48"
+    ),
+
+    // ==================== AL-SUNAN AL-KUBRA (AL-BAYHAQI) ====================
+    HadithEntity(
+      collectionKey = "bayhaqi",
+      collectionName = "Al-Sunan al-Kubra (Al-Bayhaqi)",
+      bookNumber = 10,
+      bookName = "Book 10: Kitab ash-Shahadat & Noble Character (كتاب الشهادات ومكارم الأخلاق)",
+      chapterNumber = 1,
+      chapterName = "Perfection of Noble Moral Character",
+      hadithNumber = 21301,
+      darussalamReference = "Sunan al-Kubra: #21301",
+      inBookReference = "In-Book: Vol. 10, p. 191, #21301",
+      arabicText = "إِنَّمَا بُعِثْتُ لِأُتَمِّمَ مَكَارِمَ الْأَخْلَاقِ",
+      transliteration = "Innama bu'ithtu li-utammima makarimal-akhlaq.",
+      englishText = "The Messenger of Allah (ﷺ) said: 'Indeed, I was only sent to perfect noble moral character.'",
+      urduText = "رسول اللہ ﷺ نے فرمایا: بے شک میں مکارمِ اخلاق (اعلیٰ اخلاقی اقدار) کی تکمیل کے لیے بھیجا گیا ہوں۔",
+      narrator = "Abu Hurairah (RA)",
+      grade = "Sahih",
+      gradingScholar = "Imam al-Bayhaqi & Ibn 'Abd al-Barr",
+      reference = "Al-Sunan al-Kubra 21301",
+      linkedQuranVerses = "68:4, 33:21"
+    ),
+
+    // ==================== SUNNI HADITH COMMENTARIES & GRADING WORKS ====================
+    HadithEntity(
+      collectionKey = "sunni_commentaries",
+      collectionName = "Hadith Scholarship & Commentaries (Shuruh & Takharruj)",
+      bookNumber = 1,
+      bookName = "Fath al-Bari, Sharh Muslim, Tuhfat al-Ahwadhi, 'Awn al-Ma'bud & Silsilat al-Sahihah",
+      chapterNumber = 1,
+      chapterName = "Principles of Intentions and Sincerity (Ikhlas)",
+      hadithNumber = 1,
+      darussalamReference = "Fath al-Bari Vol. 1, p. 9 / Sharh Muslim Vol. 13, p. 53",
+      inBookReference = "Separate Commentary & Takharruj Category",
+      arabicText = "قَالَ الْحَافِظُ ابْنُ حَجَرٍ فِي فَتْحِ الْبَارِي: اتَّفَقَ الْعُلَمَاءُ عَلَى عِظَمِ مَوْقِعِ حَدِيثِ (إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ) وَأَنَّهُ أَحَدُ الْأَحَادِيثِ الَّتِي عَلَيْهَا مَدَارُ الْإِسْلَامِ",
+      transliteration = "Qala al-Hafiz Ibn Hajar fi Fath al-Bari: Ittafaqa al-'ulama'u 'ala 'izami mawqi'i hadithi (Innamal-a'malu bin-niyyat) wa annahu ahadul-ahadithi allati 'alayha madarul-Islam.",
+      englishText = "Al-Hafiz Ibn Hajar states in Fath al-Bari (1/9) alongside Imam an-Nawawi in Sharh Sahih Muslim: 'Scholars have unanimously agreed upon the immense standing of the Hadith of Intentions and that it is one of the foundational axes around which Islam revolves.' (Catalogue also indexes Tuhfat al-Ahwadhi, 'Awn al-Ma'bud, Silsilat al-Ahadith al-Sahihah/Da'ifah, and Sahih/Da'if al-Jami' as a distinct commentary/grading category.)",
+      urduText = "حافظ ابن حجر رحمہ اللہ فتح الباری (1/9) میں اور امام نووی شرح صحیح مسلم میں فرماتے ہیں کہ علما کا حدیثِ نیت کی عظمت پر اتفاق ہے اور یہ ان بنیادی احادیث میں سے ہے جن پر اسلام کا مدار ہے۔",
+      narrator = "Ibn Hajar al-'Asqalani & Imam an-Nawawi (Commentary & Takharruj Category)",
+      grade = "Authenticated Classical Commentary",
+      gradingScholar = "Ibn Hajar / An-Nawawi / Al-Mubarakpuri / Al-'Azimabadi / Al-Albani",
+      reference = "Fath al-Bari 1:9 • Sharh Sahih Muslim 13:53",
+      linkedQuranVerses = "98:5, 39:11"
+    ),
+
+    // ==================== WASA'IL AL-SHIA & MUSTADRAK AL-WASA'IL ====================
+    HadithEntity(
+      collectionKey = "wasail",
+      collectionName = "Wasa'il al-Shia & Mustadrak al-Wasa'il",
+      bookNumber = 1,
+      bookName = "Volume 1: Muqaddimat al-'Ibadat (مقدمات العبادات)",
+      chapterNumber = 1,
+      chapterName = "Bina' al-Islam 'ala Khams (The Five Foundations of Islam)",
+      hadithNumber = 1,
+      darussalamReference = "Al-Ahl al-Bayt Edition: Vol. 1, Bab 1, #1",
+      inBookReference = "In-Book: Vol. 1, p. 13, Hadith 1",
+      arabicText = "بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ: عَلَى الصَّلَاةِ وَالزَّكَاةِ وَالصَّوْمِ وَالْحَجِّ وَالْوَلَايَةِ، وَلَمْ يُنَادَ بِشَيْءٍ كَمَا نُودِيَ بِالْوَلَايَةِ",
+      transliteration = "Buniyal-Islamu 'ala khams: 'alas-salati waz-zakati was-sawmi wal-hajji wal-walayah.",
+      englishText = "Imam Muhammad al-Baqir (AS) said: 'Islam is built upon five foundations: prayer (Salah), almsgiving (Zakat), fasting (Sawm), pilgrimage (Hajj), and allegiance to divine authority (Walayah).'",
+      urduText = "امام محمد باقر علیہ السلام نے فرمایا: اسلام کی بنیاد پانچ چیزوں پر ہے: نماز، زکوٰۃ، روزہ، حج، اور ولایت۔",
+      narrator = "Imam Muhammad ibn 'Ali al-Baqir (AS)",
+      grade = "Sahih (Twelver Rijal Grading)",
+      gradingScholar = "Shaykh al-Hurr al-'Amili & 'Allamah al-Majlisi",
+      reference = "Wasa'il al-Shia Vol. 1, Bab 1, #1",
+      linkedQuranVerses = "2:43, 5:55"
+    ),
+
+    // ==================== AL-SAHIFA AL-SAJJADIYYA ====================
+    HadithEntity(
+      collectionKey = "sajjadiyya",
+      collectionName = "Al-Sahifa al-Sajjadiyya",
+      bookNumber = 1,
+      bookName = "Supplication 1 & 20: Praise of Allah and Noble Moral Traits",
+      chapterNumber = 20,
+      chapterName = "Du'a Makarim al-Akhlaq (Supplication for Noble Character)",
+      hadithNumber = 20,
+      darussalamReference = "Al-Sahifa al-Sajjadiyya: Supplication #20",
+      inBookReference = "In-Book: Du'a 20 (Makarim al-Akhlaq)",
+      arabicText = "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَآلِهِ، وَبَلِّغْ بِإِيمَانِي أَكْمَلَ الْإِيمَانِ، وَاجْعَلْ يَقِينِي أَفْضَلَ الْيَقِينِ، وَانْتَهِ بِنِيَّتِي إِلَى أَحْسَنِ النِّيَّاتِ، وَبِعَمَلِي إِلَى أَحْسَنِ الْأَعْمَالِ",
+      transliteration = "Allahumma salli 'ala Muhammadin wa Alihi, wa balligh bi-imani akmalal-iman, waj'al yaqini afdalal-yaqin, wantahi bi-niyyati ila ahsanin-niyyat, wa bi-'amali ila ahsanil-a'mal.",
+      englishText = "O Allah, bless Muhammad and his Household, cause my faith to reach the most perfect faith, make my certainty the most excellent certainty, and carry my intention to the best of intentions and my deeds to the best of deeds.",
+      urduText = "اے اللہ! محمد اور آلِ محمد پر رحمت نازل فرما، اور میرے ایمان کو کامل ترین ایمان تک پہنچا دے، میرے یقین کو افضل ترین یقین بنا دے، اور میری نیت کو بہترین نیتوں اور میرے عمل کو بہترین اعمال تک پہنچا دے۔",
+      narrator = "Imam 'Ali ibn al-Husayn Zayn al-'Abidin (AS)",
+      grade = "Mutawatir Devotional Corpus",
+      gradingScholar = "Shaykh al-Mufid & Classical Imami Consensus",
+      reference = "Al-Sahifa al-Sajjadiyya, Supplication 20",
+      linkedQuranVerses = "33:56, 68:4"
+    ),
+
+    // ==================== SHAYKH AL-SADUQ & CLASSICAL IMAMI CORPUS ====================
+    HadithEntity(
+      collectionKey = "saduq_corpus",
+      collectionName = "Shaykh al-Saduq & Classical Imami Corpus (Al-Tawhid, 'Uyun Akhbar al-Rida, Al-Khisal, Al-Amali, Thawab al-A'mal, Ma'ani al-Akhbar)",
+      bookNumber = 1,
+      bookName = "Kitab al-Tawhid & 'Uyun Akhbar al-Rida (كتاب التوحيد وعيون أخبار الرضا)",
+      chapterNumber = 1,
+      chapterName = "The Golden Chain Narration (Hadith Silsilat al-Dhahab) on Divine Unity",
+      hadithNumber = 1,
+      darussalamReference = "Kitab al-Tawhid p. 25 / 'Uyun Akhbar al-Rida Vol. 2, p. 135",
+      inBookReference = "In-Book: Saduq Corpus #1 (Includes Al-Khisal, Al-Amali, Al-Mahasin, Qurb al-Isnad, Tuhaf al-'Uqul, Kamil al-Ziyarat, Kitab al-Ghayba, Al-Ihtijaj)",
+      arabicText = "كَلِمَةُ لَا إِلَهَ إِلَّا اللَّهُ حِصْنِي فَمَنْ دَخَلَ حِصْنِي أَمِنَ مِنْ عَذَابِي",
+      transliteration = "Kalimatu La ilaha illallahu hisni, faman dakhala hisni amina min 'adhabi.",
+      englishText = "Allah the Exalted declared: 'The testimony La ilaha illallah (There is no deity worthy of worship except Allah) is My fortress; whoever enters My fortress is secure from My punishment.'",
+      urduText = "اللہ عزوجل کا فرمان ہے: کلمہ لا الہ الا اللہ میرا قلعہ ہے، پس جو میرے قلعے میں داخل ہو گیا وہ میرے عذاب سے محفوظ ہو گیا۔",
+      narrator = "Imam 'Ali ibn Musa al-Rida (AS) through the Ahl al-Bayt to the Prophet (ﷺ)",
+      grade = "Sahih / Hadith Silsilat al-Dhahab",
+      gradingScholar = "Shaykh al-Saduq Ibn Babawayh",
+      reference = "Kitab al-Tawhid p. 25 • 'Uyun Akhbar al-Rida 2:135",
+      linkedQuranVerses = "47:19, 37:35"
+    ),
+
+    // ==================== ZAYDI & ISMAILI SUB-TRADITION CORPORA ====================
+    HadithEntity(
+      collectionKey = "zaydi_ismaili",
+      collectionName = "Musnad Imam Zayd & Da'a'im al-Islam (Zaydi & Ismaili Corpora)",
+      bookNumber = 1,
+      bookName = "Book 1: Kitab at-Taharah wal-Iman (مسند الإمام زيد ودعائم الإسلام)",
+      chapterNumber = 1,
+      chapterName = "Sincerity of Worship and Justice (Zaydi & Ismaili Sub-Tradition Reference)",
+      hadithNumber = 1,
+      darussalamReference = "Musnad Imam Zayd #1 / Da'a'im al-Islam Vol. 1, #1",
+      inBookReference = "In-Book: Sub-Tradition Reference #1 (Clearly Labelled Zaydi / Ismaili)",
+      arabicText = "الْإِيمَانُ مَعْرِفَةٌ بِالْقَلْبِ وَإِقْرَارٌ بِاللِّسَانِ وَعَمَلٌ بِالْأَرْكَانِ",
+      transliteration = "Al-imanu ma'rifatun bil-qalbi wa iqrarun bil-lisani wa 'amalun bil-arkan.",
+      englishText = "Faith (Iman) is recognition with the heart, affirmation with the tongue, and action with the limbs.",
+      urduText = "ایمان دل سے معرفت و تصدیق، زبان سے اقرار، اور اعضاء سے عمل کرنے کا نام ہے۔",
+      narrator = "Imam Zayd ibn 'Ali / Al-Qadi al-Nu'man (Ahl al-Bayt Transmission)",
+      grade = "Sub-Tradition Canonical Foundation (Zaydi & Ismaili)",
+      gradingScholar = "Imam Zayd ibn 'Ali (Zaydi) & Al-Qadi al-Nu'man (Ismaili)",
+      reference = "Musnad Imam Zayd #1 • Da'a'im al-Islam Vol. 1",
+      linkedQuranVerses = "49:14, 2:177"
     )
   )
 }

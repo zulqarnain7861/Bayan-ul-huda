@@ -286,15 +286,9 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   fun cycleThemeMode() {
-    val current = _uiState.value.prayerConfig.themeMode
-    val next = when (current) {
-      AppThemeMode.LIGHT -> AppThemeMode.EYE_COMFORT
-      AppThemeMode.EYE_COMFORT -> AppThemeMode.DARK
-      AppThemeMode.DARK -> AppThemeMode.ROYAL_EMERALD
-      AppThemeMode.ROYAL_EMERALD -> AppThemeMode.MADINAH_PARCHMENT
-      AppThemeMode.MADINAH_PARCHMENT -> AppThemeMode.AUTO
-      AppThemeMode.AUTO -> AppThemeMode.LIGHT
-    }
+    val entries = AppThemeMode.entries
+    val currentIdx = entries.indexOf(_uiState.value.prayerConfig.themeMode).coerceAtLeast(0)
+    val next = entries[(currentIdx + 1) % entries.size]
     setThemeMode(next)
   }
 

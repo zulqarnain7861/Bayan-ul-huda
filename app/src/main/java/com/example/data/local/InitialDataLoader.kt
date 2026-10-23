@@ -139,7 +139,7 @@ object InitialDataLoader {
         transliteration = "Bismillāhir-Raḥmānir-Raḥīm",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001001.mp3"
       )
     )
     ayahs.add(
@@ -152,7 +152,7 @@ object InitialDataLoader {
         transliteration = "Al-ḥamdu lillāhi Rabbil-ʻālamīn",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001002.mp3"
       )
     )
     ayahs.add(
@@ -165,7 +165,7 @@ object InitialDataLoader {
         transliteration = "Ar-Raḥmānir-Raḥīm",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001003.mp3"
       )
     )
     ayahs.add(
@@ -178,7 +178,7 @@ object InitialDataLoader {
         transliteration = "Māliki Yawmid-Dīn",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001004.mp3"
       )
     )
     ayahs.add(
@@ -191,7 +191,7 @@ object InitialDataLoader {
         transliteration = "Iyyāka naʻbudu wa iyyāka nastaʻīn",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001005.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001005.mp3"
       )
     )
     ayahs.add(
@@ -204,7 +204,7 @@ object InitialDataLoader {
         transliteration = "Ihdināṣ-ṣirāṭal-mustaqīm",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001006.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001006.mp3"
       )
     )
     ayahs.add(
@@ -217,7 +217,7 @@ object InitialDataLoader {
         transliteration = "Ṣirāṭallaḏīna anʻamta ʻalayhim ġayril-maġḍūbi ʻalayhim walāḍ-ḍāllīn",
         juzNumber = 1,
         pageNumber = 1,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/001007.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/001007.mp3"
       )
     )
 
@@ -232,7 +232,7 @@ object InitialDataLoader {
         transliteration = "Allāhu lā ilāha illā huwal-Ḥayyul-Qayyūm...",
         juzNumber = 3,
         pageNumber = 42,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/002255.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/002255.mp3"
       )
     )
 
@@ -247,7 +247,7 @@ object InitialDataLoader {
         transliteration = "Yā-Sīn",
         juzNumber = 22,
         pageNumber = 440,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/036001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/036001.mp3"
       )
     )
     ayahs.add(
@@ -260,7 +260,7 @@ object InitialDataLoader {
         transliteration = "Wal-Qur'ānil-Ḥakīm",
         juzNumber = 22,
         pageNumber = 440,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/036002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/036002.mp3"
       )
     )
     ayahs.add(
@@ -273,7 +273,7 @@ object InitialDataLoader {
         transliteration = "Innaka laminal-mursalīn",
         juzNumber = 22,
         pageNumber = 440,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/036003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/036003.mp3"
       )
     )
     ayahs.add(
@@ -286,7 +286,7 @@ object InitialDataLoader {
         transliteration = "ʻAlā ṣirāṭim-mustaqīm",
         juzNumber = 22,
         pageNumber = 440,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/036004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/036004.mp3"
       )
     )
     ayahs.add(
@@ -299,7 +299,7 @@ object InitialDataLoader {
         transliteration = "Tanzīlal-ʻAzīzir-Raḥīm",
         juzNumber = 22,
         pageNumber = 440,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/036005.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/036005.mp3"
       )
     )
 
@@ -314,7 +314,7 @@ object InitialDataLoader {
         transliteration = "Tabārakallaḏī biyadihil-mulku wa huwa ʻalā kulli shay'in qadīr",
         juzNumber = 29,
         pageNumber = 562,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/067001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/067001.mp3"
       )
     )
     ayahs.add(
@@ -327,7 +327,7 @@ object InitialDataLoader {
         transliteration = "Alladhī khalaqal-mawta wal-ḥayāta liyabluwakum ayyukum aḥsanu ʻamalā...",
         juzNumber = 29,
         pageNumber = 562,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/067002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/067002.mp3"
       )
     )
     ayahs.add(
@@ -340,7 +340,7 @@ object InitialDataLoader {
         transliteration = "Alladhī khalaqa sabʻa samāwātin ṭibāqan...",
         juzNumber = 29,
         pageNumber = 562,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/067003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/067003.mp3"
       )
     )
     ayahs.add(
@@ -353,7 +353,7 @@ object InitialDataLoader {
         transliteration = "Thummarjiʻil-baṣara karratayni yanqalib ilaykal-baṣaru khāsi'aw-wahuwa ḥasīr",
         juzNumber = 29,
         pageNumber = 562,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/067004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/067004.mp3"
       )
     )
 
@@ -368,7 +368,7 @@ object InitialDataLoader {
         transliteration = "Wal-ʻaṣr",
         juzNumber = 30,
         pageNumber = 601,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/103001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/103001.mp3"
       )
     )
     ayahs.add(
@@ -381,7 +381,7 @@ object InitialDataLoader {
         transliteration = "Innal-insāna lafī khusr",
         juzNumber = 30,
         pageNumber = 601,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/103002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/103002.mp3"
       )
     )
     ayahs.add(
@@ -394,7 +394,7 @@ object InitialDataLoader {
         transliteration = "Illallaḏīna āmanū wa ʻamiluṣ-ṣāliḥāti wa tawāṣaw bil-ḥaqqi wa tawāṣaw biṣ-ṣabr",
         juzNumber = 30,
         pageNumber = 601,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/103003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/103003.mp3"
       )
     )
 
@@ -409,7 +409,7 @@ object InitialDataLoader {
         transliteration = "Innā aʻṭaynākal-kawthar",
         juzNumber = 30,
         pageNumber = 602,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/108001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/108001.mp3"
       )
     )
     ayahs.add(
@@ -422,7 +422,7 @@ object InitialDataLoader {
         transliteration = "Faṣalli li-Rabbika wan-ḥar",
         juzNumber = 30,
         pageNumber = 602,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/108002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/108002.mp3"
       )
     )
     ayahs.add(
@@ -435,7 +435,7 @@ object InitialDataLoader {
         transliteration = "Inna shāni'aka huwal-abtar",
         juzNumber = 30,
         pageNumber = 602,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/108003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/108003.mp3"
       )
     )
 
@@ -450,7 +450,7 @@ object InitialDataLoader {
         transliteration = "Qul huwal-Lāhu Aḥad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/112001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/112001.mp3"
       )
     )
     ayahs.add(
@@ -463,7 +463,7 @@ object InitialDataLoader {
         transliteration = "Allāhuṣ-Ṣamad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/112002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/112002.mp3"
       )
     )
     ayahs.add(
@@ -476,7 +476,7 @@ object InitialDataLoader {
         transliteration = "Lam yalid wa lam yūlad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/112003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/112003.mp3"
       )
     )
     ayahs.add(
@@ -489,7 +489,7 @@ object InitialDataLoader {
         transliteration = "Wa lam yakun lahū kufuwan aḥad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/112004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/112004.mp3"
       )
     )
 
@@ -504,7 +504,7 @@ object InitialDataLoader {
         transliteration = "Qul aʻūḏu birabbil-falaq",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/113001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/113001.mp3"
       )
     )
     ayahs.add(
@@ -517,7 +517,7 @@ object InitialDataLoader {
         transliteration = "Min sharri mā khalaq",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/113002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/113002.mp3"
       )
     )
     ayahs.add(
@@ -530,7 +530,7 @@ object InitialDataLoader {
         transliteration = "Wa min sharri ghāsiqin iḏā waqab",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/113003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/113003.mp3"
       )
     )
     ayahs.add(
@@ -543,7 +543,7 @@ object InitialDataLoader {
         transliteration = "Wa min sharrin-naffāthāti fīl-ʻuqad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/113004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/113004.mp3"
       )
     )
     ayahs.add(
@@ -556,7 +556,7 @@ object InitialDataLoader {
         transliteration = "Wa min sharri ḥāsidin iḏā ḥasad",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/113005.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/113005.mp3"
       )
     )
 
@@ -571,7 +571,7 @@ object InitialDataLoader {
         transliteration = "Qul aʻūḏu birabbin-nās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114001.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114001.mp3"
       )
     )
     ayahs.add(
@@ -584,7 +584,7 @@ object InitialDataLoader {
         transliteration = "Malikin-nās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114002.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114002.mp3"
       )
     )
     ayahs.add(
@@ -597,7 +597,7 @@ object InitialDataLoader {
         transliteration = "Ilāhin-nās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114003.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114003.mp3"
       )
     )
     ayahs.add(
@@ -610,7 +610,7 @@ object InitialDataLoader {
         transliteration = "Min sharril-waswāsil-khannās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114004.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114004.mp3"
       )
     )
     ayahs.add(
@@ -623,7 +623,7 @@ object InitialDataLoader {
         transliteration = "Alladhī yuwaswisu fī ṣudūrin-nās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114005.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114005.mp3"
       )
     )
     ayahs.add(
@@ -636,7 +636,7 @@ object InitialDataLoader {
         transliteration = "Minal-jinnati wan-nās",
         juzNumber = 30,
         pageNumber = 604,
-        audioUrl = "https://everyayah.com/data/Alafasy_128kbps/114006.mp3"
+        audioUrl = "https://everyayah.com/data/Husary_128kbps/114006.mp3"
       )
     )
 

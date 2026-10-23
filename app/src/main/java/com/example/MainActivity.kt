@@ -56,6 +56,7 @@ import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.IslamWithEvidenceScreen
 import com.example.ui.screens.LibraryScreen
 import com.example.ui.screens.OpeningExperienceScreen
+import com.example.ui.screens.QiblaCompassScreen
 import com.example.ui.screens.QuranScreen
 import com.example.ui.screens.ReportErrorDialog
 import com.example.ui.screens.SearchScreen
@@ -74,6 +75,7 @@ object BayanNavRoutes {
   const val ABOUT = "about"
   const val DOWNLOADS = "downloads"
   const val EVIDENCE = "evidence"
+  const val QIBLA = "qibla"
 }
 
 data class BottomNavDestination(
@@ -195,7 +197,8 @@ fun BayanApp(
   val isSubpageWithBack = currentRoute in setOf(
     BayanNavRoutes.ABOUT,
     BayanNavRoutes.DOWNLOADS,
-    BayanNavRoutes.EVIDENCE
+    BayanNavRoutes.EVIDENCE,
+    BayanNavRoutes.QIBLA
   )
 
   Scaffold(
@@ -205,6 +208,7 @@ fun BayanApp(
         val headerTitle = when (currentRoute) {
           BayanNavRoutes.DOWNLOADS -> "Offline Download Manager"
           BayanNavRoutes.EVIDENCE -> "Islam with Evidence"
+          BayanNavRoutes.QIBLA -> "Qibla Direction Compass"
           else -> "About, Themes & Source Audit"
         }
         TopAppBar(
@@ -229,6 +233,11 @@ fun BayanApp(
           isOfflineMode = syncBadgeState.isOfflineMode,
           onToggleOfflineMode = {
             viewModel.downloadManager.setOfflineModeEnabled(!syncBadgeState.isOfflineMode)
+          },
+          onOpenQiblaClick = {
+            navController.navigate(BayanNavRoutes.QIBLA) {
+              launchSingleTop = true
+            }
           },
           onOpenDownloadsClick = {
             navController.navigate(BayanNavRoutes.DOWNLOADS) {
@@ -369,6 +378,9 @@ fun BayanApp(
           },
           onNavigateToEvidence = {
             navController.navigate(BayanNavRoutes.EVIDENCE) { launchSingleTop = true }
+          },
+          onNavigateToQibla = {
+            navController.navigate(BayanNavRoutes.QIBLA) { launchSingleTop = true }
           }
         )
       }
@@ -402,7 +414,9 @@ fun BayanApp(
           isReadingMode = uiState.isReadingMode,
           onToggleReadingMode = { viewModel.toggleReadingMode() },
           isContinuousMushafFlow = uiState.isContinuousMushafFlow,
-          onToggleContinuousMushafFlow = { viewModel.toggleContinuousMushafFlow() }
+          onToggleContinuousMushafFlow = { viewModel.toggleContinuousMushafFlow() },
+          currentReciter = audioState.reciter,
+          onSelectReciter = { viewModel.setReciter(it) }
         )
       }
 
@@ -496,6 +510,13 @@ fun BayanApp(
             viewModel.lookupHadithByNumber(hadithNum, colKey)
             navigateToTab(BayanNavRoutes.HADITH, MainNavigationTab.HADITH)
           }
+        )
+      }
+
+      composable(BayanNavRoutes.QIBLA) {
+        QiblaCompassScreen(
+          prayerConfig = uiState.prayerConfig,
+          onUpdatePrayerConfig = { viewModel.updatePrayerAndAlarmConfig(it) }
         )
       }
 

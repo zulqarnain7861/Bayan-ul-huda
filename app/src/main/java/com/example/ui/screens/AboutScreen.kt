@@ -102,6 +102,9 @@ fun AboutScreen(
   val developerEmail = "sheikhzulqar@gmail.com"
   val instagramUsername = "@zulqarnainah"
   val instagramUrl = "https://www.instagram.com/zulqarnainah/"
+  val facebookMessengerUrl = "https://www.facebook.com/share/1PiLFRT6jv/"
+  val isVerifiedDeveloper = !isGuestMode &&
+    com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper(userEmail)
   var showDiagnosticAuditExpanded by remember { mutableStateOf(true) }
 
   LazyColumn(
@@ -172,7 +175,7 @@ fun AboutScreen(
       }
     }
 
-    // Three Appearance Themes Card (Light, Eye-Comfort, Dark, Auto Day/Night)
+    // All 8 Persistent Appearance Themes Card
     item {
       Card(
         modifier = Modifier
@@ -186,7 +189,7 @@ fun AboutScreen(
             Icon(Icons.Default.Palette, contentDescription = null, tint = EmeraldPrimary)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "Appearance & Reading Theme",
+              text = "Appearance & Reading Themes (8 Modes)",
               style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -195,7 +198,7 @@ fun AboutScreen(
           }
           Spacer(modifier = Modifier.height(6.dp))
           Text(
-            text = "Choose Daytime Light, Nighttime Dark, Warm Low-Glare Eye-Comfort, or Automatic Day/Night switching.",
+            text = "Choose System Default, Light, Dark, Pure Black (AMOLED), Warm Paper, Sepia, Green, or Blue. Your theme persists across restarts.",
             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
           )
           Spacer(modifier = Modifier.height(10.dp))
@@ -221,7 +224,7 @@ fun AboutScreen(
       }
     }
 
-    // Developer Source & API Audit Dashboard (Section 5 Requirement — No Secrets Exposed)
+    // Source & Scholarly Integrity Audit Dashboard (Raw API URLs protected behind verified developer session)
     item {
       Card(
         modifier = Modifier
@@ -241,14 +244,22 @@ fun AboutScreen(
               Spacer(modifier = Modifier.width(8.dp))
               Column {
                 Text(
-                  text = "Source & API Audit Dashboard",
+                  text = if (isVerifiedDeveloper) {
+                    "Developer Maintenance & API Audit"
+                  } else {
+                    "Scholarly Source & Coverage Audit"
+                  },
                   style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                   )
                 )
                 Text(
-                  text = "Developer Diagnostics • Honest Coverage & Room Schema Audit",
+                  text = if (isVerifiedDeveloper) {
+                    "Verified Developer View ($developerEmail) • Full Technical Diagnostics"
+                  } else {
+                    "Honest Coverage & Edition Attribution • Technical API Links Protected"
+                  },
                   style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.Bold)
                 )
               }
@@ -273,7 +284,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(10.dp))
             if (auditReport == null) {
               Text(
-                text = "Loading Room SQLite & API verification metrics...",
+                text = "Loading verified scholarly source & Room SQLite metrics...",
                 style = MaterialTheme.typography.bodySmall
               )
             } else {
@@ -297,7 +308,7 @@ fun AboutScreen(
                       "• Verses Table (ayahs): ${auditReport.totalAyahsLocal} / 6,236 Ayahs\n" +
                       "• Translations Table (translations): ${auditReport.totalTranslationsLocal} Verified Records (Sahih International & Urdu)\n" +
                       "• Hadith Collections Table (hadith_collections): ${auditReport.totalHadithCollectionsLocal} Collections\n" +
-                      "• Hadiths Table (hadiths): ${auditReport.totalHadithsLocal} Locally Cached Narrations (+ On-Demand API)\n" +
+                      "• Hadiths Table (hadiths): ${auditReport.totalHadithsLocal} Locally Cached Narrations (+ On-Demand Verified Lookup)\n" +
                       "• Prayer Schedules Table (prayer_schedules): ${auditReport.totalPrayerSchedulesCached} Cached Schedules\n" +
                       "• Last Verified: ${auditReport.generatedAtFormatted}",
                     style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp)
@@ -346,10 +357,17 @@ fun AboutScreen(
                       }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                      text = "Docs: ${entry.officialDocsUrl}",
-                      style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
-                    )
+                    if (isVerifiedDeveloper) {
+                      Text(
+                        text = "Protected Developer Docs: ${entry.officialDocsUrl}",
+                        style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
+                      )
+                    } else {
+                      Text(
+                        text = "Attribution: Verified Scholarly Source (Technical API Endpoints Protected)",
+                        style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
+                      )
+                    }
                     Text(
                       text = "Books & Languages: ${entry.availableBooksAndLanguages}",
                       style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
@@ -387,7 +405,7 @@ fun AboutScreen(
 
               // Kutub al-Sittah & Hadith Collections Coverage Table
               Text(
-                text = "Hadith Collections Coverage (Kutub al-Sittah + Primary Collections):",
+                text = "Hadith Collections Coverage (Sunni & Shia Libraries):",
                 style = MaterialTheme.typography.labelLarge.copy(
                   fontWeight = FontWeight.Bold,
                   color = MaterialTheme.colorScheme.primary
@@ -416,7 +434,7 @@ fun AboutScreen(
                     )
                   }
                   Text(
-                    text = "${col.locallyCachedCount} cached / ${col.totalCanonicalHadiths} API",
+                    text = "${col.locallyCachedCount} cached / ${col.totalCanonicalHadiths} canonical",
                     style = MaterialTheme.typography.labelSmall.copy(
                       fontWeight = FontWeight.Bold,
                       color = GoldPrimary
@@ -492,9 +510,9 @@ fun AboutScreen(
                           style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
                         )
                       }
-                      if (src.officialUrl.isNotBlank()) {
+                      if (isVerifiedDeveloper && src.officialUrl.isNotBlank()) {
                         Text(
-                          text = "Official Source: ${src.officialUrl}",
+                          text = "Protected Developer Endpoint: ${src.officialUrl}",
                           style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                       }
@@ -557,16 +575,18 @@ fun AboutScreen(
       }
     }
 
-    // Developer Identity & Contact Us
+    // Contact Us, Social Links & Play Store Publication Support
     item {
       Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("contact_and_support_card"),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
       ) {
         Column(modifier = Modifier.padding(16.dp)) {
           Text(
-            text = "Developer Identity",
+            text = "Contact Us & Support Bayan al-Huda",
             style = MaterialTheme.typography.titleMedium.copy(
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary
@@ -586,10 +606,11 @@ fun AboutScreen(
 
           Spacer(modifier = Modifier.height(14.dp))
 
-          // Email action
+          // Email Us action
           Surface(
             modifier = Modifier
               .fillMaxWidth()
+              .testTag("contact_email_button")
               .clickable {
                 val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                   data = Uri.parse("mailto:$developerEmail")
@@ -614,7 +635,10 @@ fun AboutScreen(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Email, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text(text = developerEmail, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                Column {
+                  Text(text = "Email Us", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                  Text(text = developerEmail, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                }
               }
               IconButton(
                 onClick = {
@@ -631,10 +655,11 @@ fun AboutScreen(
 
           Spacer(modifier = Modifier.height(10.dp))
 
-          // Instagram action
+          // Follow on Instagram action
           Surface(
             modifier = Modifier
               .fillMaxWidth()
+              .testTag("contact_instagram_button")
               .clickable {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramUrl))
                 try {
@@ -658,9 +683,82 @@ fun AboutScreen(
               )
               Spacer(modifier = Modifier.width(10.dp))
               Column {
-                Text(text = "Instagram Profile", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                Text(text = "Follow on Instagram", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
                 Text(text = instagramUsername, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
               }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
+
+          // Message on Facebook / Messenger action
+          Surface(
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("contact_facebook_button")
+              .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(facebookMessengerUrl))
+                try {
+                  context.startActivity(intent)
+                } catch (e: Exception) {
+                  Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+                }
+              },
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text(
+                text = "FB",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = EmeraldPrimary)
+              )
+              Spacer(modifier = Modifier.width(10.dp))
+              Column {
+                Text(text = "Message on Facebook", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
+                Text(text = "Facebook / Messenger Direct Link", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(14.dp))
+          HorizontalDivider()
+          Spacer(modifier = Modifier.height(12.dp))
+
+          // Support Our App — US$25 Google Play Console Registration Fee Notice
+          Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = GoldPrimary.copy(alpha = 0.12f),
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("support_play_console_card")
+          ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+              Text(
+                text = "Support Our App • Google Play Store Publication",
+                style = MaterialTheme.typography.titleSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary
+                )
+              )
+              Spacer(modifier = Modifier.height(6.dp))
+              Text(
+                text = "Community support helps cover the one-time US$25 Google Play Console registration fee so we can publish Bayan al-Huda on the Google Play Store and enable more people worldwide to benefit from verified Quran, Hadith, and Salah tools.",
+                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp)
+              )
+              Spacer(modifier = Modifier.height(6.dp))
+              Text(
+                text = "100% Free & Ad-Free Pledge: Bayan al-Huda is completely free of cost and contains zero advertisements. Supporting the Play Store registration is completely optional—reach out via Email, Instagram, or Facebook above if you would like to contribute or share feedback.",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.SemiBold,
+                  color = EmeraldPrimary,
+                  lineHeight = 16.sp
+                )
+              )
             }
           }
         }

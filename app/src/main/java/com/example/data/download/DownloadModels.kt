@@ -10,6 +10,7 @@ data class OfflineAudioReciterSpec(
   val id: String,
   val displayName: String,
   val arabicName: String = "قارئ معتمد",
+  val tradition: String = "SUNNI", // "SUNNI" or "SHIA"
   val style: String,
   val bitrateKbps: Int = 128,
   val chapterReciterId: String,
@@ -199,6 +200,7 @@ object OfflineCatalogRegistry {
       id = "husary",
       displayName = "Mahmoud Khalil Al-Husary",
       arabicName = "محمود خليل الحصري",
+      tradition = "SUNNI",
       style = "Murattal (Verified Tajweed Standard)",
       bitrateKbps = 128,
       chapterReciterId = "chapter_mahmoud_khalil_al-husaree",
@@ -209,22 +211,10 @@ object OfflineCatalogRegistry {
       averageAyahSizeBytes = 52_000L
     ),
     OfflineAudioReciterSpec(
-      id = "alafasy",
-      displayName = "Mishary Rashid Alafasy",
-      arabicName = "مشاري راشد العفاسي",
-      style = "Murattal (128 kbps Verified)",
-      bitrateKbps = 128,
-      chapterReciterId = "chapter_mishaari_raashid_al_3afaasee",
-      chapterAudioBaseUrl = "https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaasee",
-      ayahReciterId = "ayah_Alafasy_128kbps",
-      ayahAudioSubfolder = "Alafasy_128kbps",
-      averageChapterSizeBytes = 13_800_000L,
-      averageAyahSizeBytes = 46_000L
-    ),
-    OfflineAudioReciterSpec(
       id = "abdulbasit",
-      displayName = "Abdul Basit Abdus Samad",
+      displayName = "Abdul Basit Abdul Samad",
       arabicName = "عبد الباسط عبد الصمد",
+      tradition = "SUNNI",
       style = "Murattal (192 kbps Classical)",
       bitrateKbps = 192,
       chapterReciterId = "chapter_abdul_basit_murattal",
@@ -235,9 +225,38 @@ object OfflineCatalogRegistry {
       averageAyahSizeBytes = 64_000L
     ),
     OfflineAudioReciterSpec(
+      id = "minshawi",
+      displayName = "Muhammad Siddiq Al-Minshawi",
+      arabicName = "محمد صديق المنشاوي",
+      tradition = "SUNNI",
+      style = "Murattal (128 kbps Classical)",
+      bitrateKbps = 128,
+      chapterReciterId = "chapter_muhammad_siddeeq_al-minshaawee",
+      chapterAudioBaseUrl = "https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee",
+      ayahReciterId = "ayah_Minshawy_Murattal_128kbps",
+      ayahAudioSubfolder = "Minshawy_Murattal_128kbps",
+      averageChapterSizeBytes = 14_900_000L,
+      averageAyahSizeBytes = 50_000L
+    ),
+    OfflineAudioReciterSpec(
+      id = "sudais",
+      displayName = "Abdul Rahman Al-Sudais",
+      arabicName = "عبد الرحمن السديس",
+      tradition = "SUNNI",
+      style = "Murattal (192 kbps Haramain)",
+      bitrateKbps = 192,
+      chapterReciterId = "chapter_abdurrahmaan_as-sudais",
+      chapterAudioBaseUrl = "https://download.quranicaudio.com/quran/abdurrahmaan_as-sudais",
+      ayahReciterId = "ayah_Abdurrahmaan_As-Sudais_192kbps",
+      ayahAudioSubfolder = "Abdurrahmaan_As-Sudais_192kbps",
+      averageChapterSizeBytes = 16_100_000L,
+      averageAyahSizeBytes = 55_000L
+    ),
+    OfflineAudioReciterSpec(
       id = "shatri",
       displayName = "Abu Bakr Al-Shatri",
       arabicName = "أبو بكر الشاطري",
+      tradition = "SUNNI",
       style = "Murattal (128 kbps Haramain Style)",
       bitrateKbps = 128,
       chapterReciterId = "chapter_abu_bakr_ash-shaatree",
@@ -246,6 +265,34 @@ object OfflineCatalogRegistry {
       ayahAudioSubfolder = "Abu_Bakr_Ash-Shaatree_128kbps",
       averageChapterSizeBytes = 13_100_000L,
       averageAyahSizeBytes = 44_000L
+    ),
+    OfflineAudioReciterSpec(
+      id = "karim_mansouri",
+      displayName = "Karim Mansouri",
+      arabicName = "كريم منصوري",
+      tradition = "SHIA",
+      style = "Tartil / Murattal (Verified Shia Quran Reciter)",
+      bitrateKbps = 40,
+      chapterReciterId = "chapter_karim_mansoori",
+      chapterAudioBaseUrl = "https://everyayah.com/data/Karim_Mansoori_40kbps",
+      ayahReciterId = "ayah_Karim_Mansoori_40kbps",
+      ayahAudioSubfolder = "Karim_Mansoori_40kbps",
+      averageChapterSizeBytes = 9_200_000L,
+      averageAyahSizeBytes = 32_000L
+    ),
+    OfflineAudioReciterSpec(
+      id = "maytham_tammar",
+      displayName = "Maytham al-Tammar",
+      arabicName = "ميثم التمار",
+      tradition = "SHIA",
+      style = "Murattal (Verified Shia Quran Reciter)",
+      bitrateKbps = 128,
+      chapterReciterId = "chapter_maytham_al_tammar",
+      chapterAudioBaseUrl = "https://everyayah.com/data/Maytham_Al_Tammar_128kbps",
+      ayahReciterId = "ayah_Maytham_Al_Tammar_128kbps",
+      ayahAudioSubfolder = "Maytham_Al_Tammar_128kbps",
+      averageChapterSizeBytes = 14_000_000L,
+      averageAyahSizeBytes = 48_000L
     )
   )
 

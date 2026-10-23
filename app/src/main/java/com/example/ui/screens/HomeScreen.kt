@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
@@ -59,12 +60,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.OutlinedTextField
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
 import com.example.data.local.entities.PrayerScheduleEntity
 import com.example.data.local.entities.SurahEntity
 import com.example.data.model.ReflectionCategory
 import com.example.data.model.ReflectionDataProvider
+import com.example.data.model.WisdomAttributionStatus
 import com.example.data.prayer.PrayerAndAlarmConfig
 import com.example.ui.components.BismillahHeader
 import com.example.ui.components.SahihGradeBadge
@@ -75,6 +82,7 @@ import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.ScheherazadeFontFamily
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
   dailyAyah: AyahEntity?,
@@ -97,10 +105,13 @@ fun HomeScreen(
   onNavigateToLibrary: () -> Unit = {},
   onNavigateToDownloads: () -> Unit = {},
   onNavigateToEvidence: () -> Unit = {},
+  onNavigateToQibla: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
   var reflectionCategory by remember { mutableStateOf(ReflectionCategory.PROPHETIC_GUIDANCE) }
+  var reflectionAttributionFilter by remember { mutableStateOf<WisdomAttributionStatus?>(null) }
+  var reflectionSearchQuery by remember { mutableStateOf("") }
   var reflectionIndex by remember { mutableIntStateOf(0) }
 
   LazyColumn(
@@ -125,7 +136,8 @@ fun HomeScreen(
         onRefreshSchedule = onRefreshPrayerSchedule,
         onTestAzanOrFajrAlarm = onTestAzanOrFajrAlarm,
         onStopActiveAlarm = onStopActiveAlarm,
-        onSnoozeActiveAlarm = onSnoozeActiveAlarm
+        onSnoozeActiveAlarm = onSnoozeActiveAlarm,
+        onOpenQiblaCompass = onNavigateToQibla
       )
       Spacer(modifier = Modifier.height(16.dp))
     }
@@ -190,6 +202,27 @@ fun HomeScreen(
         ) {
           Text("Islam with Evidence", fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
+      }
+      Spacer(modifier = Modifier.height(10.dp))
+      FilledTonalButton(
+        onClick = onNavigateToQibla,
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("home_open_qibla_compass_btn"),
+        shape = RoundedCornerShape(12.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Explore,
+          contentDescription = null,
+          tint = GoldPrimary,
+          modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+          text = "Qibla Direction Compass (Kaaba Finder)",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold
+        )
       }
       Spacer(modifier = Modifier.height(16.dp))
     }
@@ -511,10 +544,12 @@ fun HomeScreen(
       }
     }
 
-    // Moment of Reflection Section (Purely Islamic: Prophetic Guidance & Companions' Wisdom)
+    // Wisdom & Quotations Section (Prophet Muhammad ﷺ, Ahlul Bayt AS, & Early Sahabah RA)
     item {
       Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("wisdom_and_quotations_card"),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
           containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -522,136 +557,294 @@ fun HomeScreen(
       ) {
         Column(modifier = Modifier.padding(18.dp)) {
           Text(
-            text = "Prophetic & Sahabah Reflections",
+            text = "Wisdom & Quotations (Prophetic, Ahlul Bayt & Sahabah)",
             style = MaterialTheme.typography.titleMedium.copy(
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.primary
             )
           )
+          Text(
+            text = "Clearly separated categories with explicit speaker, classical source, and attribution verification status.",
+            style = MaterialTheme.typography.labelSmall.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          )
 
           Spacer(modifier = Modifier.height(8.dp))
 
-          // Category Selector Chips
-          Row {
+          // Equal & Separated Category Selector Chips
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
             FilterChip(
               selected = reflectionCategory == ReflectionCategory.PROPHETIC_GUIDANCE,
               onClick = {
                 reflectionCategory = ReflectionCategory.PROPHETIC_GUIDANCE
                 reflectionIndex = 0
               },
-              label = { Text("Prophetic Guidance", fontSize = 12.sp) },
+              label = { Text("Prophet Muhammad ﷺ", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
               colors = FilterChipDefaults.filterChipColors(
                 selectedContainerColor = EmeraldPrimary,
                 selectedLabelColor = Color.White
-              )
+              ),
+              modifier = Modifier.testTag("wisdom_category_prophetic_chip")
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            FilterChip(
+              selected = reflectionCategory == ReflectionCategory.AHLUL_BAYT_WISDOM,
+              onClick = {
+                reflectionCategory = ReflectionCategory.AHLUL_BAYT_WISDOM
+                reflectionIndex = 0
+              },
+              label = { Text("Ahlul Bayt Wisdom", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+              colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = GoldPrimary,
+                selectedLabelColor = Color.Black
+              ),
+              modifier = Modifier.testTag("wisdom_category_ahlul_bayt_chip")
+            )
             FilterChip(
               selected = reflectionCategory == ReflectionCategory.COMPANIONS_WISDOM,
               onClick = {
                 reflectionCategory = ReflectionCategory.COMPANIONS_WISDOM
                 reflectionIndex = 0
               },
-              label = { Text("Companions' Wisdom (Sahabah)", fontSize = 12.sp) },
+              label = { Text("Sahabah Wisdom (Early Sahabah)", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
               colors = FilterChipDefaults.filterChipColors(
                 selectedContainerColor = EmeraldPrimary,
                 selectedLabelColor = Color.White
-              )
+              ),
+              modifier = Modifier.testTag("wisdom_category_sahabah_chip")
             )
           }
 
+          Spacer(modifier = Modifier.height(8.dp))
+
+          // Attribution Status Filter Chips (Verified vs Disputed vs Unattributed Popular Saying)
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            FilterChip(
+              selected = reflectionAttributionFilter == null,
+              onClick = {
+                reflectionAttributionFilter = null
+                reflectionIndex = 0
+              },
+              label = { Text("All Attributions", fontSize = 10.sp) },
+              modifier = Modifier.testTag("wisdom_attr_filter_all")
+            )
+            WisdomAttributionStatus.entries.forEach { status ->
+              FilterChip(
+                selected = reflectionAttributionFilter == status,
+                onClick = {
+                  reflectionAttributionFilter = status
+                  reflectionIndex = 0
+                },
+                label = { Text(status.label, fontSize = 10.sp) },
+                modifier = Modifier.testTag("wisdom_attr_filter_${status.name.lowercase()}")
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          OutlinedTextField(
+            value = reflectionSearchQuery,
+            onValueChange = {
+              reflectionSearchQuery = it
+              reflectionIndex = 0
+            },
+            placeholder = { Text("Search speaker (e.g. Imam Ali, Fatimah, Umar), topic, or source...", fontSize = 12.sp) },
+            singleLine = true,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("wisdom_search_input")
+          )
+
           Spacer(modifier = Modifier.height(12.dp))
 
-          val filteredReflections = ReflectionDataProvider.items.filter { it.category == reflectionCategory }
+          val filteredReflections = ReflectionDataProvider.filterItems(
+            category = reflectionCategory,
+            attributionFilter = reflectionAttributionFilter,
+            searchQuery = reflectionSearchQuery
+          )
           val safeIndex = if (filteredReflections.isNotEmpty()) reflectionIndex.coerceIn(0, filteredReflections.lastIndex) else 0
-          val item = filteredReflections.getOrElse(safeIndex) { ReflectionDataProvider.items.first() }
+          val item = filteredReflections.getOrNull(safeIndex)
 
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surface
-          ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-              ) {
+          if (item == null) {
+            Surface(
+              shape = RoundedCornerShape(12.dp),
+              color = MaterialTheme.colorScheme.surface,
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Text(
+                text = "No quotations in ${reflectionCategory.displayTitle} match the current filter.",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(14.dp)
+              )
+            }
+          } else {
+            Surface(
+              shape = RoundedCornerShape(12.dp),
+              color = MaterialTheme.colorScheme.surface
+            ) {
+              Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text(
+                    text = item.theme,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                      fontWeight = FontWeight.Bold,
+                      color = GoldPrimary
+                    )
+                  )
+                  Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = when (item.attributionStatus) {
+                      WisdomAttributionStatus.VERIFIED_ATTRIBUTION -> EmeraldPrimary.copy(alpha = 0.14f)
+                      WisdomAttributionStatus.DISPUTED_ATTRIBUTION -> GoldPrimary.copy(alpha = 0.22f)
+                      WisdomAttributionStatus.UNATTRIBUTED_POPULAR_SAYING -> MaterialTheme.colorScheme.errorContainer
+                    }
+                  ) {
+                    Text(
+                      text = item.attributionStatus.label,
+                      modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                      style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = when (item.attributionStatus) {
+                          WisdomAttributionStatus.VERIFIED_ATTRIBUTION -> EmeraldPrimary
+                          WisdomAttributionStatus.DISPUTED_ATTRIBUTION -> GoldPrimary
+                          WisdomAttributionStatus.UNATTRIBUTED_POPULAR_SAYING -> MaterialTheme.colorScheme.error
+                        }
+                      )
+                    )
+                  }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
-                  text = item.theme,
+                  text = "Speaker: ${item.speaker}",
                   style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = GoldPrimary
+                    color = MaterialTheme.colorScheme.primary
                   )
                 )
+
                 Text(
-                  text = item.sourceReference,
+                  text = item.title,
+                  style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                  text = item.arabicOrOriginalText,
+                  style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = AmiriFontFamily,
+                    fontSize = 19.sp,
+                    lineHeight = 32.sp,
+                    textAlign = TextAlign.Right
+                  ),
+                  modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                  text = item.translationEnglish,
+                  style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                  text = item.translationUrdu,
+                  style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Right,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                  ),
+                  modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                  text = "Source: ${item.sourceReference}",
                   style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                   )
                 )
-              }
+                if (item.contextNotes.isNotBlank()) {
+                  Spacer(modifier = Modifier.height(2.dp))
+                  Text(
+                    text = item.contextNotes,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                      fontStyle = FontStyle.Italic,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                  )
+                }
 
-              Spacer(modifier = Modifier.height(6.dp))
-
-              Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
-              )
-
-              Spacer(modifier = Modifier.height(8.dp))
-
-              Text(
-                text = item.arabicOrOriginalText,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                  fontFamily = AmiriFontFamily,
-                  fontSize = 19.sp,
-                  lineHeight = 32.sp,
-                  textAlign = TextAlign.Right
-                ),
-                modifier = Modifier.fillMaxWidth()
-              )
-              Spacer(modifier = Modifier.height(6.dp))
-
-              Text(
-                text = item.translationEnglish,
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-              )
-
-              Spacer(modifier = Modifier.height(4.dp))
-
-              Text(
-                text = item.translationUrdu,
-                style = MaterialTheme.typography.bodySmall.copy(
-                  fontSize = 13.sp,
-                  textAlign = TextAlign.Right,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                modifier = Modifier.fillMaxWidth()
-              )
-
-              if (filteredReflections.size > 1) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                   modifier = Modifier.fillMaxWidth(),
                   horizontalArrangement = Arrangement.SpaceBetween,
                   verticalAlignment = Alignment.CenterVertically
                 ) {
-                  IconButton(
-                    onClick = { if (safeIndex > 0) reflectionIndex = safeIndex - 1 },
-                    enabled = safeIndex > 0,
-                    modifier = Modifier.size(30.dp)
-                  ) {
-                    Icon(Icons.AutoMirrored.Filled.NavigateBefore, contentDescription = "Previous Reflection")
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                      onClick = { if (safeIndex > 0) reflectionIndex = safeIndex - 1 },
+                      enabled = safeIndex > 0,
+                      modifier = Modifier.size(30.dp)
+                    ) {
+                      Icon(Icons.AutoMirrored.Filled.NavigateBefore, contentDescription = "Previous Quotation")
+                    }
+                    Text(
+                      text = "${safeIndex + 1} / ${filteredReflections.size}",
+                      style = MaterialTheme.typography.labelSmall
+                    )
+                    IconButton(
+                      onClick = { if (safeIndex < filteredReflections.lastIndex) reflectionIndex = safeIndex + 1 },
+                      enabled = safeIndex < filteredReflections.lastIndex,
+                      modifier = Modifier.size(30.dp)
+                    ) {
+                      Icon(Icons.AutoMirrored.Filled.NavigateNext, contentDescription = "Next Quotation")
+                    }
                   }
-                  Text(
-                    text = "${safeIndex + 1} / ${filteredReflections.size}",
-                    style = MaterialTheme.typography.labelSmall
-                  )
-                  IconButton(
-                    onClick = { if (safeIndex < filteredReflections.lastIndex) reflectionIndex = safeIndex + 1 },
-                    enabled = safeIndex < filteredReflections.lastIndex,
-                    modifier = Modifier.size(30.dp)
-                  ) {
-                    Icon(Icons.AutoMirrored.Filled.NavigateNext, contentDescription = "Next Reflection")
+
+                  Row {
+                    IconButton(
+                      onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val shareBody = "${item.arabicOrOriginalText}\n\n${item.translationEnglish}\n\n${item.translationUrdu}\n\n— ${item.speaker} | ${item.sourceReference} (${item.attributionStatus.label})"
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Wisdom Quotation", shareBody))
+                        Toast.makeText(context, "Quotation copied to clipboard", Toast.LENGTH_SHORT).show()
+                      },
+                      modifier = Modifier.size(32.dp)
+                    ) {
+                      Icon(Icons.Default.ContentCopy, contentDescription = "Copy Quotation", modifier = Modifier.size(16.dp))
+                    }
+                    IconButton(
+                      onClick = {
+                        val shareBody = "${item.arabicOrOriginalText}\n\n${item.translationEnglish}\n\n${item.translationUrdu}\n\n— ${item.speaker} | ${item.sourceReference} (${item.attributionStatus.label})\nShared via Bayan al-Huda"
+                        val sendIntent = Intent().apply {
+                          action = Intent.ACTION_SEND
+                          putExtra(Intent.EXTRA_TEXT, shareBody)
+                          type = "text/plain"
+                        }
+                        context.startActivity(Intent.createChooser(sendIntent, "Share Wisdom Quotation"))
+                      },
+                      modifier = Modifier.size(32.dp)
+                    ) {
+                      Icon(Icons.Default.Share, contentDescription = "Share Quotation", modifier = Modifier.size(16.dp))
+                    }
                   }
                 }
               }

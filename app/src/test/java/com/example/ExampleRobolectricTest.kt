@@ -458,5 +458,104 @@ class ExampleRobolectricTest {
     assertFalse(viewModel.uiState.value.isReaderOpen)
     assertFalse(viewModel.uiState.value.isReadingMode)
   }
+
+  @Test
+  fun `verify Qibla compass geodesic calculation and accelerometer magnetometer sensor fusion`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+
+    // 1. Verify Srinagar, Kashmir (34.0837, 74.7973) Qibla bearing (~256.82° WSW) and distance (~3695 km)
+    val srinagarBearing = com.example.data.prayer.QiblaCompassCalculator.calculateQiblaBearing(34.0837, 74.7973)
+    assertTrue("Expected ~256.82 deg but got $srinagarBearing", srinagarBearing in 256.0..257.5)
+    assertEquals("WSW", com.example.data.prayer.QiblaCompassCalculator.formatCardinalDirection(srinagarBearing))
+
+    val srinagarDistanceKm = com.example.data.prayer.QiblaCompassCalculator.calculateDistanceToKaabaKm(34.0837, 74.7973)
+    assertTrue("Expected ~3695 km but got $srinagarDistanceKm", srinagarDistanceKm in 3650.0..3750.0)
+
+    // 2. Verify sensor fusion controller with flat accelerometer vector [0, 0, 9.81] and magnetometer vector
+    val controller = com.example.data.prayer.QiblaSensorController(
+      context = context,
+      initialLatitude = 34.0837,
+      initialLongitude = 74.7973,
+      initialLocationLabel = "Srinagar, Kashmir"
+    )
+    // Gravity pointing straight down (+Z on flat phone), magnetic field pointing North (+Y)
+    controller.processSensorVectors(
+      accelerometerValues = floatArrayOf(0f, 0f, 9.81f),
+      magnetometerValues = floatArrayOf(0f, 42f, -20f),
+      smooth = false
+    )
+    assertTrue(controller.state.value.hasLiveFix)
+    assertTrue(controller.state.value.isDeviceHeldFlat)
+    assertFalse(controller.state.value.isMagneticInterferenceDetected)
+
+    // 3. Verify aligning heading with exact Qibla bearing triggers isAlignedWithQibla
+    controller.setManualHeadingOverride(srinagarBearing.toFloat())
+    assertTrue(controller.state.value.isAlignedWithQibla)
+    assertEquals(0f, controller.state.value.signedAlignmentDeltaDeg, 0.05f)
+  }
+
+  @Test
+  fun `verify 8 persistent themes Alafasy removal Sunni Shia reciters and Sunni Shia Hadith libraries`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val base = PrayerPreferencesManager.loadConfig(context)
+
+    // 1. Verify all 8 persistent themes
+    assertEquals(8, AppThemeMode.entries.size)
+    val expectedLabels = listOf(
+      "System Default",
+      "Light",
+      "Dark",
+      "Pure Black (AMOLED)",
+      "Warm Paper",
+      "Sepia",
+      "Green",
+      "Blue"
+    )
+    assertEquals(expectedLabels, AppThemeMode.entries.map { it.label })
+    for (mode in AppThemeMode.entries) {
+      PrayerPreferencesManager.saveConfig(context, base.copy(themeMode = mode))
+      assertEquals(mode, PrayerPreferencesManager.loadConfig(context).themeMode)
+    }
+
+    // 2. Verify Mishari Rashid Alafasy is completely removed from all reciter lists and download catalogues
+    val allReciters = com.example.ui.audio.availableReciters
+    assertFalse(allReciters.any { it.id.contains("alafasy", ignoreCase = true) || it.name.contains("Alafasy", ignoreCase = true) })
+    assertFalse(com.example.data.download.OfflineCatalogRegistry.audioReciters.any {
+      it.id.contains("alafasy", ignoreCase = true) || it.displayName.contains("Alafasy", ignoreCase = true)
+    })
+
+    // 3. Verify Sunni and Shia reciter sections and honest availability notes
+    val sunniReciters = allReciters.filter { it.tradition == "SUNNI" }
+    val shiaReciters = allReciters.filter { it.tradition == "SHIA" }
+    assertTrue(sunniReciters.size >= 5)
+    assertTrue(shiaReciters.size >= 2)
+    assertTrue(sunniReciters.any { it.name.contains("Husary") })
+    assertTrue(shiaReciters.any { it.name.contains("Karim Mansouri") })
+    assertTrue(shiaReciters.any { it.name.contains("Maytham al-Tammar") })
+    assertEquals(3, com.example.ui.audio.reciterAvailabilityNotes.size)
+
+    // 4. Verify separate Sunni and Shia Hadith libraries and newly catalogued works
+    val sunniCollections = ExtendedHadithDataProvider.sunniCollections
+    val shiaCollections = ExtendedHadithDataProvider.shiaCollections
+    assertTrue(sunniCollections.size >= 24)
+    assertTrue(shiaCollections.size >= 10)
+    assertTrue(sunniCollections.all { it.tradition == "SUNNI" })
+    assertTrue(shiaCollections.all { it.tradition == "SHIA" })
+    assertTrue(sunniCollections.any { it.key == "daraqutni" })
+    assertTrue(sunniCollections.any { it.key == "bayhaqi" })
+    assertTrue(sunniCollections.any { it.key == "sunni_commentaries" && it.categoryGroup == "SUNNI_COMMENTARY" })
+    assertTrue(shiaCollections.any { it.key == "alkafi" && it.categoryGroup == "AL_KUTUB_AL_ARBAA" })
+    assertTrue(shiaCollections.any { it.key == "wasail" })
+    assertTrue(shiaCollections.any { it.key == "sajjadiyya" })
+    assertTrue(shiaCollections.any { it.key == "saduq_corpus" })
+    assertTrue(shiaCollections.any { it.key == "zaydi_ismaili" && it.categoryGroup == "SHIA_ZAYDI_ISMAILI" })
+
+    // 5. Verify Developer Maintenance View gate only authorizes sheikhzulqar@gmail.com
+    assertTrue(com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper("sheikhzulqar@gmail.com"))
+    assertFalse(com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper("guest@example.com"))
+    assertFalse(com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper(null))
+  }
 }
+
+
 

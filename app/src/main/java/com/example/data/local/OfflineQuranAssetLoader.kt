@@ -21,32 +21,10 @@ object OfflineQuranAssetLoader {
     "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ "
   )
 
-  private val MUQATTAAT_SMALL_ALIF_FIXES = mapOf(
-    10 to ("الٓر" to "الٓرٰ"),
-    11 to ("الٓر" to "الٓرٰ"),
-    12 to ("الٓر" to "الٓرٰ"),
-    13 to ("الٓمٓر" to "الٓـمّٓرٰ"),
-    14 to ("الٓر" to "الٓرٰ"),
-    15 to ("الٓر" to "الٓرٰ"),
-    19 to ("كٓهيعٓصٓ" to "كٓهٰيٰعٓصٓ"),
-    20 to ("طه" to "طٰهٰ"),
-    26 to ("طسٓمٓ" to "طٰسّٓمٓ"),
-    27 to ("طسٓ" to "طٰسٓ"),
-    28 to ("طسٓمٓ" to "طٰسّٓمٓ"),
-    36 to ("يسٓ" to "يٰسٓ"),
-    40 to ("حمٓ" to "حٰمٓ"),
-    41 to ("حمٓ" to "حٰمٓ"),
-    42 to ("حمٓ" to "حٰمٓ"),
-    43 to ("حمٓ" to "حٰمٓ"),
-    44 to ("حمٓ" to "حٰمٓ"),
-    45 to ("حمٓ" to "حٰمٓ"),
-    46 to ("حمٓ" to "حٰمٓ")
-  )
-
   /**
-   * Removes only the extra prepended Bismillah at the start of Verse 1 for Surahs 2..114 (excluding Surah 9 At-Tawbah),
-   * because the upper Bismillah header is already displayed above the Surah, and ensures Uthmani Muqatta'at
-   * small alif (e.g., الٓـمّٓرٰ in Surah Ar-Ra'd 13:1) is accurately preserved.
+   * Preserves canonical Quranic text with ZERO alterations or character insertions.
+   * Only strips leading display-level Bismillah on Surahs 2..114 (excluding 9) if prepended
+   * by legacy external feeds, without modifying any canonical Quranic characters or diacritics.
    */
   fun stripDuplicateBismillahPrefix(surahNumber: Int, verseNumber: Int, rawArabic: String): String {
     var cleaned = rawArabic.removePrefix("\uFEFF").trim()
@@ -58,15 +36,6 @@ object OfflineQuranAssetLoader {
             cleaned = remainder
             break
           }
-        }
-      }
-    }
-    if (verseNumber == 1) {
-      MUQATTAAT_SMALL_ALIF_FIXES[surahNumber]?.let { (oldTok, newTok) ->
-        if (cleaned == oldTok) {
-          cleaned = newTok
-        } else if (cleaned.startsWith("$oldTok ")) {
-          cleaned = newTok + cleaned.substring(oldTok.length)
         }
       }
     }

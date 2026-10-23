@@ -1,0 +1,940 @@
+MASTER IMPLEMENTATION PROMPT — BAYAN AL-HUDA
+Complete Quran, Sunni Hadith and Shia Hadith Platform
+Existing Application Enhancement, Authentic Data Integration, API Protection, Security Remediation and Release Validation
+Developer: Zulqarnain Ahmad Sheikh
+Contact: sheikhzulqar@gmail.com
+Instagram: zulqarnainah
+Project name: Bayan al-Huda
+ 
+1. ROLE AND MISSION
+Act as a senior software architect, Android engineer, full-stack developer, database engineer, Islamic digital-library integration specialist, data-integrity engineer, API-security engineer, mobile penetration tester, accessibility specialist, and QA automation engineer.
+You are working on my existing Bayan al-Huda application. First inspect the actual repository, framework, architecture, database, current features, build configuration, environment variables, deployment configuration, and existing user data.
+Do not rebuild the application from scratch unless the current architecture genuinely prevents the requirements from being met. Preserve working features, existing records, authentication, routes, branding, and user settings wherever possible.
+Your mission is to deliver a working application with:
+1.	The complete Quran library supported by verified sources.
+2.	A distinct Sunni Hadith Library.
+3.	A distinct Shia Hadith Library.
+4.	Complete, source-verified collections wherever the underlying source and lawful data access permit.
+5.	Exact source text, traceable references, and transparent coverage information.
+6.	Search across Arabic, English, and Urdu where verified text is available.
+7.	Secure API architecture that does not expose private credentials.
+8.	Real offline downloads and caching.
+9.	Quran recitation and other supported audio features.
+10.	A working theme selector, including black and white themes.
+11.	Autonomous security assessment and verified vulnerability remediation.
+12.	Regression tests proving that existing functionality still works.
+Do not deliver a mock-up, prototype-only interface, dummy database, empty book catalogue, or demonstration containing only a handful of narrations. The app must connect its interface to real data services and real database operations.
+2. NON-NEGOTIABLE CONTENT-INTEGRITY RULES
+These rules apply to every Quran verse, Hadith, translation, commentary, narrator record, grading, source reference, and imported collection.
+2.1 No invented religious text
+Never generate a Hadith, Quran verse, Arabic matn, translation, narrator chain, volume/page reference, Hadith number, authenticity grading, or attribution using an AI model.
+AI may help a user discover search terms or explain a passage, but it must not manufacture source records or silently modify religious texts.
+A generated summary must be clearly labelled as a summary and kept separate from the original text.
+2.2 Preserve the actual source
+For every imported record, preserve as much source metadata as the provider makes available:
+•	Original collection title.
+•	Original language and exact text.
+•	Book, volume, chapter, section, and narration number.
+•	Edition or publication details.
+•	Original source URL or documented source identifier.
+•	Translator and translation edition, where available.
+•	Narrator chain / isnad, where provided.
+•	Matn / narration text.
+•	Scholarly grading, grader, and grading source, where provided.
+•	Copyright, licence, usage restrictions, and attribution requirements.
+•	Source dataset version, import date, and content hash.
+•	Any documented alternate numbering or cross-reference.
+Never silently change source numbering to fit the app's own numbering.
+If the app needs an internal database ID, retain it separately from the original source reference.
+2.3 No silent omissions
+For each book, create an import manifest containing the source's expected records or authoritative section counts when those are actually published.
+Compare imported data against that manifest. Detect:
+•	Missing chapters.
+•	Missing narrations.
+•	Duplicate records.
+•	Gaps in numbering.
+•	Broken Arabic text.
+•	Missing translations.
+•	Repeated page or chapter imports.
+•	Truncated text.
+•	Invalid or missing references.
+•	Incorrect source attribution.
+•	Corrupt downloads.
+•	Conflicting edition numbers.
+Do not assume every numerical gap is an error: editions may legitimately skip numbers, use multiple numbering systems, or contain alternate reports. Validate gaps against the selected edition and provider.
+Display a clear status for every collection:
+•	Complete and verified for a named edition.
+•	Complete in source language; translations partial.
+•	Partially imported.
+•	Metadata only.
+•	Source unavailable.
+•	Awaiting lawful data access.
+•	Import failed.
+•	Verification failed.
+A book must not receive a “complete” label until its coverage has been checked against the selected source and edition.
+2.4 Never manufacture missing data
+If a provider returns 404, an empty response, rate limiting, incomplete pagination, or an unavailable translation, do not fill the gap with generated text or unrelated narrations.
+Show a clear error and allow retry, alternate-source selection where appropriate, or a source-status explanation.
+Never display sample or test narrations in the public production library.
+Test fixtures must be isolated from production and visibly labelled as test data.
+3. TWO DISTINCT HADITH LIBRARIES
+The Hadith section must have two prominent, separate entry points:
+A. Sunni Hadith Library
+A complete Sunni collection catalogue, with each collection's coverage verified independently.
+B. Shia Hadith Library
+A complete Shia collection catalogue, with each collection's coverage verified independently.
+Do not combine the collections into one indistinguishable list.
+The main Hadith screen must show two separate cards, tabs, or sections:
+•	Sunni Hadith
+•	Shia Hadith
+Each section must have its own collection catalogue, source metadata, book and chapter navigation, search filters, saved narrations, bookmarks, reading history, downloads, and content-status indicators.
+Allow users to search both libraries together only through an explicitly labelled Search Both Libraries option. Every result must show its tradition, book, source, and edition.
+Do not classify a source merely by its title or one author's identity. Store the tradition and sub-tradition as verified catalogue metadata, and allow appropriate scholarly nuance.
+The interface must not declare one tradition correct or the other incorrect. Present source attribution and documented scholarly differences respectfully.
+4. SUNNI HADITH LIBRARY — COLLECTION CATALOGUE
+Create catalogue entries for the following works. Verify the available source text, edition, language, lawful access, and record coverage for each.
+4.1 The Six Major Sunni Collections
+1.	Sahih al-Bukhari.
+2.	Sahih Muslim.
+3.	Sunan Abi Dawud.
+4.	Jami' al-Tirmidhi / Sunan al-Tirmidhi.
+5.	Sunan al-Nasa'i, identifying the particular version or edition.
+6.	Sunan Ibn Majah.
+For each collection, implement the complete available book/chapter/narration hierarchy, pagination or cursor handling, original numbering, references, search, and source navigation.
+4.2 Other Major Sunni Hadith Collections
+Include catalogue and source-integration support for:
+7.	Al-Muwatta of Imam Malik.
+8.	Musnad Ahmad ibn Hanbal.
+9.	Sunan al-Darimi.
+10.	Musannaf Abd al-Razzaq al-San'ani.
+11.	Musannaf Ibn Abi Shaybah.
+12.	Sahih Ibn Khuzaymah.
+13.	Sahih Ibn Hibban.
+14.	Al-Mustadrak ala al-Sahihayn by al-Hakim.
+15.	Sunan al-Daraqutni.
+16.	Al-Sunan al-Kubra by al-Bayhaqi.
+17.	Al-Adab al-Mufrad by Imam al-Bukhari.
+18.	Al-Shama'il al-Muhammadiyyah by Imam al-Tirmidhi.
+19.	Riyad al-Salihin by Imam al-Nawawi.
+20.	Bulugh al-Maram by Ibn Hajar al-Asqalani.
+21.	Mishkat al-Masabih, with edition and source details.
+4.3 Sunni Hadith Scholarship and Commentary
+Create a separate category called Hadith Scholarship and Commentary. Do not mislabel a commentary or scholarly grading compilation as an original Hadith collection.
+Investigate lawful and reliable access for:
+•	Fath al-Bari by Ibn Hajar al-Asqalani.
+•	Sharh Sahih Muslim by Imam al-Nawawi.
+•	Tuhfat al-Ahwadhi.
+•	Awn al-Ma'bud.
+•	Other documented classical commentaries.
+•	Silsilat al-Ahadith al-Sahihah.
+•	Silsilat al-Ahadith al-Da'ifah.
+•	Sahih al-Jami and Da'if al-Jami.
+•	Other identifiable hadith-grading works by their actual authors.
+For modern works, check copyright and permissions. Do not copy protected commercial editions without authorization. If only a lawful excerpt, metadata record, or authorized API is available, describe that limitation accurately.
+Do not present a scholar's grading as universal consensus. Preserve the name of the grader and source, and display disagreements when reliably documented.
+5. SHIA HADITH LIBRARY — COLLECTION CATALOGUE
+Create a separate Shia Hadith Library with the following catalogue. Each entry must identify the work, author, tradition or school where appropriate, original-language availability, translations, edition, source link, and actual coverage status.
+5.1 The Four Principal Twelver Shia Hadith Books
+1.	Al-Kafi — Muhammad ibn Ya'qub al-Kulayni.
+2.	Man La Yahduruhu al-Faqih — Shaykh al-Saduq, Muhammad ibn Ali ibn Babawayh.
+3.	Tahdhib al-Ahkam — Shaykh al-Tusi, Muhammad ibn al-Hasan al-Tusi.
+4.	Al-Istibsar — Shaykh al-Tusi.
+These four books are a top-priority requirement.
+For every book, implement all available volumes, books, chapters, narrations, original numbering, source references, and available translations for the selected edition. Verify the actual coverage before declaring it complete.
+Do not import a few narrations from each book and represent them as the whole book.
+5.2 Other Important Twelver Shia Collections
+5.	Bihar al-Anwar — Muhammad Baqir al-Majlisi.
+6.	Wasa'il al-Shia — Muhammad ibn al-Hasan al-Hurr al-Amili.
+7.	Mustadrak al-Wasa'il wa Mustanbat al-Masa'il — Mirza Husayn al-Nuri.
+8.	Nahj al-Balagha — sermons, letters, and sayings, clearly distinguished from the four principal Hadith books.
+9.	Al-Sahifa al-Sajjadiyya — supplications, separately categorized.
+10.	Kitab al-Tawhid — Shaykh al-Saduq.
+11.	Uyun Akhbar al-Rida — Shaykh al-Saduq.
+12.	Al-Khisal — Shaykh al-Saduq.
+13.	Al-Amali of Shaykh al-Saduq.
+14.	Al-Amali of Shaykh al-Tusi, distinguished from similarly named works.
+15.	Al-Mahasin — Ahmad ibn Muhammad al-Barqi.
+16.	Qurb al-Isnad — Abd Allah ibn Ja'far al-Himyari.
+17.	Tuhaf al-Uqul — Hasan ibn Ali ibn Shu'ba al-Harrani.
+18.	Kamil al-Ziyarat — Ibn Qulawayh.
+19.	Thawab al-A'mal wa Iqab al-A'mal — Shaykh al-Saduq.
+20.	Ma'ani al-Akhbar — Shaykh al-Saduq.
+21.	Kitab al-Ghayba by al-Nu'mani.
+22.	Kitab al-Ghayba by Shaykh al-Tusi, kept separate from the work by al-Nu'mani.
+23.	Al-Ihtijaj — Ahmad ibn Ali al-Tabarsi.
+24.	Al-Mahasin and other separately published works with similar or variant titles must be distinguished by author and edition.
+25.	Other recognized primary Shia Hadith collections discovered through scholarly bibliographies and verified source catalogues.
+Also investigate reliable Shia rijal / narrator-biography sources and Hadith commentary sources. Store them as scholarly reference material, not as if they were original Hadith collections.
+5.3 Other Shia Traditions
+The Shia catalogue must not imply that every Shia tradition uses the same books.
+Create extensible catalogue metadata for:
+•	Twelver / Ithna Ashari.
+•	Zaydi.
+•	Ismaili.
+Add collections for these traditions only after their identity, authorship, text source, and tradition-specific relevance have been verified.
+Keep them clearly categorized. Do not mix Zaydi or Ismaili works into the Twelver Four Books category, or classify all Shia literature as one undifferentiated corpus.
+6. SOURCE AND API INTEGRATION — RESEARCH FIRST, THEN IMPLEMENT
+Investigate the official documentation, actual data availability, licensing, API access requirements, pagination, search functions, rate limits, and completeness of each candidate source.
+Start with these source-discovery leads:
+Sunni sources
+•	Sunnah.com: https://sunnah.com/
+•	Sunnah.com developer information: https://sunnah.com/developers
+•	Official API documentation: https://sunnah.stoplight.io/docs/api/
+•	Official API repository: https://github.com/sunnah-com/api
+•	Quran Foundation documentation, for Quran and supported related content: https://api-docs.quran.com/
+•	QuranEnc: https://quranenc.com/
+•	Al-Islam.org: https://al-islam.org/ — evaluate each individual work and its applicable usage terms; do not assume it supplies a complete Sunni API.
+Shia sources
+•	Thaqalayn: https://thaqalayn.com/
+•	Shia Research Library: https://shiaresearch.org/library
+•	Shia Research Library reading catalogue: https://shiaresearch.org/library
+•	Rewayaat: https://rewayaat.info/
+•	Maktab Shia Library: https://shia.makteb.org/
+•	Al-Islam.org: https://al-islam.org/
+These are source-discovery leads, not a declaration that every source offers a public API, unrestricted download, or complete dataset. Inspect each source's official documentation, source links, terms, and actual data.
+Do not invent API endpoints, credentials, undocumented request formats, API keys, or repository capabilities. Do not use another website's private or undocumented endpoints without authorization.
+For each source, record:
+1.	Provider and official website.
+2.	Official API documentation, if one exists.
+3.	Authentication requirements.
+4.	Collections actually available.
+5.	Arabic text coverage.
+6.	English translation coverage.
+7.	Urdu translation coverage.
+8.	Edition and numbering system.
+9.	Search and pagination support.
+10.	Rate limits and caching requirements.
+11.	Redistribution and offline-use permissions.
+12.	Whether a full lawful export is available.
+13.	Import validation method.
+14.	Known limitations and gaps.
+If no documented API exists for a collection, use a complete, lawfully obtained dataset or authorized integration where possible. Do not scrape a website in violation of its terms. If permission or complete data is unavailable, report the exact blocker and implement the remaining available content honestly.
+6.1 Data provider abstraction
+Implement a provider-adapter layer so that the UI does not depend on one provider's response format.
+A provider adapter must normalize source data into the app's internal schema while preserving original text and source metadata. Keep the original raw source response or a legally permitted reproducible import artifact when appropriate.
+Each adapter must support, where available:
+•	List collections.
+•	List books and chapters.
+•	Retrieve a narration by source ID or exact reference.
+•	Paginated collection import.
+•	Search in supported languages.
+•	Retrieve translation variants.
+•	Retrieve grading and narrator metadata.
+•	Report coverage and synchronization status.
+•	Retry transient failures without creating duplicates.
+If one provider does not contain a particular book, the app must not silently substitute a different book or edition.
+7. DATABASE AND COMPLETE-IMPORT ENGINE
+Implement an actual database schema for:
+•	Traditions and sub-traditions.
+•	Collections and editions.
+•	Authors and source publishers.
+•	Books and chapters.
+•	Narrations.
+•	Isnad and matn, where available.
+•	Translation records and translator metadata.
+•	Grading records and grading authorities.
+•	Cross-references.
+•	Source URLs and source identifiers.
+•	Import jobs and import manifests.
+•	Import errors and coverage verification.
+•	User bookmarks, notes, reading history, and downloaded items.
+•	Content version and synchronization metadata.
+Use stable internal IDs but preserve each source's native IDs and references.
+7.1 Complete import process
+Build a resumable importer that:
+1.	Checks the provider's lawful access and availability.
+2.	Retrieves collection metadata.
+3.	Reads the complete pagination structure.
+4.	Downloads every permitted page or section.
+5.	Validates HTTP status and response schema.
+6.	Validates each record's collection and edition.
+7.	Checks duplicates and source identifiers.
+8.	Checks record counts against source manifests where available.
+9.	Checks required text fields and encoding.
+10.	Saves progress transactionally.
+11.	Records failed pages and records.
+12.	Resumes without losing completed work.
+13.	Verifies the resulting local or server dataset.
+14.	Produces a report for each collection.
+Never assume the first API response contains the complete collection.
+Never use a fixed small limit such as 10, 50, or 100 records as if it were a complete book.
+Never mark an import complete while more pages remain or required records have failed validation.
+Use incremental synchronization only when the source provides a trustworthy versioning or update mechanism. Otherwise, perform documented reconciliation.
+7.2 Production data separation
+Keep test fixtures, development seed data, and production religious content strictly separated.
+Do not seed the production database with a handful of sample narrations as a substitute for a real import.
+A failed import must result in a visible incomplete/error status, not a success notification.
+8. SEARCH — EXACT, FAST, AND TRACEABLE
+Implement a working search engine for both libraries.
+Search capabilities:
+•	Arabic text.
+•	English text.
+•	Urdu text.
+•	Exact phrase.
+•	Partial phrase.
+•	Original Hadith number.
+•	Book and chapter.
+•	Author.
+•	Narrator names where indexed.
+•	Source references.
+•	Available grading metadata.
+•	Optional normalized Arabic search that does not overwrite the original text.
+Arabic search may support normalized hamza forms, diacritics-insensitive matching, and letter variants as an additional search index. Preserve the original Arabic text exactly as imported.
+Urdu search must support Urdu script and sensible normalization. Transliteration search may be offered as an additional discovery tool, not as a replacement for the original language.
+Search results must show:
+•	Exact original narration text.
+•	Translation, if available.
+•	Collection and tradition.
+•	Book/chapter.
+•	Exact source reference and numbering system.
+•	Author/source attribution.
+•	Available grading with the grader identified.
+•	Edition/source link.
+•	Whether the result is complete or has missing fields.
+Clicking a result must open the exact record that produced the result. It must not open a similarly worded narration from another book.
+8.1 Exact-source verification
+For each source-backed result, provide a View Original Source link when a valid source URL is available.
+Implement a verification status that compares the app record with the chosen source/edition. When comparison is technically and legally possible, verify exact text and reference. Store the verification timestamp, source version, and comparison result.
+If the source has different translations or numbering systems, show the difference instead of forcing an incorrect match.
+Never claim that the app has checked every narration against a live website unless the verification process actually ran.
+9. API AND SECRET PROTECTION
+The goal is to protect private credentials and sensitive implementation details, not to falsely claim that public URLs can be made impossible to discover.
+9.1 Audit all existing code
+Search the repository, Git history where authorized, build artifacts, APK/AAB files, frontend bundles, source maps, environment files, deployment settings, and logs for:
+•	API keys.
+•	API secrets.
+•	OAuth client secrets.
+•	Database connection strings.
+•	Database passwords.
+•	Signing keys and keystores.
+•	Private access tokens.
+•	Admin credentials.
+•	Private service URLs.
+•	Debug endpoints.
+•	Unprotected database access.
+•	Credentials accidentally included in sample configuration files.
+•	Secrets embedded in Android resources or JavaScript bundles.
+Never print actual secrets into a report, terminal output, generated prompt, or user interface. Redact sensitive values.
+9.2 Correct architecture
+Move privileged API calls to a trusted backend or server-side function.
+Keep provider credentials in protected server environment variables or an appropriate secret manager. Never put private secrets into:
+•	Android source code.
+•	APK/AAB assets.
+•	Public JavaScript.
+•	Browser storage.
+•	Public environment variables.
+•	Git repositories.
+•	Public configuration files.
+•	Client-side source maps.
+•	Public crash logs.
+The mobile app should call the application's own authenticated backend for protected operations. The backend should call the third-party provider using its server-side credentials.
+Use separate credentials for development, testing, and production.
+Use least-privilege database accounts and restrict each credential to the minimum required operations.
+9.3 API endpoints and configuration
+Hide private provider endpoints and internal configuration from ordinary user-facing screens. Do not show API keys, tokens, database URLs, raw environment variables, stack traces, or internal server configuration in the app.
+However, do not rely on hiding an endpoint URL as a security control. Public client requests can be inspected.
+Protect backend endpoints with:
+•	Authentication where required.
+•	Authorization for every protected resource.
+•	Server-side input validation.
+•	Rate limiting and abuse controls.
+•	Request size limits.
+•	Safe error messages.
+•	Secure database queries.
+•	Correct CORS configuration for a web client.
+•	CSRF protection where the authentication design requires it.
+•	Secure session handling.
+•	Password hashing with an appropriate modern algorithm.
+•	Audit logging that does not record secrets.
+•	Request timeouts and safe retry behavior.
+Never place a third-party private key in a request sent directly from the app.
+Use a provider allowlist and restrict which upstream hosts the backend can contact. Do not create a generic open proxy.
+9.4 Rotate exposed secrets
+If a private secret has been committed, included in a public build, or exposed in logs:
+1.	Identify the affected credential without displaying it.
+2.	Revoke or rotate it at the provider.
+3.	Update the server's secret configuration.
+4.	Check relevant access logs.
+5.	Remove it from the current source and build artifacts.
+6.	Address Git history exposure according to repository policy.
+7.	Rebuild and test the app.
+8.	Verify that the old credential no longer works.
+Removing a secret from source code alone does not make an already exposed credential safe.
+9.5 Android-specific checks
+Inspect and fix, where applicable:
+•	AndroidManifest exported activities, services, and receivers.
+•	Deep links and intent handling.
+•	Content providers and file-sharing permissions.
+•	WebView JavaScript and navigation security.
+•	Insecure local storage.
+•	Backup rules and sensitive-data backup.
+•	Network Security Configuration.
+•	TLS certificate validation.
+•	Cleartext HTTP use.
+•	Debuggable release builds.
+•	Release signing and keystore handling.
+•	Sensitive data in notifications, logs, and crash reports.
+•	Web authentication redirects.
+•	Unsafe deserialization and file import.
+•	Permissions not required by the app.
+•	Dependency vulnerabilities.
+Do not disable TLS verification to make a failing API call work.
+Code obfuscation may add defense in depth but must never be treated as a replacement for backend authorization.
+10. AUTONOMOUS ANDROID SECURITY REMEDIATION WORKFLOW
+Use the following repositories and security resources as applicable to the actual stack:
+•	Strix: https://github.com/usestrix/strix
+•	MobSF: https://github.com/MobSF/Mobile-Security-Framework-MobSF
+•	JADX: https://github.com/skylot/jadx
+•	Frida: https://github.com/frida/frida
+•	MobSF Scan: https://github.com/MobSF/mobsfscan
+•	Semgrep: https://github.com/semgrep/semgrep
+•	OWASP MASTG: https://github.com/OWASP/MASTG
+•	OWASP MASVS: https://github.com/OWASP/ASVS
+•	OWASP MASVS website: https://mas.owasp.org/MASVS/
+Use tools only on this application, its dependencies, and explicitly authorized test environments and devices.
+Required execution sequence
+Phase 1 — Baseline and project inspection
+•	Identify the real framework and app architecture.
+•	Identify the current Git branch and working-tree status.
+•	Create a dedicated security-fix branch or equivalent safe checkpoint.
+•	Record the current build result.
+•	Record baseline test results.
+•	Map important routes, database tables, APIs, and Android components.
+•	Identify critical features that must not break.
+Phase 2 — Source and dependency scanning
+Run applicable tools against the real source:
+•	Semgrep.
+•	MobSF Scan.
+•	Dependency and package vulnerability checks.
+•	Secret scanning.
+•	Framework-specific static analysis.
+•	Android manifest and configuration checks.
+Inspect findings and distinguish actual exploitable vulnerabilities from false positives.
+Phase 3 — Android package assessment
+If an APK or AAB is available:
+•	Run MobSF analysis.
+•	Use JADX to inspect the compiled APK where legally and technically appropriate.
+•	Review the manifest, permissions, endpoints, embedded credentials, storage, exported components, and network configuration.
+•	Use Frida only on authorized test builds and devices to validate specific runtime findings.
+•	Use Strix for authorized application security testing where compatible with the stack.
+•	Consult OWASP MASTG and MASVS for verification criteria.
+If the current project is not yet buildable as an Android package, complete the applicable source and backend checks first, then build a package before claiming that APK testing has passed.
+Phase 4 — Validate every finding
+For every potential vulnerability:
+•	Assign a unique finding ID.
+•	Record affected component and severity.
+•	Record the evidence and reproduction conditions.
+•	Identify the actual security impact.
+•	Confirm whether the finding is real, a false positive, or unverified.
+•	Identify the smallest safe correction.
+•	Add a regression test where feasible.
+Never label a finding as confirmed solely because a scanner printed a warning.
+Phase 5 — Implement fixes
+Fix the root cause, not merely the scanner message.
+Examples:
+•	Remove exposed secrets and rotate affected credentials.
+•	Move privileged provider calls to the backend.
+•	Fix authorization and access-control checks.
+•	Correct unsafe database access.
+•	Fix insecure Android component exposure.
+•	Improve storage and transport security.
+•	Update vulnerable dependencies when compatible.
+•	Add validation, rate limiting, and safe error handling.
+•	Remove accidental debug behavior from release builds.
+Avoid large unrelated rewrites.
+Phase 6 — Re-test
+Re-run relevant scans and exploit-validation steps after fixes.
+Verify that the specific original issue no longer reproduces.
+Check for regressions in authentication, navigation, data retrieval, offline mode, and downloads.
+Phase 7 — Build and release validation
+Produce the actual build using the project's correct build system.
+Verify release configuration, signing, API configuration, and absence of private credentials in the shipped package.
+Do not deploy automatically to production without authorization.
+Safety restrictions
+•	Do not attack unrelated websites, third-party infrastructure, or users.
+•	Do not perform destructive production tests.
+•	Do not extract real user data.
+•	Do not bypass authorization on systems outside the authorized test scope.
+•	Do not make up scan results.
+•	Do not claim a tool was executed if it was only inspected or installed.
+•	If a tool is unavailable or incompatible, report it and use an appropriate alternative.
+•	Preserve a recoverable checkpoint before substantial changes.
+TASK: PROTECT API LINKS AND SENSITIVE TECHNICAL INFORMATION IN THE ABOUT SECTION
+
+Modify the existing Islamic application with minimal changes. Do not redesign the About section or remove any normal information currently displayed there.
+
+1.	Keep normal About information visible
+
+Preserve the existing:
+
+- About information, app description, and developer credits.
+- Islamic book and content-source names.
+- Translation details, audit summaries, record counts, and content verification status.
+- Theme information and other non-sensitive information.
+- Existing layout, styling, and functionality.
+
+Do not hide ordinary information just because it appears in the About or Source Audit section.
+
+2.	Hide API links and sensitive technical details
+
+Hide the following from ordinary users throughout the About, Themes, Source Audit, Security, Content Integrity, and related information screens:
+
+- API URLs, API endpoints, API request addresses, and direct API links.
+- Internal repository and source-code links.
+- Server addresses, internal service URLs, and infrastructure details.
+- Sensitive security configuration, host-pinning implementation details, internal allowlists, and technical vulnerability information.
+- Any credentials, private tokens, secrets, or other information that could expose the application to security risks.
+
+This includes visible documentation URLs such as https://quranenc.com/ and Android security documentation links when they are presented as technical links in the interface.
+
+Important distinction: Keep the names of trusted sources, APIs, books, and documentation where appropriate. Hide the actual URLs and sensitive implementation details, not the useful descriptive information.
+
+3.	Developer-only access
+
+Provide a protected developer maintenance view for sensitive technical information.
+
+- The authorized developer identity is associated with the email address already configured in the existing developer section: sheikhzulqar@gmail.com.
+- Inspect the existing authentication system and confirm the actual authorized developer account before applying access rules.
+- Only the verified developer account, with a server-side administrator/developer role, may access protected API configuration, internal technical links, and sensitive diagnostic information where necessary.
+- Ordinary users may view the About section but must not see or modify protected technical information.
+- Do not grant privileges merely because a user types the developer email address.
+- Do not expose secrets or private credentials even in the developer interface. Use secure configuration or secret management.
+
+4.	Preserve all application functionality
+
+- Do not delete, disable, replace, or modify working APIs.
+- Keep existing API integrations, data fetching, caching, database records, source attribution, and content verification operational.
+- Do not alter Quranic Arabic, translations, Hadith, Tafsir, or other Islamic content.
+- Do not weaken HTTPS enforcement, certificate validation, host pinning, or existing security controls.
+- Hide sensitive information at the presentation and authorization layers without breaking internal functionality.
+
+5.	Test and report
+
+Inspect all relevant screens and components for exposed API URLs or sensitive technical information.
+
+Test that:
+
+1. Ordinary users can see the normal About information.
+2. Ordinary users cannot see or access protected API links or sensitive technical details.
+3. The verified developer account can access permitted maintenance information.
+4. Unauthorized requests are blocked by server-side authorization.
+5. API integrations and all existing app functions continue working.
+6. The interface works consistently on mobile, tablet, and desktop.
+
+Report the files changed, the security issues corrected, and the tests actually performed.
+
+STRICT RULE
+
+Make only the requested changes. Keep all non-sensitive About information as it is. Do not redesign the screen, delete records, change Islamic content, break API integrations, or lock out the legitimate developer.
+CRITICAL TASK: COMPLETE QURAN TEXT AUDIT — ZERO CHANGES TO ORIGINAL TEXT
+Act as a Quranic Arabic text integrity specialist, Uthmani-script rendering engineer, Unicode expert, and software QA engineer.
+1. REPORTED EXAMPLE: SURAH AR-RA'D
+I have noticed a possible issue with the small alif (dagger alif) in the opening letters of Surah Ar-Ra'd.
+Example as I expect it to appear:
+الٓمّٓرٰ
+The small alif (ٰ) after the final letter may be missing or may not be rendering clearly in the application. It is also possible that the character exists in the underlying Quranic text but is not visible because of a font, Unicode, or rendering problem.
+Use this example as the starting point for investigation. Verify the exact expected Uthmani text against the authoritative source and edition already used by the application. Do not assume that the displayed example alone establishes the complete canonical character sequence.
+Important: This is only one example. Do not limit the audit to Surah Ar-Ra'd or to the dagger alif. Investigate the entire Quran for anything missing, invisible, corrupted, or incorrectly displayed.
+2. ABSOLUTE RULE: ZERO CHANGES TO THE ORIGINAL QURANIC TEXT
+The original canonical Quranic Arabic text is sacred, immutable source data.
+Not even one character may be changed.
+Never:
+•	Add, delete, replace, rewrite, correct, rearrange, or regenerate any Quranic character.
+•	Change even one Arabic letter, word, verse, diacritic, or Quranic sign.
+•	Add or remove dagger alif (ٰ), maddah (ٓ), shaddah (ّ), hamzah, sukun, harakat, waqf signs, or other marks.
+•	Change the original Unicode code points, character sequence, or canonical text records.
+•	Apply automatic Unicode normalization or text-cleaning operations that could change the original text.
+•	Replace the original Quran with AI-generated text or a different Quranic edition.
+•	Modify the correct Quranic audio, reciters, audio URLs, verse mappings, or playback synchronization.
+Do not modify the canonical database records during this audit. Start with read-only inspection and preserve an integrity snapshot.
+3. AUDIT THE ENTIRE QURAN, NOT JUST ONE CHARACTER
+Check every Surah and every Ayah, from Surah Al-Fatihah to Surah An-Nas.
+Look for every possible missing or incorrectly rendered element, including:
+1.	Arabic letters and complete words.
+2.	Small alif (dagger alif), including the reported example in Surah Ar-Ra'd.
+3.	Other small letters and special Quranic letter forms.
+4.	Maddah, shaddah, hamzah, sukun, and all other vowel and diacritical marks.
+5.	Quranic symbols, waqf signs, sajdah signs, and other marks present in the chosen authoritative text.
+6.	Missing, overlapping, clipped, misplaced, or invisible combining marks.
+7.	Incorrect letter connections, Arabic shaping, ligatures, and right-to-left rendering.
+8.	Characters lost during database storage, API transmission, parsing, caching, or display.
+9.	Differences between the canonical source text and the text displayed on the screen.
+10.	Any other missing, altered, or corrupted Quranic element, even if it has never been reported before.
+Do not assume that an element is missing simply because it looks small. Verify its actual presence in the source data and its visibility in the rendered output.
+4. CHECK EVERY LAYER OF THE APPLICATION
+Trace the Quranic text through the complete application pipeline:
+•	Original Quran data source.
+•	Database and stored records.
+•	API responses and JSON parsing.
+•	Data transformations and caching.
+•	Unicode handling and text normalization.
+•	Arabic font and text-shaping engine.
+•	Mobile, tablet, and desktop rendering.
+•	Final displayed Surah and Ayah.
+Identify the exact layer responsible for every confirmed discrepancy.
+For the Surah Ar-Ra'd example, check whether the expected dagger alif is present in the original source, retained in storage, transmitted correctly, and visibly rendered. Compare the exact Unicode code points and their order against the matching authoritative reference.
+5. FIX DISPLAY PROBLEMS WITHOUT CHANGING TEXT
+If a character exists in the canonical source but is invisible or incorrectly displayed, fix the responsible software layer only.
+Possible safe fixes include:
+•	Using a properly tested Uthmani Quran font.
+•	Correcting Arabic shaping or combining-mark positioning.
+•	Fixing right-to-left rendering.
+•	Correcting a display component that clips small marks.
+•	Removing a faulty transformation that discards characters, provided the canonical source remains unchanged.
+•	Correcting font-size or line-height issues that hide small Quranic signs.
+Test on Android phones, tablets, and desktop browsers, at different font sizes and in both light and dark modes.
+Do not insert additional characters into the Quranic text to compensate for a font or display defect.
+If the original stored text appears to be incomplete, do not automatically repair or replace it. Document the discrepancy and request verification against the authoritative source.
+6. PRESERVE EXISTING AUDIO AND ALL OTHER FEATURES
+The Quran audio is already correct. Do not modify it.
+Preserve all existing:
+•	Quran recitations and reciters.
+•	Audio files, URLs, timing, and verse synchronization.
+•	Quranic translations and tafsir.
+•	Surah and Ayah identifiers.
+•	Hadith content and cross-references.
+•	User data, application settings, and other working functionality.
+This is a text-integrity and rendering audit, not a redesign or content-replacement task.
+7. REQUIRED AUTOMATED INTEGRITY TESTS
+Create tests to establish that:
+•	Every expected Surah and Ayah remains present.
+•	The original canonical Quranic text is unchanged.
+•	Every character sequence matches the preserved baseline.
+•	No text-processing function silently removes or changes Quranic marks.
+•	The reported Surah Ar-Ra'd example is investigated and displayed correctly when its source data and expected rendering are verified.
+•	The audit covers all Surahs, all verses, and all relevant Quranic characters, not just the reported example.
+•	Existing audio and verse mappings remain unchanged.
+•	All unresolved discrepancies are documented.
+Use exact character-level comparison and appropriate cryptographic hashes of the canonical text before and after the work. A hash match is useful for confirming integrity, but it does not by itself prove that the original text was complete or authoritative.
+8. FINAL REPORT
+Provide a clear report showing:
+•	Surah name and number.
+•	Ayah number.
+•	Missing, invisible, or suspected character or sign.
+•	Original source verification result.
+•	Root cause: source data, database, API, transformation, font, or rendering.
+•	Whether the issue was safely fixed or remains unresolved.
+•	Results of text-integrity and audio regression tests.
+Do not claim that the complete Quran has been checked unless the automated audit actually covers every Surah and Ayah.
+FINAL NON-NEGOTIABLE INSTRUCTION
+Check the entire Quran for everything that may be missing or incorrectly displayed, using Surah Ar-Ra'd (13:1) and the reported small alif as the first example. Do not limit the search to this example.
+ZERO CHANGES to the original Quranic text. ZERO changes to correct audio. Fix only verified technical problems in the display or processing layers, and prove that the original canonical text remains unchanged. If a discrepancy cannot be verified safely, report it without altering the text.
+
+11. THEMES AND APPEARANCE
+Implement a real theme selector in Settings.
+Required options:
+1.	System Default.
+2.	Light.
+3.	Dark.
+4.	Pure Black / AMOLED Black.
+5.	Warm Paper.
+6.	Sepia.
+7.	Green.
+8.	Blue.
+If practical, provide an optional accent-colour selector.
+Theme settings must persist after app restart and must be applied consistently to all screens, including:
+•	Home.
+•	Quran.
+•	Sunni Hadith.
+•	Shia Hadith.
+•	Search.
+•	Bookmarks.
+•	Reading history.
+•	Offline downloads.
+•	Audio player.
+•	Authentication.
+•	Settings.
+•	About and contact pages.
+Use centralized design tokens rather than hard-coded colours in every component.
+Pure Black must use true black backgrounds where intended, not merely dark grey.
+Ensure readable contrast, visible focus states, readable disabled states, and accessible controls.
+Arabic and Urdu text must retain correct shaping, line direction, and right-to-left layout in every theme.
+Provide a preview and test that theme selection remains correct after navigation and restart.
+12. QURAN LIBRARY
+Preserve and improve the existing Quran section.
+Required features:
+•	All 114 surahs.
+•	Arabic Quran text from a verified source.
+•	Verified English translations with translator attribution.
+•	Verified Urdu translations with translator attribution.
+•	Tafsir in available languages with author/source attribution.
+•	Surah and ayah navigation.
+•	Search by Arabic, English, and Urdu where available.
+•	Direct ayah references.
+•	Cross-references to related Quran and Hadith records only when supported by documented sources.
+•	Bookmarks and reading progress.
+•	Copy/share options that preserve the exact reference.
+•	Audio playback with available reciters.
+•	Repeat, pause, resume, and next/previous controls where supported.
+Use the official Quran Foundation API documentation as an integration lead: https://api-docs.quran.com/
+Read the official API documentation and use the correct credentials and environment. The API's documented pre-production data limitations must not be mistaken for complete production Quran coverage.
+Use QuranEnc where its actual translations, language coverage, and terms fit the requested implementation: https://quranenc.com/
+Do not assume that access to a translation or recitation grants unrestricted redistribution or offline-storage rights. Check the applicable licence and terms.
+Do not invent translations, verse text, tafsir, or audio.
+13. AUDIO FEATURES
+Implement actual audio playback where lawful, supported files or streaming APIs are available.
+For Quran recitation:
+•	Select a reciter.
+•	Play a surah.
+•	Play an ayah where the source supports ayah-level audio.
+•	Pause and resume.
+•	Seek when supported.
+•	Navigate next and previous.
+•	Display current playback position.
+•	Handle network interruption.
+•	Resume according to the platform's supported background-audio capabilities.
+•	Download permitted audio for offline use.
+•	Show download status and errors.
+Do not show a working-looking audio player when no playable source exists.
+Do not fabricate audio URLs or claim an audio file is downloaded unless it is present and verified.
+14. REAL OFFLINE LIBRARY AND DOWNLOAD MANAGER
+Implement a functional offline manager, not a cosmetic download button.
+Quran downloads
+Where rights and source access permit, allow users to download:
+•	All Quran text.
+•	Selected surahs.
+•	Selected ayahs.
+•	Selected translations.
+•	Selected tafsir.
+•	Selected reciter audio.
+•	Whole-surah audio.
+•	Ayah-level audio where available.
+Sunni and Shia Hadith downloads
+Allow users to download:
+•	A selected book.
+•	A selected volume.
+•	A selected chapter.
+•	Individual narrations.
+•	Available translations and required source metadata.
+Support:
+•	Progress display.
+•	Pause and resume where supported.
+•	Retry.
+•	Cancel.
+•	Delete downloaded content.
+•	Download integrity verification.
+•	Storage-usage reporting.
+•	Available-space checks.
+•	Duplicate-download prevention.
+•	Version and update checks.
+•	Offline search over downloaded records.
+•	Clear distinction between online-only and offline-available content.
+Store a manifest for every download. Verify that the downloaded data is readable and matches its expected content hash or source manifest when available.
+On Android, use an appropriate persistent background-work mechanism, such as WorkManager, for jobs that need to survive process restarts. For a PWA, respect browser storage limits and clearly communicate that background execution may be restricted.
+Do not claim that an API's entire database is available offline unless a complete, lawful dataset has actually been obtained and validated.
+15.	ISLAM WITH EVIDENCE — SOURCE-VERIFICATION FEATURE
+BTR UPDATE — BAYAN AL-HUDA
+
+Modify the existing app. Preserve its current design, themes, and all working features.
+
+1.	Reciters Button and Audio Library
+
+Add a small, clean “Reciters” button in the existing Quran/audio section. Tapping it should open a list of available reciters, allowing users to select a reciter and play their verified Quran recordings.
+
+- Completely remove Mishari Rashid Alafasy from all reciter lists, searches, recommendations, and audio selections.
+- Include a few authentic Sunni reciters, such as Abdul Basit Abdul Samad, Mahmoud Khalil Al-Husary, Muhammad Siddiq Al-Minshawi, and Abdul Rahman Al-Sudais.
+- Check whether genuine recordings by Islam Sobhi, Abdullah Shehab, and Abdul Rahman Masoud are available. Add them only when their identity, working audio links, and lawful streaming permissions are verified.
+- Add a small selection of verified Shia Quran reciters from authentic, authorized sources. Clearly label the section where affiliation is verified.
+- Prefer reliable APIs and authorized audio catalogues, such as “Quran.com Reciters” (https://quran.com/reciters) and “ShiaVoice” (https://shiavoice.com/cat-1), subject to source permissions.
+
+Ensure the player actually works. Verify audio links and surah availability; never invent recordings or claim complete coverage when it is unavailable. Keep Quran recitation separate from duas, ziyarat, latmiyat, and lectures.
+
+2.	Contact Us and Community Support
+
+Add a “Contact Us” button that opens a simple contact page with:
+
+- Email Us: sheikhzulqar@gmail.com
+- Instagram: https://www.instagram.com/zulqarnainah/
+- Facebook Messenger: Open https://www.facebook.com/share/1PiLFRT6jv/ so users can contact the developer through Facebook.
+
+Display friendly button labels, not raw social-media URLs. Open the relevant app when available, with a browser fallback.
+
+Include a “Support Our App” section explaining that the developer hopes to raise US$25 for the Google Play Console registration fee to publish Bayan al-Huda on the Play Store. Anyone wishing to help with the fee, development, or testing can contact the developer through these options.
+
+Clearly state that Bayan al-Huda will remain completely free and ad-free. Do not add payment gateways, donation forms, or automatic payment collection. Never claim that funds have been raised or the app has been published unless verified.
+
+3.	Final Verification
+
+Test the Reciters button, every displayed audio source, playback, and all contact links. Confirm that Mishari Rashid Alafasy is removed everywhere and that all existing app features remain functional. Report only changes and tests actually completed.
+If this feature exists or is part of the current project, preserve and improve it.
+Allow users to investigate a quotation, Hadith claim, attribution, or religious statement.
+The result should distinguish:
+•	Exact match found.
+•	Partial match found.
+•	Similar wording, but not an exact match.
+•	Attribution disputed.
+•	Scholarly grading disagreement.
+•	No match found in the sources searched.
+•	Verification unavailable.
+For every result, show the exact source reference, collection, original text when available, translation attribution, and relevant grading source.
+“No match found” must never be presented as proof that a quotation is fabricated. State which indexed sources were searched and the limitations of the search.
+AI can help formulate queries or explain verified evidence, but cannot invent evidence or create missing source records.
+16. PERFORMANCE, ACCESSIBILITY AND RESPONSIVE DESIGN
+Preserve the current platform and improve responsiveness.
+Support the existing target platforms, including phone, tablet, and desktop where applicable.
+Requirements:
+•	Mobile-first layouts.
+•	Responsive desktop layouts.
+•	Readable Arabic and Urdu fonts.
+•	Correct RTL rendering.
+•	Accessible font scaling.
+•	Keyboard navigation where relevant.
+•	Clear loading, empty, error, and retry states.
+•	Pagination or virtualized lists for large collections.
+•	Database indexes for search and source references.
+•	Cached catalogue metadata.
+•	Safe API timeouts and retry policies.
+•	No unbounded database queries.
+•	No unnecessary full-library downloads during app startup.
+Do not fetch an entire large collection for every search query. Use an appropriate indexed backend search or a verified local search index.
+17. TESTING REQUIREMENTS
+Write and execute automated tests against the actual implementation.
+17.1 Hadith separation tests
+Verify that:
+•	Sunni books appear in the Sunni catalogue.
+•	Shia books appear in the Shia catalogue.
+•	The four principal Twelver Shia books are separately listed.
+•	A book does not accidentally appear in the wrong tradition.
+•	Search filters work independently.
+•	Combined search identifies each result's tradition.
+•	Bookmarks and reading history preserve the correct source.
+•	Offline downloads preserve the correct collection identity.
+17.2 Content integrity tests
+Verify that:
+•	Original source references are preserved.
+•	Imported text is not silently rewritten.
+•	Arabic text is not truncated.
+•	Translation attribution is present when applicable.
+•	Duplicate imports do not create duplicate records.
+•	Pagination imports do not skip pages.
+•	Failed pages prevent a collection from being falsely marked complete.
+•	Partial translations are identified as partial.
+•	Source links point to the intended record where supported.
+•	Record counts and coverage manifests reconcile where an authoritative expected count exists.
+17.3 Security tests
+Verify:
+•	No private API secrets appear in the release package.
+•	No database password is shipped in the client.
+•	Protected backend operations require correct authorization.
+•	Unauthorized users cannot access protected data or administrative actions.
+•	Rate limits are effective.
+•	Invalid input is handled safely.
+•	Errors do not expose credentials or stack traces.
+•	Deep links and exported components are appropriately protected.
+•	Network transport uses valid TLS.
+•	Production builds do not contain accidental debug features.
+Do not treat an API URL being visible as a vulnerability by itself. Test whether unauthorized users can misuse the endpoint or obtain privileged access.
+17.4 Regression tests
+Test all existing major features, including:
+•	Login and logout.
+•	User preferences.
+•	Quran navigation.
+•	Quran search.
+•	Sunni Hadith search.
+•	Shia Hadith search.
+•	Both-library search.
+•	Bookmarks.
+•	Reading history.
+•	Audio.
+•	Downloads.
+•	Offline reading and search.
+•	Themes.
+•	Settings.
+•	Contact and support links.
+•	Error and retry flows.
+Run the build and all relevant tests after implementing changes.
+If any test cannot run, report the exact reason. Do not invent passing results.
+18. REQUIRED DELIVERY REPORT
+At completion, provide a concise but detailed report containing:
+A. Implementation
+•	Features completed.
+•	Files and components changed.
+•	Database migrations.
+•	New backend routes or provider adapters.
+•	New dependencies.
+•	Build output and build status.
+B. Collection coverage matrix
+For every listed Sunni and Shia book, report:
+•	Collection name.
+•	Tradition/category.
+•	Actual source used.
+•	Source/edition.
+•	Arabic coverage.
+•	English coverage.
+•	Urdu coverage.
+•	Number of imported records when measured.
+•	Expected record count and its source, when authoritative.
+•	Missing records or unresolved gaps.
+•	Search status.
+•	Offline status.
+•	Verification status.
+•	Licence/access status.
+•	Whether the collection is genuinely complete for the selected edition.
+Do not mark a collection complete merely because its catalogue entry exists.
+C. API security
+Report:
+•	Secret findings, with all secret values redacted.
+•	Credentials rotated, if any.
+•	Backend changes.
+•	Authorization and rate-limit tests.
+•	APK/AAB inspection status.
+•	Remaining risks.
+D. Security testing
+For each tool, state:
+•	Whether it was run.
+•	The version or execution environment where known.
+•	What was scanned.
+•	Findings confirmed.
+•	Fixes made.
+•	Retest results.
+•	Limitations.
+Do not claim MobSF, JADX, Frida, Strix, Semgrep, or any other tool was run unless it was actually executed.
+E. Release readiness
+Report:
+•	Build result.
+•	Automated test result.
+•	Features that passed.
+•	Features that failed.
+•	Features not tested.
+•	Data sources that still need permission or integration.
+•	Any incomplete collection.
+•	Any blocking security issue.
+Do not deploy to production without explicit authorization.
+19. IMPLEMENTATION PRIORITY
+Work in this order:
+1.	Inspect and protect the existing project.
+2.	Establish the current build and regression-test baseline.
+3.	Implement separate Sunni and Shia libraries.
+4.	Build the complete collection catalogue and source coverage manifest.
+5.	Integrate real source providers and lawful complete datasets.
+6.	Implement the resumable import and content-integrity verification engine.
+7.	Implement source-linked Arabic, English, and Urdu search.
+8.	Secure API credentials and privileged backend access.
+9.	Implement real offline downloads and audio where available.
+10.	Implement the theme selector.
+11.	Run security tools and remediate confirmed vulnerabilities.
+12.	Run all regression tests and rebuild.
+13.	Produce the coverage matrix and honest security report.
+If any requirement is blocked by missing credentials, licensing, unavailable source data, or an undocumented API, do not fake it. Implement what can be completed, explain the blocker, and identify the exact next action required.
+
+20. FINAL ACCEPTANCE CRITERIA
+The project is not complete just because the screens look attractive.
+It is complete only when:
+•	Sunni and Shia libraries are separate and functional.
+•	The listed books have real catalogue records and verified source connections wherever available.
+•	The Four Principal Twelver Shia Books are separately accessible.
+•	The Six Major Sunni Collections are separately accessible.
+•	Complete imports are validated against trustworthy source coverage.
+•	Search returns the exact source-backed record and reference.
+•	No AI-generated religious text is inserted as a source record.
+•	No partial book is falsely labelled complete.
+•	Private API credentials are absent from public client code and release artifacts.
+•	Protected operations are secured on the backend.
+•	The theme selector works and persists.
+•	Offline downloads contain real, validated data.
+•	Existing features continue to work.
+•	The project builds successfully in the actual environment.
+•	Test and security results are based on executed checks, not assumptions.
+•	Remaining gaps are documented honestly.
+Start by inspecting the actual project and reporting its architecture, current working features, data sources, and build status. Then implement the changes in small, verifiable stages. Do not stop after producing a plan or UI mock-up. Continue through actual implementation, data validation, testing, security remediation, and a final evidence-based report.
+

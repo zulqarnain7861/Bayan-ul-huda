@@ -14,7 +14,11 @@ data class HadithCollectionMeta(
   val totalCanonicalCount: Int = 0,
   val totalBooksCount: Int = 1,
   val darussalamEditionLabel: String = "Darussalam Canonical",
-  val inBookEditionLabel: String = "In-Book (Book & Hadith)"
+  val inBookEditionLabel: String = "In-Book (Book & Hadith)",
+  val tradition: String = "SUNNI",
+  val subTradition: String = "Ahl al-Sunnah wal-Jama'ah",
+  val categoryGroup: String = "KUTUB_AL_SITTAH",
+  val coverageStatusBadge: String = "Foundational Verified Selection + On-Demand API"
 )
 
 object ExtendedHadithDataProvider {
@@ -32,7 +36,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 7563,
       totalBooksCount = 97,
       darussalamEditionLabel = "Darussalam / Fath al-Bari",
-      inBookEditionLabel = "In-Book & USC-MSA Reference"
+      inBookEditionLabel = "In-Book & USC-MSA Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "muslim",
@@ -46,7 +53,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 7563,
       totalBooksCount = 56,
       darussalamEditionLabel = "Darussalam / Fu'ad Abd al-Baqi",
-      inBookEditionLabel = "In-Book & USC-MSA Reference"
+      inBookEditionLabel = "In-Book & USC-MSA Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "abudawud",
@@ -60,7 +70,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 5274,
       totalBooksCount = 43,
       darussalamEditionLabel = "Darussalam / Muhyi al-Din",
-      inBookEditionLabel = "In-Book Reference"
+      inBookEditionLabel = "In-Book Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "tirmidhi",
@@ -74,7 +87,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 3956,
       totalBooksCount = 49,
       darussalamEditionLabel = "Darussalam / Ahmad Shakir",
-      inBookEditionLabel = "In-Book Reference"
+      inBookEditionLabel = "In-Book Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "nasai",
@@ -88,7 +104,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 5758,
       totalBooksCount = 51,
       darussalamEditionLabel = "Darussalam / Abu Ghuddah",
-      inBookEditionLabel = "In-Book Reference"
+      inBookEditionLabel = "In-Book Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "ibnmajah",
@@ -102,7 +121,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 4341,
       totalBooksCount = 37,
       darussalamEditionLabel = "Darussalam / Fu'ad Abd al-Baqi",
-      inBookEditionLabel = "In-Book Reference"
+      inBookEditionLabel = "In-Book Reference",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Kutub al-Sittah)",
+      categoryGroup = "KUTUB_AL_SITTAH"
     ),
     HadithCollectionMeta(
       key = "malik",
@@ -116,7 +138,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 1858,
       totalBooksCount = 61,
       darussalamEditionLabel = "Yahya al-Laythi Canonical",
-      inBookEditionLabel = "Book & Hadith In-Book"
+      inBookEditionLabel = "Book & Hadith In-Book",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "nawawi",
@@ -130,7 +155,10 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 42,
       totalBooksCount = 1,
       darussalamEditionLabel = "Nawawi Canonical 1–42",
-      inBookEditionLabel = "Primary Source Cross-Ref"
+      inBookEditionLabel = "Primary Source Cross-Ref",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     ),
     HadithCollectionMeta(
       key = "riyadussalihin",
@@ -144,9 +172,18 @@ object ExtendedHadithDataProvider {
       totalCanonicalCount = 1896,
       totalBooksCount = 19,
       darussalamEditionLabel = "Darussalam Continuous 1–1896",
-      inBookEditionLabel = "Book & Chapter In-Book"
+      inBookEditionLabel = "Book & Chapter In-Book",
+      tradition = "SUNNI",
+      subTradition = "Ahl al-Sunnah (Major Classical Collection)",
+      categoryGroup = "SUNNI_OTHER_MAJOR"
     )
   ) + CompleteHadithCollectionsCatalog.additionalCollections
+
+  val sunniCollections: List<HadithCollectionMeta>
+    get() = primaryCollections.filter { it.tradition == "SUNNI" }
+
+  val shiaCollections: List<HadithCollectionMeta>
+    get() = primaryCollections.filter { it.tradition == "SHIA" }
 
   fun getHadithCollectionEntities(
     cachedCounts: Map<String, Int> = emptyMap()
@@ -185,14 +222,16 @@ object ExtendedHadithDataProvider {
         chapterNumber = 1,
         chapterName = "How Divine Revelation started",
         hadithNumber = 1,
-        inBookReference = "Book 1, Hadith 1 • USC-MSA Vol. 1, Book 1, #1",
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Sahih Intl / Cross-Edition Ref: #70 • USC-MSA Vol. 1, Book 1, #1",
+        arabicNumber = 70,
         arabicText = "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى دُنْيَا يُصِيبُهَا أَوْ إِلَى امْرَأَةٍ يَنْكِحُهَا فَهِجْرَتُهُ إِلَى مَا هَاجَرَ إِلَيْهِ",
         transliteration = "Innamal-a'malu bin-niyyat, wa innama likulli imri'in ma nawa, faman kanat hijratuhu ila dunya yusibuha aw ila imra'atin yankihuha fahijratuhu ila ma hajara ilayh.",
         englishText = "The reward of deeds depends upon the intentions and every person will get the reward according to what he has intended. So whoever emigrated for worldly benefits or for a woman to marry, his emigration was for what he emigrated for.",
         urduText = "اعمال کا دارومدار صرف نیت پر ہے اور ہر شخص کو وہی ملے گا جس کی اس نے نیت کی، چنانچہ جس کی ہجرت دنیا حاصل کرنے کے لیے ہو یا کسی عورت سے شادی کے لیے تو اس کی ہجرت اسی مقصد کے لیے شمار ہوگی۔",
         narrator = "'Umar ibn al-Khattab (RA)",
-        grade = "Sahih",
-        gradingScholar = "Imam al-Bukhari (Consensus)",
+        grade = "Sahih (Darussalam / Original Sahih al-Bukhari)",
+        gradingScholar = "Imam al-Bukhari (Darussalam / Sahih International Verified)",
         reference = "Sahih al-Bukhari 1",
         linkedQuranVerses = "4:100, 33:5, 98:5"
       ),
@@ -204,7 +243,9 @@ object ExtendedHadithDataProvider {
         chapterNumber = 3,
         chapterName = "First revelation in Cave Hira",
         hadithNumber = 3,
-        inBookReference = "Book 1, Hadith 3 • USC-MSA Vol. 1, Book 1, #3",
+        darussalamReference = "Darussalam: #3",
+        inBookReference = "Book 1, Hadith 3 • Sahih Intl / USC-MSA Vol. 1, Book 1, #3",
+        arabicNumber = 3,
         arabicText = "جَاءَهُ الْمَلَكُ فَقَالَ اقْرَأْ‏.‏ قَالَ مَا أَنَا بِقَارِئٍ... فَقَالَ اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ * خَلَقَ الإِنسَانَ مِنْ عَلَقٍ * اقْرَأْ وَرَبُّكَ الأَكْرَمُ",
         transliteration = "Ja'ahul-malaku faqala: Iqra'. Qala: Ma ana bi-qari'... Faqala: Iqra' bismi Rabbikal-ladhi khalaq, khalaqal-insana min 'alaq, Iqra' wa Rabbukal-Akram.",
         englishText = "The angel came to him in the cave of Hira and asked him to read. The Prophet (ﷺ) replied, 'I do not know how to read.' The angel caught me and pressed me three times, then released me and said: 'Read in the name of your Lord Who created; created man from a clot. Read, and your Lord is the Most Generous' (96:1-3).",
@@ -214,6 +255,69 @@ object ExtendedHadithDataProvider {
         gradingScholar = "Imam al-Bukhari",
         reference = "Sahih al-Bukhari 3",
         linkedQuranVerses = "96:1, 96:2, 96:3, 96:4, 96:5"
+      ),
+      HadithEntity(
+        collectionKey = "bukhari",
+        collectionName = "Sahih al-Bukhari",
+        bookNumber = 1,
+        bookName = "Book 1: Revelation (كتاب بدء الوحي)",
+        chapterNumber = 4,
+        chapterName = "Recitation of the Qur'an with Jibril in Ramadan",
+        hadithNumber = 5,
+        darussalamReference = "Darussalam: #5",
+        inBookReference = "Book 1, Hadith 5 • Sahih Intl / USC-MSA Vol. 1, Book 1, #5",
+        arabicNumber = 5,
+        arabicText = "كَانَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ أَجْوَدَ النَّاسِ، وَكَانَ أَجْوَدُ مَا يَكُونُ فِي رَمَضَانَ حِينَ يَلْقَاهُ جِبْرِيلُ، وَكَانَ يَلْقَاهُ فِي كُلِّ لَيْلَةٍ مِنْ رَمَضَانَ فَيُدَارِسُهُ الْقُرْآنَ",
+        transliteration = "Kana Rasulullah (ﷺ) ajwadan-nas, wa kana ajwadu ma yakunu fi Ramadana hina yalqahu Jibril, wa kana yalqahu fi kulli laylatin min Ramadana fayudarisuhul-Qur'an.",
+        englishText = "Allah's Messenger (ﷺ) was the most generous of all the people, and he used to reach the peak of generosity in the month of Ramadan when Jibril met him. Jibril used to meet him every night of Ramadan to study the Qur'an together with him.",
+        urduText = "رسول اللہ ﷺ تمام لوگوں میں سب سے زیادہ سخی تھے، اور رمضان میں جب حضرت جبرائیل علیہ السلام آپ سے ملتے تو آپ کی سخاوت انتہا کو پہنچ جاتی۔ حضرت جبرائیل رمضان کی ہر رات آپ سے ملتے اور آپ کے ساتھ قرآن کا دور کرتے تھے۔",
+        narrator = "'Abdullah ibn 'Abbas (RA)",
+        grade = "Sahih (Darussalam / Original Sahih al-Bukhari)",
+        gradingScholar = "Imam al-Bukhari",
+        reference = "Sahih al-Bukhari 5",
+        linkedQuranVerses = "75:16, 75:17, 2:185"
+      ),
+      HadithEntity(
+        collectionKey = "bukhari",
+        collectionName = "Sahih al-Bukhari",
+        bookNumber = 2,
+        bookName = "Book 2: Belief (كتاب الإيمان)",
+        chapterNumber = 3,
+        chapterName = "A Muslim is the One from Whose Tongue and Hands Muslims are Safe",
+        hadithNumber = 10,
+        darussalamReference = "Darussalam: #10",
+        inBookReference = "Book 2, Hadith 3 • Sahih Intl / USC-MSA Vol. 1, Book 2, #9",
+        arabicNumber = 10,
+        arabicText = "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ، وَالْمُهَاجِرُ مَنْ هَجَرَ مَا نَهَى اللَّهُ عَنْهُ",
+        transliteration = "Al-Muslimu man salimal-Muslimuna min lisanihi wa yadih, wal-Muhajiru man hajara ma nahallahu 'anh.",
+        englishText = "The Prophet (ﷺ) said: 'A Muslim is the one from whose tongue and hands the Muslims are safe; and a Muhajir (emigrant) is the one who abandons what Allah has forbidden.'",
+        urduText = "نبی کریم ﷺ نے فرمایا: کامل مسلمان وہ ہے جس کی زبان اور ہاتھ سے دوسرے مسلمان محفوظ رہیں، اور حقیقی مہاجر وہ ہے جو ان کاموں کو چھوڑ دے جن سے اللہ نے منع فرمایا ہے۔",
+        narrator = "'Abdullah ibn 'Amr (RA)",
+        grade = "Sahih (Darussalam / Original Sahih al-Bukhari)",
+        gradingScholar = "Imam al-Bukhari",
+        reference = "Sahih al-Bukhari 10",
+        linkedQuranVerses = "49:11, 33:58"
+      ),
+      HadithEntity(
+        collectionKey = "bukhari",
+        collectionName = "Sahih al-Bukhari",
+        bookNumber = 2,
+        bookName = "Book 2: Belief (كتاب الإيمان)",
+        chapterNumber = 17,
+        chapterName = "Sanctity of Life and Property through Testimony and Prayer",
+        hadithNumber = 25,
+        darussalamReference = "Darussalam: #25",
+        inBookReference = "Book 2, Hadith 18 • Sahih Intl / USC-MSA Vol. 1, Book 2, #24",
+        arabicNumber = 25,
+        arabicText = "أُمِرْتُ أَنْ أُقَاتِلَ النَّاسَ حَتَّى يَشْهَدُوا أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَيُقِيمُوا الصَّلَاةَ، وَيُؤْتُوا الزَّكَاةَ، فَإِذَا فَعَلُوا ذَلِكَ عَصَمُوا مِنِّي دِمَاءَهُمْ وَأَمْوَالَهُمْ إِلَّا بِحَقِّ الْإِسْلَامِ، وَحِسَابُهُمْ عَلَى اللَّهِ",
+        transliteration = "Umirtu an uqatilan-nasa hatta yashhadu an la ilaha illallahu wa anna Muhammadan Rasulullah, wa yuqimus-salata, wa yu'tuz-zakah...",
+        englishText = "Allah's Messenger (ﷺ) said: 'I have been ordered that people testify that none has the right to be worshipped but Allah and that Muhammad is Allah's Messenger, and establish the prayer and give the Zakat; when they do so, they protect their blood and property from me except by Islamic law, and their reckoning is with Allah.'",
+        urduText = "رسول اللہ ﷺ نے فرمایا: مجھے حکم دیا گیا ہے کہ لوگ گواہی دیں کہ اللہ کے سوا کوئی معبود نہیں اور محمد ﷺ اللہ کے رسول ہیں، اور نماز قائم کریں اور زکوٰۃ ادا کریں۔ جب وہ ایسا کر لیں تو ان کے جان و مال محفوظ ہو گئے سوائے حقِ اسلام کے، اور ان کے دلوں کا حساب اللہ پر ہے۔",
+        narrator = "'Abdullah ibn 'Umar (RA)",
+        grade = "Sahih (Darussalam / Original Sahih al-Bukhari)",
+        gradingScholar = "Imam al-Bukhari",
+        reference = "Sahih al-Bukhari 25",
+        linkedQuranVerses = "9:5, 88:21, 88:22"
       ),
       HadithEntity(
         collectionKey = "bukhari",
@@ -337,9 +441,32 @@ object ExtendedHadithDataProvider {
         bookNumber = 1,
         bookName = "Book 1: Faith (كتاب الإيمان)",
         chapterNumber = 1,
+        chapterName = "Inquiry on Faith and Pillars of Islam",
+        hadithNumber = 5,
+        darussalamReference = "Darussalam: #5",
+        inBookReference = "Book 1, Hadith 5 • Sahih Intl / Fu'ad Abd al-Baqi #9",
+        arabicNumber = 9,
+        arabicText = "كَانَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ يَوْمًا بَارِزًا لِلنَّاسِ فَأَتَاهُ رَجُلٌ فَقَالَ يَا رَسُولَ اللَّهِ مَا الإِيمَانُ قَالَ أَنْ تُؤْمِنَ بِاللَّهِ وَمَلاَئِكَتِهِ وَكِتَابِهِ وَلِقَائِهِ وَرُسُلِهِ وَتُؤْمِنَ بِالْبَعْثِ الآخِرِ",
+        transliteration = "Kana Rasulullah (ﷺ) yawman barizan lin-nasi fa-atahu rajulun faqala: Ya Rasulallah, ma al-Iman? Qala: An tu'mina billahi wa mala'ikatihi wa kitabihi wa liqa'ihi wa rusulihi wa tu'mina bil-ba'thil-akhir.",
+        englishText = "One day the Messenger of Allah (ﷺ) appeared before the public; a man came to him and asked: 'O Messenger of Allah, what is Iman (Faith)?' He replied: 'That you believe in Allah, His angels, His Book, the meeting with Him, His Messengers, and that you believe in the final Resurrection.'",
+        urduText = "ایک دن رسول اللہ ﷺ لوگوں کے درمیان تشریف فرما تھے کہ ایک شخص آیا اور عرض کیا: یا رسول اللہ! ایمان کیا ہے؟ آپ ﷺ نے فرمایا: یہ کہ تم اللہ پر، اس کے فرشتوں پر، اس کی کتاب پر، اس سے ملاقات پر، اس کے رسولوں پر اور آخرت میں دوبارہ زندہ کیے جانے پر ایمان لاؤ۔",
+        narrator = "Abu Hurairah (RA)",
+        grade = "Sahih (Darussalam / Original Sahih Muslim)",
+        gradingScholar = "Imam Muslim",
+        reference = "Sahih Muslim 5",
+        linkedQuranVerses = "2:285, 4:136"
+      ),
+      HadithEntity(
+        collectionKey = "muslim",
+        collectionName = "Sahih Muslim",
+        bookNumber = 1,
+        bookName = "Book 1: Faith (كتاب الإيمان)",
+        chapterNumber = 1,
         chapterName = "Hadith of Jibril — Islam, Iman, Ihsan",
         hadithNumber = 8,
+        darussalamReference = "Darussalam: #8",
         inBookReference = "Book 1, Hadith 1 • Fu'ad Abd al-Baqi #8",
+        arabicNumber = 8,
         arabicText = "الإِسْلامُ أَنْ تَشْهَدَ أَنْ لا إِلَهَ إِلا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَتُقِيمَ الصَّلاةَ، وَتُؤْتِيَ الزَّكَاةَ، وَتَصُومَ رَمَضَانَ، وَتَحُجَّ الْبَيْتَ... الإِحْسَانُ أَنْ تَعْبُدَ اللَّهَ كَأَنَّكَ تَرَاهُ، فَإِنْ لَمْ تَكُنْ تَرَاهُ فَإِنَّهُ يَرَاكَ",
         transliteration = "Al-Islamu an tashhada an la ilaha illallah wa anna Muhammadan Rasulullah... Al-Ihsanu an ta'budallaha ka'annaka tarahu, fa in lam takun tarahu fa innahu yarak.",
         englishText = "Jibril asked about Islam, Iman (Faith), and Ihsan (Spiritual Excellence). The Prophet (ﷺ) defined Islam by the five pillars, Iman by belief in Allah, His angels, His books, His messengers, the Last Day, and Divine Decree, and Ihsan as worshipping Allah as though you see Him, for if you do not see Him, He truly sees you.",
@@ -349,6 +476,48 @@ object ExtendedHadithDataProvider {
         gradingScholar = "Imam Muslim",
         reference = "Sahih Muslim 8",
         linkedQuranVerses = "2:177, 2:285, 4:136, 31:34"
+      ),
+      HadithEntity(
+        collectionKey = "muslim",
+        collectionName = "Sahih Muslim",
+        bookNumber = 1,
+        bookName = "Book 1: Faith (كتاب الإيمان)",
+        chapterNumber = 2,
+        chapterName = "The Five Daily Prayers, Fasting Ramadan, and Zakat",
+        hadithNumber = 10,
+        darussalamReference = "Darussalam: #10",
+        inBookReference = "Book 1, Hadith 8 • Sahih Intl / Fu'ad Abd al-Baqi #11",
+        arabicNumber = 11,
+        arabicText = "جَاءَ رَجُلٌ إِلَى رَسُولِ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ مِنْ أَهْلِ نَجْدٍ ثَائِرُ الرَّأْسِ... فَقَالَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ: أَفْلَحَ وَأَبِيهِ إِنْ صَدَقَ، أَوْ دَخَلَ الْجَنَّةَ وَأَبِيهِ إِنْ صَدَقَ",
+        transliteration = "Ja'a rajulun ila Rasulillahi (ﷺ) min ahli Najdin tha'irur-ra's... Faqala Rasulullah (ﷺ): Aflaha wa abihi in sadaq, aw dakhalal-Jannata wa abihi in sadaq.",
+        englishText = "A man from the people of Najd with disheveled hair came to the Messenger of Allah (ﷺ) asking about Islam. When told of the five prayers in the day and night, fasting Ramadan, and Zakat, he said: 'By Allah, I will neither add to this nor decrease from it.' The Messenger of Allah (ﷺ) said: 'He has succeeded, if he is truthful.'",
+        urduText = "اہلِ نجد میں سے ایک شخص رسول اللہ ﷺ کی خدمت میں حاضر ہوا اور اسلام کے بارے میں سوال کیا۔ جب آپ ﷺ نے اسے دن رات کی پانچ نمازیں، رمضان کے روزے اور زکوٰۃ بتائیں تو اس نے کہا کہ میں اس میں نہ کمی کروں گا نہ زیادتی۔ رسول اللہ ﷺ نے فرمایا: اگر یہ سچ کہہ رہا ہے تو کامیاب ہو گیا۔",
+        narrator = "Talhah ibn 'Ubaydullah (RA)",
+        grade = "Sahih (Darussalam / Original Sahih Muslim)",
+        gradingScholar = "Imam Muslim",
+        reference = "Sahih Muslim 10",
+        linkedQuranVerses = "23:1, 23:2, 23:9"
+      ),
+      HadithEntity(
+        collectionKey = "muslim",
+        collectionName = "Sahih Muslim",
+        bookNumber = 1,
+        bookName = "Book 1: Faith (كتاب الإيمان)",
+        chapterNumber = 10,
+        chapterName = "Glad Tidings for the Sincere Testimony of Tawhid",
+        hadithNumber = 25,
+        darussalamReference = "Darussalam: #25",
+        inBookReference = "Book 1, Hadith 46 • Sahih Intl / Fu'ad Abd al-Baqi #29",
+        arabicNumber = 29,
+        arabicText = "مَنْ شَهِدَ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ، وَأَنَّ عِيسَى عَبْدُ اللَّهِ وَابْنُ أَمَتِهِ وَكَلِمَتُهُ أَلْقَاهَا إِلَى مَرْيَمَ وَرُوحٌ مِنْهُ، وَأَنَّ الْجَنَّةَ حَقٌّ، وَأَنَّ النَّارَ حَقٌّ، أَدْخَلَهُ اللَّهُ مِنْ أَيِّ أَبْوَابِ الْجَنَّةِ الثَّمَانِيَةِ شَاءَ",
+        transliteration = "Man shahida an la ilaha illallahu wahdahu la sharika lahu, wa anna Muhammadan 'abduhu wa rasuluhu... adkhalahullahu min ayyi abwabil-Jannatith-thamaniyati sha'.",
+        englishText = "Whoever testifies that there is no deity worthy of worship except Allah alone with no partner, that Muhammad is His servant and Messenger, that 'Isa (Jesus) is the servant of Allah, the son of His maidservant, and His Word which He bestowed upon Maryam and a spirit from Him, and that Paradise is true and Hellfire is true, Allah will admit him through whichever of the eight gates of Paradise he wishes.",
+        urduText = "جو شخص گواہی دے کہ اللہ کے سوا کوئی معبود نہیں، وہ اکیلا ہے اس کا کوئی شریک نہیں، اور محمد ﷺ اس کے بندے اور رسول ہیں، اور عیسیٰ علیہ السلام اللہ کے بندے اور اس کا کلمہ ہیں، اور جنت حق ہے اور دوزخ حق ہے، تو اللہ اسے جنت کے آٹھوں دروازوں میں سے جس سے چاہے داخل فرمائے گا۔",
+        narrator = "'Ubadah ibn as-Samit (RA)",
+        grade = "Sahih (Darussalam / Original Sahih Muslim)",
+        gradingScholar = "Imam Muslim",
+        reference = "Sahih Muslim 25",
+        linkedQuranVerses = "4:171, 3:45"
       ),
       HadithEntity(
         collectionKey = "muslim",
@@ -993,14 +1162,114 @@ object ExtendedHadithDataProvider {
       )
     ) + CompleteHadithCollectionsCatalog.getAdditionalFoundationalHadiths()
     return rawList.map { h ->
-      if (h.darussalamReference.isBlank()) {
+      val isShia = isShiaCollection(h.collectionKey)
+      val normalizedGrade = h.grade.ifBlank { "Not graded in this source" }
+      if (isShia) {
+        val shiaRef = if (h.darussalamReference.isBlank() || h.darussalamReference.contains("Darussalam", ignoreCase = true)) {
+          "Shia Canonical: #${h.hadithNumber}"
+        } else {
+          h.darussalamReference
+        }
         h.copy(
-          darussalamReference = "Darussalam: #${h.hadithNumber}",
+          darussalamReference = shiaRef,
+          grade = normalizedGrade,
           arabicNumber = if (h.arabicNumber > 0) h.arabicNumber else h.hadithNumber
         )
       } else {
-        h
+        val sunniDarussalam = h.darussalamReference.ifBlank { "Darussalam: #${h.hadithNumber}" }
+        val secondaryNum = if (h.arabicNumber > 0) h.arabicNumber else h.hadithNumber
+        val sunniInBook = if (h.inBookReference.contains("Sahih Intl", ignoreCase = true)) {
+          h.inBookReference
+        } else {
+          "${h.inBookReference} • Sahih Intl Ref: #$secondaryNum"
+        }
+        h.copy(
+          darussalamReference = sunniDarussalam,
+          inBookReference = sunniInBook,
+          grade = normalizedGrade,
+          arabicNumber = secondaryNum
+        )
       }
     }
+  }
+
+  fun isShiaCollection(collectionKey: String): Boolean {
+    return shiaCollections.any { it.key.equals(collectionKey, ignoreCase = true) }
+  }
+
+  /**
+   * Matches a Hadith by exact number across supported numbering conventions
+   * (Darussalam / Primary number, Sahih International / Arabic edition number, or exact In-Book Hadith number).
+   * Never performs random substring matching (e.g. searching 5 will NOT match 5027 or 1145).
+   */
+  fun matchesExactHadithNumber(hadith: HadithEntity, targetNumber: Int): Boolean {
+    if (targetNumber <= 0) return false
+    if (hadith.hadithNumber == targetNumber || hadith.arabicNumber == targetNumber) return true
+    val exactTokenRegex = Regex("""(?:hadith|#|ref:|darussalam:)\s*0*${targetNumber}(?!\d)""", RegexOption.IGNORE_CASE)
+    return exactTokenRegex.containsMatchIn(hadith.inBookReference) ||
+      exactTokenRegex.containsMatchIn(hadith.darussalamReference)
+  }
+
+  data class HadithLibraryIntegrityReport(
+    val isValid: Boolean,
+    val totalSunniHadiths: Int,
+    val totalShiaHadiths: Int,
+    val duplicateIds: List<String>,
+    val invalidNumberIds: List<String>,
+    val missingContentIds: List<String>,
+    val gradingCrossContaminationIds: List<String>
+  )
+
+  fun validateHadithLibraryIntegrity(
+    hadiths: List<HadithEntity> = getExtendedHadiths()
+  ): HadithLibraryIntegrityReport {
+    val seenKeys = HashSet<String>()
+    val duplicateIds = mutableListOf<String>()
+    val invalidNumberIds = mutableListOf<String>()
+    val missingContentIds = mutableListOf<String>()
+    val gradingCrossContaminationIds = mutableListOf<String>()
+    var sunniCount = 0
+    var shiaCount = 0
+
+    for (h in hadiths) {
+      val id = "${h.collectionKey}:${h.hadithNumber}"
+      if (!seenKeys.add(id)) {
+        duplicateIds.add(id)
+      }
+      if (h.hadithNumber <= 0 || h.bookNumber <= 0) {
+        invalidNumberIds.add(id)
+      }
+      if (h.arabicText.isBlank() || h.englishText.isBlank() || h.reference.isBlank() || h.grade.isBlank()) {
+        missingContentIds.add(id)
+      }
+      if (isShiaCollection(h.collectionKey)) {
+        shiaCount++
+        if (h.darussalamReference.contains("Darussalam", ignoreCase = true) ||
+          h.grade.contains("Darussalam", ignoreCase = true) ||
+          h.gradingScholar.contains("Darussalam", ignoreCase = true)
+        ) {
+          gradingCrossContaminationIds.add(id)
+        }
+      } else {
+        sunniCount++
+      }
+    }
+
+    val isValid = duplicateIds.isEmpty() &&
+      invalidNumberIds.isEmpty() &&
+      missingContentIds.isEmpty() &&
+      gradingCrossContaminationIds.isEmpty() &&
+      sunniCount > 0 &&
+      shiaCount > 0
+
+    return HadithLibraryIntegrityReport(
+      isValid = isValid,
+      totalSunniHadiths = sunniCount,
+      totalShiaHadiths = shiaCount,
+      duplicateIds = duplicateIds,
+      invalidNumberIds = invalidNumberIds,
+      missingContentIds = missingContentIds,
+      gradingCrossContaminationIds = gradingCrossContaminationIds
+    )
   }
 }

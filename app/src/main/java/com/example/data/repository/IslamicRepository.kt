@@ -105,6 +105,8 @@ class IslamicRepository(
     val translations = ArrayList<TranslationEntity>(hadiths.size * 2)
     for (h in hadiths) {
       val refKey = "${h.collectionKey}:${h.hadithNumber}"
+      val isShia = ExtendedHadithDataProvider.isShiaCollection(h.collectionKey)
+      val editionPrefix = if (isShia) "shia_canonical" else "darussalam"
       if (h.englishText.isNotBlank() && h.englishText != IslamicRemoteService.NOT_AVAILABLE_IN_SOURCE) {
         translations.add(
           TranslationEntity(
@@ -112,7 +114,7 @@ class IslamicRepository(
             referenceKey = refKey,
             surahOrBookNumber = h.bookNumber,
             verseOrHadithNumber = h.hadithNumber,
-            editionKey = "en.darussalam.${h.collectionKey}",
+            editionKey = "en.$editionPrefix.${h.collectionKey}",
             editionTitle = "English (${h.collectionName} Verified Source)",
             languageCode = "en",
             text = h.englishText
@@ -126,7 +128,7 @@ class IslamicRepository(
             referenceKey = refKey,
             surahOrBookNumber = h.bookNumber,
             verseOrHadithNumber = h.hadithNumber,
-            editionKey = "ur.darussalam.${h.collectionKey}",
+            editionKey = "ur.$editionPrefix.${h.collectionKey}",
             editionTitle = "Urdu (${h.collectionName} Verified Source)",
             languageCode = "ur",
             text = h.urduText
@@ -175,12 +177,10 @@ class IslamicRepository(
     val local = hadithDao.getHadith(collectionKey, hadithNumber)
     if (local != null) return@withContext local
 
-    // Also check if any locally cached Hadith in this collection matches by Arabic edition number or In-Book number
+    // Also check if any locally cached Hadith in this collection matches by Arabic/Sahih Intl edition number or In-Book number
     val localCollectionHadiths = hadithDao.getHadithsByCollection(collectionKey).first()
     val inBookOrArabicMatch = localCollectionHadiths.find {
-      it.arabicNumber == hadithNumber ||
-        it.inBookReference.endsWith("Hadith $hadithNumber", ignoreCase = true) ||
-        it.inBookReference.endsWith("#$hadithNumber", ignoreCase = true)
+      ExtendedHadithDataProvider.matchesExactHadithNumber(it, hadithNumber)
     }
     if (inBookOrArabicMatch != null) return@withContext inBookOrArabicMatch
 
@@ -286,13 +286,14 @@ class IslamicRepository(
 
     val results = LinkedHashMap<String, HadithEntity>()
 
-    // 1. Parse explicit collection + Hadith number e.g. "bukhari 5027", "sunnah.com/muslim:223", "abu dawud 500", "tirmidhi:1924"
+    // 1. Parse explicit collection + Hadith number e.g. "bukhari 5027", "sunnah.com/muslim:223", "alkafi 5"
     val parsedRef = parseCollectionAndHadithNumber(q)
     if (parsedRef != null) {
       val (colKey, hNum) = parsedRef
       findOrFetchHadithByNumber(colKey, hNum)?.let { h ->
         results["${h.collectionKey}_${h.hadithNumber}"] = h
       }
+      return@withContext results.values.toList()
     }
 
     // 2. Parse "Book X, Hadith Y" or "Book X" in-book reference
@@ -307,26 +308,35 @@ class IslamicRepository(
         }
         val refreshedBook = hadithDao.getHadithsByBook(activeCollectionKey, bookNum).first()
         for (h in refreshedBook) {
-          if (inBookNum == null || h.inBookReference.contains("Hadith $inBookNum", ignoreCase = true)) {
+          if (inBookNum == null || ExtendedHadithDataProvider.matchesExactHadithNumber(h, inBookNum) ||
+            Regex("""hadith\s*0*${inBookNum}(?!\d)""", RegexOption.IGNORE_CASE).containsMatchIn(h.inBookReference)
+          ) {
             results["${h.collectionKey}_${h.hadithNumber}"] = h
           }
         }
-      }
-    }
-
-    // 3. Parse plain number or "Darussalam #X" / "Hadith #X"
-    val plainNumberRegex = Regex("""^(?:hadith|hadees|darussalam|intl|number|#|\s)*(\d{1,4})$""", RegexOption.IGNORE_CASE)
-    plainNumberRegex.find(q)?.let { match ->
-      val num = match.groupValues[1].toIntOrNull()
-      if (num != null && num > 0) {
-        // First check/fetch in the currently active collection
-        findOrFetchHadithByNumber(activeCollectionKey, num)?.let { h ->
-          results["${h.collectionKey}_${h.hadithNumber}"] = h
+        if (results.isNotEmpty()) {
+          return@withContext results.values.toList()
         }
       }
     }
 
-    // 4. Local Room full-text & reference search
+    // 3. Parse plain number or "Darussalam #X" / "Sahih International #X" / "Hadith #X"
+    // CRITICAL: Exact number search must return ONLY the exact Hadith from the selected book, never substring matches!
+    val plainNumberRegex = Regex(
+      """^(?:hadith|hadees|darussalam|darasalam|sahih\s*international|sahi\s*international|sahih\s*intl|in-book|in\s*book|canonical|intl|number|no\.?|#|:|\s)*(\d{1,5})$""",
+      RegexOption.IGNORE_CASE
+    )
+    plainNumberRegex.find(q)?.let { match ->
+      val num = match.groupValues[1].toIntOrNull()
+      if (num != null && num > 0) {
+        findOrFetchHadithByNumber(activeCollectionKey, num)?.let { h ->
+          results["${h.collectionKey}_${h.hadithNumber}"] = h
+        }
+        return@withContext results.values.toList()
+      }
+    }
+
+    // 4. Local Room full-text & reference search for non-numeric queries
     val daoMatches = hadithDao.searchHadiths(q).first()
     for (h in daoMatches) {
       results["${h.collectionKey}_${h.hadithNumber}"] = h
@@ -351,14 +361,22 @@ class IslamicRepository(
       "ibnmajah" to listOf("sunan ibn majah", "ibn majah", "ibnmajah"),
       "malik" to listOf("muwatta imam malik", "muwatta malik", "muwatta", "malik"),
       "nawawi" to listOf("40 hadith nawawi", "forty hadith nawawi", "nawawi40", "nawawi"),
-      "riyadussalihin" to listOf("riyad as-salihin", "riyadussalihin", "riyad")
+      "riyadussalihin" to listOf("riyad as-salihin", "riyadussalihin", "riyad"),
+      "alkafi" to listOf("kitab al-kafi", "al-kafi", "alkafi", "kafi"),
+      "faqih" to listOf("man la yahduruhu al-faqih", "al-faqih", "faqih"),
+      "tahdhib" to listOf("tahdhib al-ahkam", "tahdhib"),
+      "istibsar" to listOf("al-istibsar", "istibsar"),
+      "nahjulbalagha" to listOf("nahj al-balagha", "nahjul balagha", "nahjulbalagha"),
+      "bihar" to listOf("bihar al-anwar", "bihar"),
+      "wasail" to listOf("wasa'il al-shia", "wasail al-shia", "wasail"),
+      "sajjadiyya" to listOf("al-sahifa al-sajjadiyya", "sajjadiyya")
     )
 
     for ((canonicalKey, aliases) in collectionAliases) {
       for (alias in aliases) {
         if (lower.contains(alias)) {
           val afterAlias = lower.substringAfter(alias)
-          val numMatch = Regex("""[:#\s-]*(?:hadith|darussalam|#)?\s*(\d{1,4})""").find(afterAlias)
+          val numMatch = Regex("""[:#\s-]*(?:hadith|darussalam|sahih\s*international|#)?\s*(\d{1,5})""").find(afterAlias)
           val number = numMatch?.groupValues?.getOrNull(1)?.toIntOrNull()
           if (number != null && number > 0) {
             return canonicalKey to number

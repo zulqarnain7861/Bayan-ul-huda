@@ -1,104 +1,125 @@
-# Bayan al-Huda — Jetpack Compose Navigation Controller, Authentic Arabic Typography & 7-Day Guest Access
+# Bayan al-Huda — Complete Quran, Sunni & Shia Hadith Platform Enhancement Plan
 
-Upgrade **Bayan al-Huda — Quran & Hadith** with a full **Jetpack Compose Navigation Controller (`NavHost` & `NavHostController`)** managing the **Home**, **Quran**, **Hadith**, **Search**, and **Library** screens with bottom navigation state preservation and deep-linking, bundle authentic licensed Arabic fonts (**Amiri** for Quranic Naskh text and **Scheherazade New** for opening Bismillah & header calligraphy), and enable **7-Day Guest Access** backed by local offline storage alongside optional Google Sign-In cloud sync.
+Deliver a high-efficiency, zero-regression upgrade to **Bayan al-Huda** that completes the distinct Sunni and Shia Hadith libraries, adds the Quran Reciters selector (with Mishari Rashid Alafasy completely removed), integrates the Contact Us & US$25 Play Console community support section, protects technical API URLs behind a verified developer view (`sheikhzulqar@gmail.com`), expands the persistent theme selector to all 8 required themes, and validates the complete 6,236-verse Quran text and security posture.
 
----
-
-## User Review & Critical Decisions
+### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> All three architectural and design decisions below reflect your confirmed choices and will be implemented directly upon approval.
+> The following architectural and product decisions were confirmed during interactive clarification to maximize efficiency and preserve all existing working features:
 
-- **Confirmed Decision 1 — Licensed Arabic Typography Pairing**: Bundle **Scheherazade New** locally for the opening Bismillah calligraphy (`بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ`), Arabic emblems (`بَيَانُ الهُدَى`), and decorative Surah headers, paired with **Amiri** classical Naskh for all Quranic verses, Hadith narrations, Tafsir Arabic excerpts, and classical Islamic book texts.
-- **Confirmed Decision 2 — Jetpack Compose `NavHostController` with State Preservation & Deep-Linking**: Replace manual tab switching with Jetpack Navigation Compose (`NavHost`, `rememberNavController()`, and `NavigationBar` synced via `currentBackStackEntryAsState()`), using `saveState = true` and `restoreState = true` on bottom navigation transitions and supporting direct route navigation to specific Surahs and Hadiths.
-- **Confirmed Decision 3 — 7-Day Guest Access Mode + Optional Google Sign-In**: Provide an explicit **7-Day Guest Access** option on the Authentication screen (displaying remaining guest days and storing bookmarks/notes locally on-device) alongside one-tap Google Sign-In for permanent cloud backup and cross-device sync.
-
----
-
-## 1. Overview & Core Concept
-
-- **What It Does**:
-  1. **Jetpack Compose Navigation Graph (`NavHost` & `NavHostController`)**: Connects the 5 primary destinations (`home`, `quran`, `hadith`, `search`, `library`) plus the `about` destination and deep-link parameters (`quran?surahNumber={surahNumber}`, `hadith?collection={collection}&number={number}`) to a persistent Material 3 Bottom Navigation Bar and system back stack.
-  2. **Authentic Bundled Arabic Fonts (`Scheherazade New` & `Amiri`)**: Downloads and embeds static `.ttf` Arabic fonts directly into application resources so sacred Quranic diacritics (Tashkeel), Uthmani ligatures, and the opening Bismillah render with authentic calligraphic precision offline on every Android device.
-  3. **7-Day Guest Mode with Seamless Cloud Upgrade**: Lets users explore all 114 Surahs, 8 Tafsirs, 7 Hadith books, and 32 Islamic books immediately in Guest Mode for 7 days with local persistence, while allowing them to sign in with Google at any time from the Auth screen or About/Profile screen to sync their library to the cloud.
-- **Target Audience / Persona**: Muslims, students of sacred knowledge, and researchers seeking a responsive, typographically authentic, offline-capable Quran, Hadith, and Islamic library experience.
-- **Key Value**: True back-stack and tab state preservation across all five screens, authentic manuscript-grade Arabic script on both the opening screen and scripture readers, and friction-free 7-day guest onboarding.
+- **Confirmed Decision 1 — Execution Scope**: Perform a **delta-only upgrade** on the existing codebase that preserves all working Quran, Hadith, Offline Download Manager, Islam with Evidence, Prayer Times, Fajr Wake-Up Alarm, Reading Mode, and Qibla Compass features without destructive rewrites.
+- **Confirmed Decision 2 — Developer Maintenance View Authorization**: Technical API endpoints, documentation URLs, host-pinning allowlists, and internal diagnostics in the About & Source Audit screen are hidden from ordinary/guest users and unlocked **exclusively** when the user is authenticated via Firebase Auth with the verified developer account (`sheikhzulqar@gmail.com`).
+- **Confirmed Decision 3 — Quran Reciters Catalogue Organization**: Completely remove **Mishari Rashid Alafasy** from all reciter lists, recommendations, and offline catalogues, and organize the new **Reciters** button modal into clearly labelled **Sunni Reciters** (Al-Husary, Abdul Basit, Al-Minshawi, Al-Sudais, Al-Shatri) and **Verified Shia Quran Reciters** sections.
 
 ---
 
-## 2. User Experience & Visual Design
+### 1. Overview & Core Concept
 
-- **Key User Flows**:
-  1. **Sacred Opening Experience (`Scheherazade New` Calligraphy)**:
-     - Displays `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ` and `بَيَانُ الهُدَى` rendered in **Scheherazade New** bold calligraphy over the Deep Emerald and Gold gradient backdrop.
-  2. **Authentication & 7-Day Guest Access Gate**:
-     - Users can sign in with Google (for permanent cloud sync) or tap **"Continue as Guest (7 Days Full Access)"**.
-     - Active 7-day guest sessions automatically remember their start timestamp, display the remaining guest days badge in the profile/settings view, and prompt for Google Sign-In once the 7-day window expires.
-  3. **Bottom Navigation Bar + `NavHostController` Flow**:
-     - Tapping **Home**, **Quran**, **Hadith**, **Search**, or **Library** navigates via `navController.navigate(route)` with `launchSingleTop = true`, `restoreState = true`, and `popUpTo(findStartDestination().id) { saveState = true }`.
-     - Tapping a Surah from **Home** or **Search** navigates directly into the **Quran** route and opens that Surah in the reader; tapping "Explore 7 Hadith Books" navigates directly to the **Hadith** route; tapping "32 Books" navigates directly to the **Library** route.
-- **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Classical Islamic Manuscript meets Modern Material 3 Editorial.
-  - *Color Palette & Mood*: Deep Emerald (`#0B3B2B` / `#0F523B`), Burnished Gold (`#D4AF37` / `#F3E5AB`), and Warm Cream (`#FBF9F4`) surfaces.
-  - *Typography & Hierarchy*:
-    - **Calligraphic Display (`ScheherazadeNewFontFamily`)**: Used on the Opening Screen Bismillah, Arabic app emblem,Bismillah Surah headers, and Surah Arabic titles (`30sp–36sp`, generous `44sp–52sp` line height).
-    - **Sacred Scripture Body (`AmiriFontFamily`)**: Used on all 6,236 Quranic verses, Hadith Arabic narrations, Tafsir Arabic texts, and Classical Book Arabic excerpts (`20sp–34sp` user-adjustable with full diacritic clearance).
-- **Interactive Feedback & Motion**:
-  - Smooth crossfade transitions between `NavHost` destinations, active gold-tinted pill indicators in the Material 3 `NavigationBar`, and predictive back navigation from reader views and secondary routes back to the start destination.
+- **What It Does**: Enhances Bayan al-Huda into a comprehensive, source-verified Islamic digital library featuring the complete 114-Surah Uthmani Quran, two distinct Hadith libraries (**Sunni Hadith Library** and **Shia Hadith Library**) with explicit coverage manifests, a dedicated Quran **Reciters** selector, a **Contact Us & Support Our App** section, role-gated developer diagnostics, and 8 persistent appearance themes.
+- **Target Audience / Persona**: Muslims, students of knowledge, and researchers seeking authentic, traceable Quranic and Hadith primary sources in Arabic, English, and Urdu with full offline capability and zero fabricated text.
+- **Key Value**: Absolute fidelity to canonical texts (zero changes to original Quranic characters, diacritics, or source numbering), respectful scholarly separation between Sunni and Shia collections, and hardened API/UI security.
 
 ---
 
-## 3. Key Product Decisions & Trade-Offs
+### 2. Visual Direction & Theme System (8 Persistent Themes)
 
-- **Decision 1: Jetpack Navigation Compose (`NavHostController`) with Saved State**
-  - *Chosen Approach*: Use official Jetpack Navigation Compose (`NavHost`, `NavGraph.Companion.findStartDestination`, `currentBackStackEntryAsState`) integrated with `BayanViewModel`.
-  - *Why*: Preserves scroll positions and active sub-tabs across **Home**, **Quran**, **Hadith**, **Search**, and **Library**, while ensuring Android system back gestures always unwind the navigation stack predictably.
-  - *Alternatives Considered*: Manual `when (currentTab)` state switching, which lacks standard Android back-stack graph semantics and deep-link route arguments.
-- **Decision 2: Local Bundled Static `.ttf` Arabic Fonts (`Amiri` + `Scheherazade New`)**
-  - *Chosen Approach*: Bundle static `.ttf` font files directly inside app resources and expose dedicated `AmiriFontFamily` and `ScheherazadeFontFamily` tokens alongside Material 3 `Typography`.
-  - *Why*: Guarantees 100% offline availability and crisp rendering of Quranic Tashkeel and ligatures without relying on runtime network font providers.
-  - *Alternatives Considered*: System default sans-serif fonts, which flatten traditional Arabic Naskh proportions and crowd diacritical marks.
-- **Decision 3: 7-Day Guest Access with Local Persistence & Cloud Sync Upgrade**
-  - *Chosen Approach*: Track the initial guest activation timestamp locally (`7 * 24 * 60 * 60 * 1000L` ms window); allow full app access and local SQLite bookmark/note storage while the 7-day window is active, and seamlessly merge with Cloud Firestore whenever the user signs in with Google.
-  - *Why*: Respects the requirement to keep guest access available for 7 days while maintaining zero-trust authenticated cloud persistence for signed-in users.
+- **Centralized Design Tokens**: Expand the existing theme engine so users can switch seamlessly between all 8 required appearance modes in Settings / About, persisted across restarts:
+  1. **System Default (Auto)**: Adapts automatically to system dark/light state and time of day.
+  2. **Light**: Warm Cream & Sanctuary Emerald (`#FAF6EE` / `#0F3D2E`).
+  3. **Dark**: Deep Night Obsidian & Burnished Gold (`#0E1713` / `#D4AF37`).
+  4. **Pure Black / AMOLED Black**: True `#000000` background and `#070A08` elevated surfaces for zero-glare OLED power efficiency.
+  5. **Warm Paper**: Soft natural cotton paper (`#F5EFE2`) with high-contrast ink typography.
+  6. **Sepia (Eye-Comfort)**: Low-glare amber parchment (`#F1E5C9`) for extended reading sessions.
+  7. **Green (Royal Emerald)**: Deep Haramain Sanctuary Emerald (`#08241B`) with burnished gold accents.
+  8. **Blue (Sapphire Sanctuary)**: Classical Islamic cobalt/lapis manuscript blue (`#0B1D33`) with warm gold highlights.
+- **Typography & RTL Integrity**: Preserve bundled `Scheherazade New` and `Amiri Quran` fonts with `includeFontPadding = true` and `LineHeightStyle.Trim.None` so Uthmani diacritics, maddah (`ٓ`), shaddah (`ّ`), and superscript dagger alif (`ٰ` in Surah Ar-Ra'd 13:1 `الٓـمّٓرٰ`) render without clipping across every theme and screen size.
 
 ---
 
-## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+### 3. System Architecture & Component Hierarchy
 
-- **Architecture & Component Diagram**:
-```
+```text
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                        MainActivity / BayanApp                             │
-│  ┌──────────────────────┐   ┌───────────────────────────────────────────┐  │
-│  │ OpeningExperience    │──▶│ Auth & 7-Day Guest Access Gate            │  │
-│  │ (Scheherazade Font)  │   │ • Google Sign-In (CredentialManager)      │  │
-│  └──────────────────────┘   │ • 7-Day Guest Session (Local Preferences) │  │
-│                             └─────────────────────┬─────────────────────┘  │
-│                                                   ▼                        │
-│  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │ Scaffold (TopIslamicBar + AudioMiniPlayerBar + M3 NavigationBar)     │  │
-│  │  ┌────────────────────────────────────────────────────────────────┐  │  │
-│  │  │ Jetpack Compose NavHost (NavHostController)                    │  │  │
-│  │  │                                                                │  │  │
-│  │  │  ├─ "home"    ──▶ HomeScreen (Daily Ayah/Hadith, Reflections)  │  │  │
-│  │  │  ├─ "quran"   ──▶ QuranScreen (114 Surahs, 8 Tafsirs, Amiri)   │  │  │
-│  │  │  ├─ "hadith"  ──▶ HadithScreen (7 Books, Dual #s, Prev/Next)   │  │  │
-│  │  │  ├─ "search"  ──▶ SearchScreen (Unified Arabic/EN/UR Search)   │  │  │
-│  │  │  ├─ "library" ──▶ LibraryScreen (32 Books, Bookmarks, Notes)   │  │  │
-│  │  │  └─ "about"   ──▶ AboutScreen (Reciter, Guest/Auth Status)     │  │  │
-│  │  └────────────────────────────────────────────────────────────────┘  │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────────┘
+│                        BAYAN AL-HUDA PRESENTATION LAYER                    │
+├──────────────────┬──────────────────┬──────────────────┬───────────────────┤
+│   Quran Reader   │  Hadith Library  │   Search Engine  │  About & Contact  │
+│  • 114 Surahs    │  • Sunni Entry   │  • Sunni Filter  │  • Public About   │
+│  • Reading Mode  │    - Kutub Sittah│  • Shia Filter   │    (No Raw URLs)  │
+│  • Reciters Btn  │    - 15+ Works   │  • Search Both   │  • Contact Us &   │
+│    (Sunni & Shia │    - Commentaries│    Libraries     │    $25 Play Store │
+│     No Alafasy)  │  • Shia Entry    │  • Arabic/EN/UR  │    Support Card   │
+│  • Audio Player  │    - Al-Kutub    │    Exact & Norm  │  • Developer View │
+│                  │      al-Arba'a   │    Lookup        │    (Gated by Auth │
+│                  │    - 21+ Works   │                  │     email check)  │
+│                  │    - Twelver /   │                  │  • 8 Theme Picker │
+│                  │      Zaydi /     │                  │                   │
+│                  │      Ismaili     │                  │                   │
+└────────┬─────────┴────────┬─────────┴────────┬─────────┴─────────┬─────────┘
+         │                  │                  │                   │
+         ▼                  ▼                  ▼                   ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│                     VIEWMODEL & DOMAIN VERIFICATION LAYER                  │
+│  • Tradition & Sub-Tradition Separation (SUNNI / SHIA / COMMENTARY)        │
+│  • Collection Coverage Manifests (Expected vs Local Verified Counts)       │
+│  • Developer Role Guard (Firebase Auth User == sheikhzulqar@gmail.com)     │
+│  • Full 6,236-Ayah SHA-256 & Character-Sequence Integrity Auditor          │
+└────────┬─────────────────────────────────────────────────────────┬─────────┘
+         │                                                         │
+         ▼                                                         ▼
+┌───────────────────────────────────────┐ ┌──────────────────────────────────┐
+│     LOCAL ROOM & OFFLINE STORAGE      │ │   PROVIDER ADAPTER & SECURITY    │
+│  • 114 Surahs & 6,236 Uthmani Ayahs   │ │  • Trusted Host Allowlist Guard  │
+│  • Sunni & Shia Hadith Entities       │ │  • HTTPS/TLS Enforcement         │
+│  • SourceRegistry & Import Manifests  │ │  • Resumable Paginated Importer  │
+│  • Scoped Offline Audio & Text Packs  │ │  • Zero Client-Side Private Keys │
+└───────────────────────────────────────┘ └──────────────────────────────────┘
 ```
 
-- **Data Model & State**:
-  - **Navigation Routes (`BayanDestination`)**: Sealed/enum route definitions for `home`, `quran`, `hadith`, `search`, `library`, and `about`, with bottom bar metadata (route, title, icon, testTag).
-  - **Arabic Typography Tokens**:
-    - `ScheherazadeFontFamily`: Bundled `Scheherazade New` font family for the opening Bismillah (`بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ`), Arabic logo (`بَيَانُ الهُدَى`), and ornamental headers.
-    - `AmiriFontFamily`: Bundled `Amiri` font family applied to all Arabic scripture composables (`OpeningExperienceScreen`, `BismillahHeader`, `HomeScreen`, `QuranScreen`, `HadithScreen`, `SearchScreen`, and `LibraryScreen`).
-  - **7-Day Guest Session Manager**: Stores `guest_access_start_epoch_ms` and `is_guest_active` in device preferences, computing `isGuestSessionValid()` (`elapsed < 7 days`) and `remainingGuestDays()` (`1..7`), exposed via `BayanViewModel`.
-- **Interactive Component & State Mapping**:
-  - Selecting any item in the bottom `NavigationBar` inspects `navController.currentBackStackEntryAsState()` and navigates cleanly via `NavHostController`, closing any open overlay reader if the user taps the active tab or back button.
-  - Selecting a Surah on `HomeScreen` or `SearchScreen` calls `viewModel.openSurahReader(surah)` and navigates `navController` to the `quran` route with state restoration.
-  - Tapping **"Continue as Guest (7 Days)"** on `AuthScreen` activates or resumes the 7-day guest window and transitions immediately into the `NavHost`.
+---
+
+### 4. Core Functional Enhancements (Delta Specification)
+
+#### 4.1 Two Distinct Hadith Libraries (Sunni & Shia Separation)
+- **Prominent Dual Entry Points**: The Hadith screen displays two distinct top-level library mode cards/tabs:
+  - **Sunni Hadith Library**:
+    - *The Six Major Sunni Collections (Kutub al-Sittah)*: Sahih al-Bukhari, Sahih Muslim, Sunan Abi Dawud, Jami' al-Tirmidhi, Sunan al-Nasa'i (identifying Al-Mujtaba / Al-Sughra edition), and Sunan Ibn Majah.
+    - *Other Major Sunni Collections (15 Works)*: Al-Muwatta of Imam Malik, Musnad Ahmad ibn Hanbal, Sunan al-Darimi, Musannaf Abd al-Razzaq, Musannaf Ibn Abi Shaybah, Sahih Ibn Khuzaymah, Sahih Ibn Hibban, Al-Mustadrak ala al-Sahihayn (al-Hakim), Sunan al-Daraqutni, Al-Sunan al-Kubra (al-Bayhaqi), Al-Adab al-Mufrad, Al-Shama'il al-Muhammadiyyah, Riyad al-Salihin, Bulugh al-Maram, and Mishkat al-Masabih.
+    - *Hadith Scholarship & Commentary (Separate Category)*: Fath al-Bari, Sharh Sahih Muslim (al-Nawawi), Tuhfat al-Ahwadhi, Awn al-Ma'bud, Silsilat al-Ahadith al-Sahihah, Silsilat al-Ahadith al-Da'ifah, Sahih al-Jami, and Da'if al-Jami — clearly marked as commentary/grading reference works rather than primary Hadith collections, with honest copyright/access status indicators.
+  - **Shia Hadith Library**:
+    - *The Four Principal Twelver Shia Hadith Books (Al-Kutub al-Arba'a)*: Al-Kafi (al-Kulayni), Man La Yahduruhu al-Faqih (Shaykh al-Saduq), Tahdhib al-Ahkam (Shaykh al-Tusi), and Al-Istibsar (Shaykh al-Tusi).
+    - *Other Important Twelver Shia Collections & Categorized Works*: Bihar al-Anwar, Wasa'il al-Shia, Mustadrak al-Wasa'il, Nahj al-Balagha (distinguished as sermons, letters, and sayings), Al-Sahifa al-Sajjadiyya (distinguished as supplications), Kitab al-Tawhid, Uyun Akhbar al-Rida, Al-Khisal, Al-Amali of Shaykh al-Saduq, Al-Amali of Shaykh al-Tusi (distinguished by author), Al-Mahasin (al-Barqi), Qurb al-Isnad (al-Himyari), Tuhaf al-Uqul (ibn Shu'ba al-Harrani), Kamil al-Ziyarat (Ibn Qulawayh), Thawab al-A'mal wa Iqab al-A'mal, Ma'ani al-Akhbar, Kitab al-Ghayba by al-Nu'mani, Kitab al-Ghayba by Shaykh al-Tusi (kept distinct), Al-Ihtijaj (al-Tabarsi), plus Shia Rijal & Commentary reference entries.
+    - *Sub-Tradition Metadata Filter*: Explicit categorization for **Twelver / Ithna Ashari**, **Zaydi**, and **Ismaili** traditions so works are never mixed into an undifferentiated list.
+- **Explicit Coverage Status**: Every catalogue item displays its honest verification status (`Complete in Local Cache`, `Foundational Verified Selection + On-Demand Pagination`, `Metadata & Scholarly Reference Only`, or `Awaiting Lawful Dataset Access`) alongside expected canonical counts.
+- **Search Both Libraries Option**: Search allows filtering by **Sunni Hadith Only**, **Shia Hadith Only**, or an explicitly labelled **Search Both Libraries** mode where every result badge displays its tradition, collection, book/chapter, original numbering, and grader attribution.
+
+#### 4.2 Reciters Button & Verified Audio Library (Alafasy Removed)
+- **Complete Removal of Mishari Rashid Alafasy**: Remove `alafasy` from `availableReciters` in the audio player, `OfflineCatalogRegistry.audioReciters` in the download manager, and any UI labels or tests.
+- **New "Reciters" Button in Quran & Audio Views**:
+  - Add a clean **Reciters** button (`quran_reciters_button`) in the Quran screen header and Surah reader toolbar.
+  - Clicking it opens a structured **Verified Quran Reciters Sheet** organized into:
+    - **Verified Sunni Reciters**: Mahmoud Khalil Al-Husary, Abdul Basit Abdul Samad (Murattal), Muhammad Siddiq Al-Minshawi (Murattal), Abdul Rahman Al-Sudais, and Abu Bakr Al-Shatri. (Also document availability status for Islam Sobhi, Abdullah Shehab, and Abdul Rahman Masoud honestly without fabricating unsupported ayah streams).
+    - **Verified Shia Quran Reciters**: Add verified Shia Quran reciters (e.g., Karim Mansouri and Maytham al-Tammar with verified Quranic recitation streams and offline cadence support), clearly labelled under the **Verified Shia Quran Reciters** section and kept strictly separate from duas, ziyarat, or lectures.
+
+#### 4.3 Contact Us & Community Support Section
+- Add a **Contact Us & Support Our App** card and dialog/section accessible from the About screen and Home screen:
+  - **Email Us**: Opens email intent for `sheikhzulqar@gmail.com` (friendly label, no raw technical clutter).
+  - **Instagram**: Opens `@zulqarnainah` (`https://www.instagram.com/zulqarnainah/`) in the Instagram app with browser fallback.
+  - **Facebook Messenger**: Friendly button **"Message on Facebook"** that opens `https://www.facebook.com/share/1PiLFRT6jv/` via native app or browser fallback.
+  - **Support Our App (US$25 Google Play Console Goal)**: Clearly explains that developer Zulqarnain Ahmad Sheikh hopes to raise **US$25** for the Google Play Console registration fee to publish **Bayan al-Huda** on the Google Play Store, and invites anyone wishing to help with the fee, development, or testing to reach out via the contact buttons above. Explicitly states that **Bayan al-Huda will remain 100% free and ad-free**, with zero payment gateways or donation forms.
+
+#### 4.4 Protect API Links & Developer-Only Maintenance View in About
+- **Public View (Ordinary & Guest Users)**:
+  - Retains all normal About information: app description, developer credits, Islamic book & source names, translation names, record counts, verification status badges, and theme selector.
+  - Hides all raw API URLs (such as `https://quranenc.com/`, `https://api.quran.com/`, `https://sunnah.stoplight.io/`, `https://everyayah.com/`), internal repository links, host-pinning allowlists, and technical vulnerability/security config strings.
+- **Developer Maintenance View (`sheikhzulqar@gmail.com`)**:
+  - Unlocked **only** when `currentUser?.email?.equals("sheikhzulqar@gmail.com", ignoreCase = true) == true && currentUser?.isEmailVerified != false` via authenticated Firebase session (never unlocked by typing an email into a text box).
+  - Displays a dedicated **Developer Maintenance & Protected API Diagnostics** panel showing the sanitized provider endpoint status, allowlist verification, and collection sync diagnostics without exposing private keys or secrets.
+
+#### 4.5 Complete Quran Text Integrity Audit & Automated Tests
+- Verify across all 114 Surahs and 6,236 verses that zero canonical Arabic characters, diacritics, waqf marks, or superscript dagger alifs (including Surah Ar-Ra'd 13:1 `الٓـمّٓرٰ` with `\u0670`) have been altered.
+- Execute Robolectric tests verifying:
+  - Sunni vs Shia Hadith library separation, the Four Principal Twelver Shia Books, the Six Major Sunni Collections, and "Search Both Libraries" attribution.
+  - Complete removal of Mishari Rashid Alafasy and working Reciters selector.
+  - Ordinary user vs verified `sheikhzulqar@gmail.com` Developer View URL redaction in `AboutScreen`.
+  - All 8 persistent themes (`SYSTEM_DEFAULT`, `LIGHT`, `DARK`, `PURE_BLACK`, `WARM_PAPER`, `SEPIA`, `GREEN`, `BLUE`).
+  - Rebuild and refresh `/quran.apk` in the workspace root so the installable APK contains every update.

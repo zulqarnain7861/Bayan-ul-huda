@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -112,6 +113,7 @@ fun SalahAndFajrAlarmCard(
   onTestAzanOrFajrAlarm: (String, Boolean) -> Unit,
   onStopActiveAlarm: () -> Unit,
   onSnoozeActiveAlarm: (Int) -> Unit,
+  onOpenQiblaCompass: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -415,6 +417,18 @@ fun SalahAndFajrAlarmCard(
           }
 
           Row {
+            IconButton(
+              onClick = onOpenQiblaCompass,
+              modifier = Modifier
+                .size(36.dp)
+                .testTag("salah_card_qibla_btn")
+            ) {
+              Icon(
+                imageVector = Icons.Default.Explore,
+                contentDescription = "Open Qibla Direction Compass",
+                tint = GoldPrimary
+              )
+            }
             IconButton(
               onClick = onRefreshSchedule,
               modifier = Modifier

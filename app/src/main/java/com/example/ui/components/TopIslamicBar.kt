@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
@@ -51,6 +52,7 @@ fun TopIslamicBar(
   themeMode: AppThemeMode = AppThemeMode.LIGHT,
   isOfflineMode: Boolean = false,
   onToggleOfflineMode: () -> Unit = {},
+  onOpenQiblaClick: () -> Unit = {},
   onOpenDownloadsClick: () -> Unit = {},
   onOpenEvidenceClick: () -> Unit = {},
   onCycleThemeMode: () -> Unit = {},
@@ -131,6 +133,16 @@ fun TopIslamicBar(
     },
     actions = {
       IconButton(
+        onClick = onOpenQiblaClick,
+        modifier = Modifier.testTag("top_bar_qibla_action")
+      ) {
+        Icon(
+          imageVector = Icons.Default.Explore,
+          contentDescription = "Qibla Direction Compass",
+          tint = GoldPrimary
+        )
+      }
+      IconButton(
         onClick = onOpenEvidenceClick,
         modifier = Modifier.testTag("top_bar_evidence_action")
       ) {
@@ -157,8 +169,8 @@ fun TopIslamicBar(
         val icon = when (themeMode) {
           AppThemeMode.LIGHT -> Icons.Default.LightMode
           AppThemeMode.EYE_COMFORT -> Icons.Default.RemoveRedEye
-          AppThemeMode.DARK -> Icons.Default.DarkMode
-          AppThemeMode.ROYAL_EMERALD, AppThemeMode.MADINAH_PARCHMENT -> Icons.Default.Palette
+          AppThemeMode.DARK, AppThemeMode.PURE_BLACK -> Icons.Default.DarkMode
+          AppThemeMode.ROYAL_EMERALD, AppThemeMode.MADINAH_PARCHMENT, AppThemeMode.SAPPHIRE_BLUE -> Icons.Default.Palette
           AppThemeMode.AUTO -> Icons.Default.BrightnessAuto
         }
         Icon(

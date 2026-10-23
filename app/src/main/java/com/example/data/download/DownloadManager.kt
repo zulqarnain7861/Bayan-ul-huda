@@ -388,7 +388,7 @@ class DownloadManager(
       ContentLicenceEntity(
         resourceId = "everyayah_audio",
         provider = "EveryAyah.com & QuranicAudio.com",
-        title = "Verified Quran Recitations (Al-Husary, Alafasy, Abdul Basit, Al-Shatri)",
+        title = "Verified Quran Recitations (Al-Husary, Abdul Basit, Al-Minshawi, Al-Sudais, Al-Shatri, Karim Mansouri)",
         rightsHolder = "EveryAyah & QuranicAudio Contributors",
         licenceUrl = "https://everyayah.com/",
         offlineStorageAllowed = true,

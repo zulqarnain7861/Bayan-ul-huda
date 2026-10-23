@@ -2,10 +2,8 @@ package com.example.ui.prayer
 
 import android.content.Context
 import android.media.AudioAttributes
-import android.media.AudioFormat
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.AudioTrack
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.VibrationEffect
@@ -15,8 +13,6 @@ import com.example.data.prayer.MuezzinAudioOption
 import com.example.data.prayer.PrayerAndAlarmConfig
 import com.example.data.prayer.PrayerPreferencesManager
 import com.example.data.prayer.PrayerTimeCalculator
-import kotlin.math.PI
-import kotlin.math.sin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,6 +33,7 @@ data class FajrAlarmPlaybackState(
   val remainingSeconds: Int = 0, // Max 900 seconds (15 minutes)
   val maxDurationSeconds: Int = 900,
   val includeFajrTathwibPhrase: Boolean = false,
+  val isPureVocalWithoutMusic: Boolean = true,
   val arabicWakeMessage: String = "الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ • قُمْ إِلَى صَلَاةِ الْفَجْرِ",
   val transliterationMessage: String = PrayerTimeCalculator.FAJR_TATHWIB_TRANSLITERATION,
   val englishWakeMessage: String = "Prayer is better than sleep — Rise for the blessed Fajr prayer.",
@@ -47,12 +44,12 @@ object AzanAudioController {
 
   const val MAX_FAJR_ALARM_DURATION_SECONDS = 15 * 60 // 15 minutes strict cap
   const val STANDARD_AZAN_DURATION_SECONDS = 3 * 60 + 30 // 3.5 minutes for regular prayer Azan
+  const val IS_PURE_VOCAL_WITHOUT_MUSIC = true
 
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
   private var activeJob: Job? = null
-  private var toneSynthJob: Job? = null
+  private var playbackJob: Job? = null
   private var mediaPlayer: MediaPlayer? = null
-  private var audioTrack: AudioTrack? = null
   private var previousSystemAlarmVolume: Int? = null
   private var audioFocusRequest: AudioFocusRequest? = null
 
@@ -88,8 +85,8 @@ object AzanAudioController {
 
     val title = when {
       isTahajjudAlarm -> "Tahajjud Wake-Up Alarm (Final Third of Night)"
-      isSpecial15MinFajrAlarm -> "Fajr 15-Minute Wake-Up Alarm"
-      else -> "$prayerName Azan (${muezzin.title})"
+      isSpecial15MinFajrAlarm -> "Fajr 15-Minute Pure Vocal Azan Alarm"
+      else -> "$prayerName Pure Vocal Azan (${muezzin.title})"
     }
 
     applyAlarmAudioFocusAndVolume(appCtx, config)
@@ -103,16 +100,17 @@ object AzanAudioController {
       prayerOrAlarmTitle = title,
       muezzinTitle = muezzin.title,
       currentStageLabel = if (isSpecial15MinFajrAlarm && config.progressiveSequence) {
-        "Stage 1/3: Gentle Dawn Awakening Chime"
+        "Stage 1/2: Pure Vocal Fajr Azan (الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ — No Music)"
       } else {
-        "Playing Authentic Azan Audio"
+        "Playing Pure Vocal Azan Audio (No Music)"
       },
       remainingSeconds = totalSeconds,
       maxDurationSeconds = totalSeconds,
-      includeFajrTathwibPhrase = isFajrRelated
+      includeFajrTathwibPhrase = isFajrRelated,
+      isPureVocalWithoutMusic = true
     )
 
-    startAudioPlaybackEngine(
+    startPureVocalPlaybackEngine(
       context = appCtx,
       streamUrl = muezzin.streamUrl,
       volumeScalar = (config.alarmVolumePercent / 100f).coerceIn(0.2f, 1.0f),
@@ -127,12 +125,11 @@ object AzanAudioController {
         val elapsed = totalSeconds - remaining
         val stage = if (isSpecial15MinFajrAlarm && config.progressiveSequence) {
           when {
-            elapsed < 45 -> "Stage 1/3: Gentle Initial Awakening Audio"
-            elapsed < 300 -> "Stage 2/3: Fajr Azan (الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ)"
-            else -> "Stage 3/3: Progressive Fajr Wake-Up Reminder (15-Min Cap)"
+            elapsed < 240 -> "Stage 1/2: Pure Vocal Fajr Azan (الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ — No Music)"
+            else -> "Stage 2/2: Pure Vocal Fajr Azan Repetition (15-Min Cap — No Music)"
           }
         } else {
-          "Authentic Azan Playback Active"
+          "Pure Vocal Azan Playback Active (No Music)"
         }
         _playbackState.value = _playbackState.value.copy(
           remainingSeconds = remaining,
@@ -160,8 +157,8 @@ object AzanAudioController {
   fun stopAlarm(context: Context) {
     activeJob?.cancel()
     activeJob = null
-    toneSynthJob?.cancel()
-    toneSynthJob = null
+    playbackJob?.cancel()
+    playbackJob = null
 
     try {
       mediaPlayer?.stop()
@@ -173,42 +170,30 @@ object AzanAudioController {
     }
     mediaPlayer = null
 
-    try {
-      audioTrack?.stop()
-    } catch (_: Exception) {
-    }
-    try {
-      audioTrack?.release()
-    } catch (_: Exception) {
-    }
-    audioTrack = null
-
     restoreSystemAlarmVolumeAndFocus(context.applicationContext)
     _playbackState.value = FajrAlarmPlaybackState(isActive = false)
   }
 
-  private fun startAudioPlaybackEngine(
+  private fun startPureVocalPlaybackEngine(
     context: Context,
     streamUrl: String,
     volumeScalar: Float,
     isProgressive15Min: Boolean
   ) {
-    toneSynthJob?.cancel()
-    toneSynthJob = scope.launch(Dispatchers.IO) {
-      var streamingStarted = false
+    playbackJob?.cancel()
+    playbackJob = scope.launch(Dispatchers.IO) {
       try {
         val mp = MediaPlayer()
         mp.setAudioAttributes(
           AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
             .build()
         )
         mp.setDataSource(streamUrl)
         mp.isLooping = isProgressive15Min
         mp.setVolume(volumeScalar, volumeScalar)
         mp.setOnPreparedListener { player ->
-          streamingStarted = true
           player.start()
         }
         mp.setOnCompletionListener { player ->
@@ -222,78 +207,8 @@ object AzanAudioController {
         mp.prepareAsync()
         mediaPlayer = mp
       } catch (_: Exception) {
-        streamingStarted = false
+        // Pure vocal Azan only — never synthesize musical tones or chimes
       }
-
-      // Wait briefly to see if network stream connects; simultaneously or as offline fallback,
-      // generate a calm melodic Maqam Hijaz cadence on USAGE_ALARM so offline wake-up always works.
-      delay(1200L)
-      if (!streamingStarted && isActive && _playbackState.value.isActive) {
-        playOfflineMelodicAzanCadence(volumeScalar, isProgressive15Min)
-      }
-    }
-  }
-
-  private suspend fun playOfflineMelodicAzanCadence(
-    baseVolume: Float,
-    progressiveBoost: Boolean
-  ) {
-    val sampleRate = 22050
-    // Maqam Hijaz notes (D4, Eb4, F#4, G4, A4, Bb4, C#5, D5)
-    val hijazFrequencies = doubleArrayOf(293.66, 311.13, 369.99, 392.00, 440.00, 466.16, 554.37, 587.33)
-    val minBuf = AudioTrack.getMinBufferSize(
-      sampleRate,
-      AudioFormat.CHANNEL_OUT_MONO,
-      AudioFormat.ENCODING_PCM_16BIT
-    ).coerceAtLeast(4096)
-
-    val track = try {
-      AudioTrack.Builder()
-        .setAudioAttributes(
-          AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        )
-        .setAudioFormat(
-          AudioFormat.Builder()
-            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-            .setSampleRate(sampleRate)
-            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-            .build()
-        )
-        .setBufferSizeInBytes(minBuf)
-        .setTransferMode(AudioTrack.MODE_STREAM)
-        .build()
-    } catch (_: Exception) {
-      return
-    }
-
-    audioTrack = track
-    try {
-      track.play()
-      var cycle = 0
-      while (_playbackState.value.isActive) {
-        val currentVol = if (progressiveBoost) {
-          (baseVolume * (0.55f + (cycle.coerceAtMost(6) * 0.075f))).coerceIn(0.25f, 1.0f)
-        } else {
-          baseVolume
-        }
-        for (freq in hijazFrequencies) {
-          if (!_playbackState.value.isActive) break
-          val durationSamples = (sampleRate * 0.45).toInt()
-          val samples = ShortArray(durationSamples)
-          for (i in 0 until durationSamples) {
-            val env = sin(PI * i / durationSamples)
-            val wave = sin(2.0 * PI * freq * i / sampleRate)
-            samples[i] = (wave * env * currentVol * Short.MAX_VALUE * 0.45).toInt().toShort()
-          }
-          track.write(samples, 0, samples.size)
-        }
-        cycle++
-        delay(800L)
-      }
-    } catch (_: Exception) {
     }
   }
 
@@ -305,7 +220,7 @@ object AzanAudioController {
           .setAudioAttributes(
             AudioAttributes.Builder()
               .setUsage(AudioAttributes.USAGE_ALARM)
-              .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+              .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
               .build()
           )
           .build()
