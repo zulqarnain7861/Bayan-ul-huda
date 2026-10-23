@@ -277,9 +277,9 @@ class AudioPlayerManager(private val context: Context) {
         prepareAsync()
       }
 
-      // If network is unreachable or slow (>2.2s), smoothly start offline recitation cadence so popup never hangs
+      // If network is unreachable or slow (>6s), smoothly transition to silent offline progress so popup never hangs and never synthesizes music
       fallbackJob = scope.launch {
-        delay(2200L)
+        delay(6000L)
         if (!preparedRef && _audioState.value.isBuffering && _audioState.value.isVisible) {
           startOfflineRecitationFallback(surah, ayah, surahName)
         }
@@ -304,7 +304,7 @@ class AudioPlayerManager(private val context: Context) {
     }
     mediaPlayer = null
 
-    val totalDurationMs = 6000
+    val totalDurationMs = 4000
     _audioState.value = _audioState.value.copy(
       isVisible = true,
       isBuffering = false,
@@ -314,82 +314,20 @@ class AudioPlayerManager(private val context: Context) {
       surahName = surahName,
       currentPositionMs = 0,
       durationMs = totalDurationMs,
-      statusMessage = customOfflineStatus ?: "${_audioState.value.reciter.name} (Offline Recitation Cadence)"
+      statusMessage = customOfflineStatus ?: "${_audioState.value.reciter.name} (Pure Vocal Only — Download Surah for Offline Audio)"
     )
 
+    // Strictly no synthesized musical tones or chimes — progress silently if network/offline MP3 is unavailable
     progressJob = scope.launch(Dispatchers.IO) {
-      val sampleRate = 22050
-      val maqamNotes = doubleArrayOf(293.66, 329.63, 369.99, 392.00, 440.00, 392.00, 369.99, 329.63)
-      val minBuf = try {
-        AudioTrack.getMinBufferSize(
-          sampleRate,
-          AudioFormat.CHANNEL_OUT_MONO,
-          AudioFormat.ENCODING_PCM_16BIT
-        ).coerceAtLeast(4096)
-      } catch (_: Exception) {
-        4096
-      }
-
-      val track = try {
-        AudioTrack.Builder()
-          .setAudioAttributes(
-            AudioAttributes.Builder()
-              .setUsage(AudioAttributes.USAGE_MEDIA)
-              .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-              .build()
-          )
-          .setAudioFormat(
-            AudioFormat.Builder()
-              .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-              .setSampleRate(sampleRate)
-              .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-              .build()
-          )
-          .setBufferSizeInBytes(minBuf)
-          .setTransferMode(AudioTrack.MODE_STREAM)
-          .build()
-      } catch (_: Exception) {
-        null
-      }
-
-      offlineAudioTrack = track
-      try {
-        track?.play()
-      } catch (_: Exception) {
-      }
-
-      val steps = 20
+      val steps = 16
       val stepMs = totalDurationMs / steps
       for (step in 1..steps) {
         if (!isActive || !_audioState.value.isPlaying) break
-        val freq = maqamNotes[step % maqamNotes.size]
-        if (track != null) {
-          try {
-            val samplesCount = (sampleRate * (stepMs / 1000.0)).toInt()
-            val samples = ShortArray(samplesCount)
-            for (i in 0 until samplesCount) {
-              val env = sin(PI * i / samplesCount)
-              val wave = sin(2.0 * PI * freq * i / sampleRate)
-              samples[i] = (wave * env * Short.MAX_VALUE * 0.3f).toInt().toShort()
-            }
-            track.write(samples, 0, samples.size)
-          } catch (_: Exception) {
-            delay(stepMs.toLong())
-          }
-        } else {
-          delay(stepMs.toLong())
-        }
+        delay(stepMs.toLong())
         _audioState.value = _audioState.value.copy(
           currentPositionMs = (step * stepMs).coerceAtMost(totalDurationMs)
         )
       }
-
-      try {
-        track?.stop()
-        track?.release()
-      } catch (_: Exception) {
-      }
-      offlineAudioTrack = null
 
       if (_audioState.value.isVisible && _audioState.value.isPlaying) {
         _audioState.value = _audioState.value.copy(

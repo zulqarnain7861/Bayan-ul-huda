@@ -44,6 +44,7 @@ object AzanAudioController {
 
   const val MAX_FAJR_ALARM_DURATION_SECONDS = 15 * 60 // 15 minutes strict cap
   const val STANDARD_AZAN_DURATION_SECONDS = 3 * 60 + 30 // 3.5 minutes for regular prayer Azan
+  const val SHORT_TAKBIR_VOCAL_DURATION_SECONDS = 30 // 30 seconds pure vocal Takbir (no musical tone)
   const val IS_PURE_VOCAL_WITHOUT_MUSIC = true
 
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -60,7 +61,8 @@ object AzanAudioController {
     context: Context,
     prayerName: String,
     isSpecial15MinFajrAlarm: Boolean,
-    isTahajjudAlarm: Boolean = false
+    isTahajjudAlarm: Boolean = false,
+    azanModeName: String = "FULL_AZAN"
   ) {
     stopAlarm(context)
     val appCtx = context.applicationContext
@@ -77,15 +79,17 @@ object AzanAudioController {
       if (selected.includesFajrTathwib) MuezzinAudioOption.MAKKAH_HARAM else selected
     }
 
-    val totalSeconds = if (isSpecial15MinFajrAlarm || isTahajjudAlarm) {
-      MAX_FAJR_ALARM_DURATION_SECONDS
-    } else {
-      STANDARD_AZAN_DURATION_SECONDS
+    val isShortVocalTakbir = !isSpecial15MinFajrAlarm && !isTahajjudAlarm && azanModeName == "SHORT_TONE"
+    val totalSeconds = when {
+      isSpecial15MinFajrAlarm || isTahajjudAlarm -> MAX_FAJR_ALARM_DURATION_SECONDS
+      isShortVocalTakbir -> SHORT_TAKBIR_VOCAL_DURATION_SECONDS
+      else -> STANDARD_AZAN_DURATION_SECONDS
     }
 
     val title = when {
-      isTahajjudAlarm -> "Tahajjud Wake-Up Alarm (Final Third of Night)"
-      isSpecial15MinFajrAlarm -> "Fajr 15-Minute Pure Vocal Azan Alarm"
+      isTahajjudAlarm -> "Tahajjud Wake-Up Alarm (Pure Vocal Azan, No Music)"
+      isSpecial15MinFajrAlarm -> "Fajr 15-Minute Pure Vocal Azan Alarm (No Music)"
+      isShortVocalTakbir -> "$prayerName Vocal Takbir Reminder (No Music)"
       else -> "$prayerName Pure Vocal Azan (${muezzin.title})"
     }
 
@@ -181,34 +185,56 @@ object AzanAudioController {
     isProgressive15Min: Boolean
   ) {
     playbackJob?.cancel()
+    val candidateVocalUrls = listOf(
+      streamUrl,
+      "https://www.islamcan.com/audio/adhan/azan1.mp3",
+      "https://www.islamcan.com/audio/adhan/azan2.mp3"
+    ).distinct()
+
     playbackJob = scope.launch(Dispatchers.IO) {
-      try {
-        val mp = MediaPlayer()
-        mp.setAudioAttributes(
-          AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-            .build()
-        )
-        mp.setDataSource(streamUrl)
-        mp.isLooping = isProgressive15Min
-        mp.setVolume(volumeScalar, volumeScalar)
-        mp.setOnPreparedListener { player ->
-          player.start()
-        }
-        mp.setOnCompletionListener { player ->
-          if (isProgressive15Min && _playbackState.value.isActive) {
-            player.seekTo(0)
-            player.start()
-          } else {
-            stopAlarm(context)
+      var urlIndex = 0
+      fun tryPlayVocalUrl(index: Int) {
+        if (index >= candidateVocalUrls.size || !_playbackState.value.isActive) return
+        try {
+          try {
+            mediaPlayer?.release()
+          } catch (_: Exception) {
           }
+          val mp = MediaPlayer()
+          mp.setAudioAttributes(
+            AudioAttributes.Builder()
+              .setUsage(AudioAttributes.USAGE_ALARM)
+              .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+              .build()
+          )
+          mp.setDataSource(candidateVocalUrls[index])
+          mp.isLooping = isProgressive15Min
+          mp.setVolume(volumeScalar, volumeScalar)
+          mp.setOnPreparedListener { player ->
+            player.start()
+          }
+          mp.setOnCompletionListener { player ->
+            if (isProgressive15Min && _playbackState.value.isActive) {
+              player.seekTo(0)
+              player.start()
+            } else {
+              stopAlarm(context)
+            }
+          }
+          mp.setOnErrorListener { _, _, _ ->
+            urlIndex += 1
+            if (urlIndex < candidateVocalUrls.size && _playbackState.value.isActive) {
+              tryPlayVocalUrl(urlIndex)
+            }
+            true
+          }
+          mp.prepareAsync()
+          mediaPlayer = mp
+        } catch (_: Exception) {
+          // Pure vocal Azan only — never synthesize musical tones or chimes
         }
-        mp.prepareAsync()
-        mediaPlayer = mp
-      } catch (_: Exception) {
-        // Pure vocal Azan only — never synthesize musical tones or chimes
       }
+      tryPlayVocalUrl(0)
     }
   }
 
@@ -216,7 +242,8 @@ object AzanAudioController {
     try {
       val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+          .setWillPauseWhenDucked(true)
           .setAudioAttributes(
             AudioAttributes.Builder()
               .setUsage(AudioAttributes.USAGE_ALARM)

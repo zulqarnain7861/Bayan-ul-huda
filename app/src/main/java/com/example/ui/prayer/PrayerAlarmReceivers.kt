@@ -54,6 +54,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
             putExtra(PrayerAlarmScheduler.EXTRA_PRAYER_NAME, prayerName)
             putExtra(PrayerAlarmScheduler.EXTRA_IS_SPECIAL_FAJR, isSpecialFajr)
             putExtra(PrayerAlarmScheduler.EXTRA_IS_TAHAJJUD, isTahajjud)
+            putExtra(PrayerAlarmScheduler.EXTRA_AZAN_MODE, modeName)
           }
           try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -67,7 +68,8 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
               context = appCtx,
               prayerName = prayerName,
               isSpecial15MinFajrAlarm = isSpecialFajr,
-              isTahajjudAlarm = isTahajjud
+              isTahajjudAlarm = isTahajjud,
+              azanModeName = modeName
             )
             AzanForegroundService.postHighPriorityAlarmNotification(
               context = appCtx,
@@ -116,6 +118,8 @@ class AzanForegroundService : Service() {
     val prayerName = intent?.getStringExtra(PrayerAlarmScheduler.EXTRA_PRAYER_NAME) ?: "Fajr"
     val isSpecialFajr = intent?.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_SPECIAL_FAJR, false) ?: false
     val isTahajjud = intent?.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_TAHAJJUD, false) ?: false
+    val modeName = intent?.getStringExtra(PrayerAlarmScheduler.EXTRA_AZAN_MODE)
+      ?: AzanNotificationMode.FULL_AZAN.name
 
     ensureNotificationChannel(this)
     val notification = buildAlarmNotification(this, prayerName, isSpecialFajr)
@@ -128,7 +132,8 @@ class AzanForegroundService : Service() {
       context = this,
       prayerName = prayerName,
       isSpecial15MinFajrAlarm = isSpecialFajr,
-      isTahajjudAlarm = isTahajjud
+      isTahajjudAlarm = isTahajjud,
+      azanModeName = modeName
     )
 
     return START_NOT_STICKY
@@ -140,18 +145,21 @@ class AzanForegroundService : Service() {
   }
 
   companion object {
-    const val CHANNEL_ID = "bayan_azan_and_fajr_alarm_channel"
+    private const val LEGACY_CHANNEL_ID = "bayan_azan_and_fajr_alarm_channel"
+    const val CHANNEL_ID = "bayan_pure_vocal_azan_alarm_channel_v2"
     const val NOTIFICATION_ID = 4001
 
     fun ensureNotificationChannel(context: Context) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        runCatching { nm.deleteNotificationChannel(LEGACY_CHANNEL_ID) }
         val channel = NotificationChannel(
           CHANNEL_ID,
-          "Salah Azan & 15-Minute Fajr Wake-Up Alarm",
+          "Salah Azan & 15-Minute Fajr Wake-Up Alarm (Vocal Only, No Music)",
           NotificationManager.IMPORTANCE_HIGH
         ).apply {
-          description = "Authentic Azan notifications and 15-minute Fajr wake-up alarm with Snooze & Stop controls"
+          description = "Pure vocal Azan notifications and 15-minute Fajr wake-up alarm without system ringtone music"
+          setSound(null, null)
           enableVibration(true)
           lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
@@ -184,6 +192,7 @@ class AzanForegroundService : Service() {
         .setContentText("Hayya 'alas-Salah — Come to Prayer ($prayerName)")
         .setContentIntent(openIntent)
         .setAutoCancel(true)
+        .setSound(null)
         .setSilent(true)
         .build()
       nm.notify(NOTIFICATION_ID + 1, notif)
@@ -235,13 +244,13 @@ class AzanForegroundService : Service() {
       val title = if (isSpecialFajr || prayerName.contains("Fajr", ignoreCase = true)) {
         "Fajr Wake-Up • ${PrayerTimeCalculator.FAJR_TATHWIB_ARABIC}"
       } else {
-        "$prayerName Azan — Hayya 'alas-Salah"
+        "$prayerName Pure Vocal Azan — Hayya 'alas-Salah"
       }
 
       val body = if (isSpecialFajr || prayerName.contains("Fajr", ignoreCase = true)) {
-        "${PrayerTimeCalculator.FAJR_TATHWIB_TRANSLITERATION} (${PrayerTimeCalculator.FAJR_TATHWIB_ENGLISH}) • Active up to 15 min"
+        "${PrayerTimeCalculator.FAJR_TATHWIB_TRANSLITERATION} (${PrayerTimeCalculator.FAJR_TATHWIB_ENGLISH}) • Pure Vocal Azan (No Music)"
       } else {
-        "It is time for $prayerName prayer. Tap Stop or Snooze."
+        "It is time for $prayerName prayer (Pure Vocal Azan, No Music). Tap Stop or Snooze."
       }
 
       return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -251,6 +260,8 @@ class AzanForegroundService : Service() {
         .setStyle(NotificationCompat.BigTextStyle().bigText("$body\nنماز نیند سے بہتر ہے"))
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setCategory(NotificationCompat.CATEGORY_ALARM)
+        .setSound(null)
+        .setSilent(true)
         .setOngoing(true)
         .setContentIntent(openAppIntent)
         .setFullScreenIntent(openAppIntent, true)

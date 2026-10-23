@@ -3,8 +3,8 @@ package com.example.data.prayer
 import android.content.Context
 
 enum class AzanNotificationMode(val label: String) {
-  FULL_AZAN("Full Azan Audio"),
-  SHORT_TONE("Short Takbir / Notification"),
+  FULL_AZAN("Full Vocal Azan (No Music)"),
+  SHORT_TONE("Short Vocal Takbir (No Music)"),
   SILENT("Silent Reminder"),
   OFF("Disabled")
 }
