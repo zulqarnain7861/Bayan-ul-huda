@@ -27,6 +27,7 @@ import com.example.ui.prayer.BootAndTimeChangeReceiver
 import com.example.ui.prayer.PrayerAlarmScheduler
 import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.ScheherazadeFontFamily
+import com.example.ui.theme.UrduNastaliqFontFamily
 import java.util.Calendar
 import java.util.TimeZone
 import kotlinx.coroutines.flow.first
@@ -57,14 +58,18 @@ class ExampleRobolectricTest {
     assertTrue(R.font.amiri_quran != 0)
     assertTrue(R.font.amiri != 0)
     assertTrue(R.font.scheherazade_new != 0)
+    assertTrue(R.font.noto_nastaliq_urdu != 0)
     assertNotNull(AmiriFontFamily)
     assertNotNull(ScheherazadeFontFamily)
+    assertNotNull(UrduNastaliqFontFamily)
 
     assertEquals("home", BayanNavRoutes.HOME)
     assertEquals("quran", BayanNavRoutes.QURAN)
     assertEquals("hadith", BayanNavRoutes.HADITH)
     assertEquals("search", BayanNavRoutes.SEARCH)
     assertEquals("library", BayanNavRoutes.LIBRARY)
+
+    assertEquals("https://wa.me/7889632693?text=Assalamu%20Alaikum", com.example.ui.components.WHATSAPP_SUPPORT_URL)
 
     assertTrue(AuthManager.startOrResumeGuestSession(context))
     assertTrue(AuthManager.isGuestSessionValid(context))
@@ -450,7 +455,7 @@ class ExampleRobolectricTest {
     // Verify Surah Ar-Ra'd 13:1 canonical text and dagger alif (\u0670) remain untouched
     val arRadAyahs = OfflineQuranAssetLoader.loadSurahFromAssets(application, 13)
     val arRadAyah1 = arRadAyahs.first { it.verseNumber == 1 }
-    assertTrue(arRadAyah1.textArabic.startsWith("الٓـمّٓرٰ"))
+    assertTrue(arRadAyah1.textArabic.startsWith("الٓمٓر"))
     assertTrue(arRadAyah1.textArabic.contains('\u0670'))
 
     // Closing Surah Reader resets Reading Mode
@@ -555,7 +560,392 @@ class ExampleRobolectricTest {
     assertFalse(com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper("guest@example.com"))
     assertFalse(com.example.data.remote.SecurityIntegrityGuard.isAuthorizedDeveloper(null))
   }
+
+  @Test
+  fun `verify Daily Duas Special Occasions Friday Bath Reminder and Necessary Sunnah Reminders`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    assertEquals("duas", BayanNavRoutes.DUAS)
+
+    // 1. Verify Masnoon Duas & Special Occasions Duas data integrity
+    val allDuas = com.example.data.model.DailyDuasDataProvider.allDuas
+    assertTrue(allDuas.size >= 25)
+    assertTrue(allDuas.all {
+      it.arabicText.isNotBlank() &&
+        it.transliteration.isNotBlank() &&
+        it.englishTranslation.isNotBlank() &&
+        it.urduTranslation.isNotBlank() &&
+        it.authenticReference.isNotBlank()
+    })
+
+    val masnoonDuas = allDuas.filter { it.category != com.example.data.model.DuaCategory.SPECIAL_OCCASIONS }
+    val specialOccasionDuas = allDuas.filter { it.category == com.example.data.model.DuaCategory.SPECIAL_OCCASIONS }
+    assertTrue(masnoonDuas.size >= 14)
+    assertTrue(specialOccasionDuas.size >= 11)
+    assertTrue(specialOccasionDuas.any { it.occasionType == com.example.data.model.SpecialOccasionType.JUMUAH_FRIDAY })
+    assertTrue(specialOccasionDuas.any { it.occasionType == com.example.data.model.SpecialOccasionType.RAMADAN_IFTAR })
+    assertTrue(specialOccasionDuas.any { it.occasionType == com.example.data.model.SpecialOccasionType.LAYLATUL_QADR })
+    assertTrue(specialOccasionDuas.any { it.occasionType == com.example.data.model.SpecialOccasionType.SAFAR_TRAVEL })
+    assertTrue(specialOccasionDuas.any { it.occasionType == com.example.data.model.SpecialOccasionType.ISTIKHARAH })
+
+    // 2. Verify Friday Bath (Jumu'ah Ghusl) Reminder & Necessary Sunnah Reminders
+    val reminders = com.example.data.model.DailyDuasDataProvider.defaultNecessaryReminders
+    assertTrue(reminders.size >= 8)
+    val fridayBathSpec = reminders.firstOrNull { it.id == "rem_friday_bath_ghusl" }
+    assertNotNull(fridayBathSpec)
+    assertTrue(fridayBathSpec!!.title.contains("Friday Bath", ignoreCase = true))
+    assertEquals(com.example.data.model.ReminderFrequency.WEEKLY_FRIDAY, fridayBathSpec.frequency)
+
+    val updatedState = com.example.data.prayer.SunnahReminderManager.setFridayBathReminder(
+      context = context,
+      enabled = true,
+      time24h = "09:00"
+    )
+    assertTrue(updatedState.fridayBathReminderEnabled)
+    assertEquals("09:00", updatedState.fridayBathReminderTime24h)
+
+    val afterCheck = com.example.data.prayer.SunnahReminderManager.toggleFridayChecklistItem(
+      context = context,
+      itemId = "friday_ghusl_bath"
+    )
+    assertTrue(afterCheck.completedFridayChecklistIds.contains("friday_ghusl_bath"))
+
+    val afterSalawat = com.example.data.prayer.SunnahReminderManager.incrementFridaySalawat(context, 10)
+    assertEquals(10, afterSalawat.fridaySalawatCount)
+
+    val scheduledSummary = com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(context)
+    assertTrue(scheduledSummary.any { it.contains("Friday Bath", ignoreCase = true) })
+  }
+
+  @Test
+  fun `verify offline Adhan alarm recordings 100 percent default volume preview test keep and lock screen playback`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+
+    // 1. Verify default 100% hardware-honest volume (0%..100% range, no false >100% software claims)
+    val defaultConfig = PrayerAndAlarmConfig()
+    assertEquals(100, defaultConfig.alarmVolumePercent)
+    assertTrue(defaultConfig.boostSystemAlarmStream)
+    assertTrue(defaultConfig.vibrationEnabled)
+    assertTrue(defaultConfig.continuousVibration)
+    assertEquals(0, AzanAudioController.computeLoudnessGainMb(100))
+
+    // Persist and reload custom volume (e.g. 85%) and favourite Adhan
+    val customConfig = defaultConfig.copy(
+      alarmVolumePercent = 85,
+      selectedMuezzinId = com.example.data.prayer.MuezzinAudioOption.MADINAH_NABAWI.id
+    )
+    PrayerPreferencesManager.saveConfig(context, customConfig)
+    val saved = PrayerPreferencesManager.loadConfig(context)
+    assertEquals(85, saved.alarmVolumePercent)
+    assertEquals(com.example.data.prayer.MuezzinAudioOption.MADINAH_NABAWI.id, saved.selectedMuezzinId)
+
+    // Save favourite Muezzin and reset back to 100% default
+    val favSaved = AzanAudioController.selectAndSaveFavouriteMuezzin(
+      context,
+      com.example.data.prayer.MuezzinAudioOption.MAKKAH_HARAM
+    )
+    assertEquals(com.example.data.prayer.MuezzinAudioOption.MAKKAH_HARAM.id, favSaved.selectedMuezzinId)
+    AzanAudioController.savePreferredAlarmVolume(context, 100)
+    assertEquals(100, PrayerPreferencesManager.loadConfig(context).alarmVolumePercent)
+
+    // 2. Verify all 14 genuine pure-vocal Adhans are stored locally offline in assets/adhan/<id>.wav
+    val muezzins = com.example.data.prayer.MuezzinAudioOption.entries
+    assertEquals(14, muezzins.size)
+    assertTrue(muezzins.all { it.subtitle.contains("No Music", ignoreCase = true) })
+    assertTrue(muezzins.any { it.title.contains("Masjid an-Nabawi", ignoreCase = true) || it.originMasjid.contains("Masjid an-Nabawi", ignoreCase = true) })
+    assertTrue(muezzins.any { it.title.contains("Ali Ahmed Mulla") })
+    assertTrue(muezzins.any { it.title.contains("Essam Bukhari") })
+    assertTrue(muezzins.any { it.tradition == "SHIA" })
+
+    val offlineVerification = AzanAudioController.verifyAllOfflineAdhanRecordings(context)
+    assertEquals(14, offlineVerification.size)
+    assertTrue(
+      "All 14 Adhan recordings must exist locally in assets/adhan/ with non-zero bytes",
+      offlineVerification.values.all { it }
+    )
+
+    // 3. Preview, Test, and Keep offline Adhan playback
+    AzanAudioController.savePreferredAlarmVolume(context, 90)
+    val madinahAdhan = com.example.data.prayer.MuezzinAudioOption.MADINAH_NABAWI
+    AzanAudioController.previewMuezzinAzan(context, madinahAdhan)
+    val previewState = AzanAudioController.playbackState.value
+    assertTrue(previewState.isActive)
+    assertTrue(previewState.isPreviewMode)
+    assertTrue(previewState.isPlayingOfflineLocalAsset)
+    assertEquals(madinahAdhan.id, previewState.activeMuezzinId)
+    assertEquals(90, previewState.currentVolumePercent)
+
+    // Full Alarm Test at 100% + continuous vibration
+    AzanAudioController.savePreferredAlarmVolume(context, 100)
+    val abdulBasit = com.example.data.prayer.MuezzinAudioOption.EGYPT_ABDUL_BASIT
+    AzanAudioController.testMuezzinAzan(context, abdulBasit)
+    val stateAfterTest = AzanAudioController.playbackState.value
+    assertTrue(stateAfterTest.isActive)
+    assertFalse(stateAfterTest.isPreviewMode)
+    assertTrue(stateAfterTest.isPlayingOfflineLocalAsset)
+    assertEquals(abdulBasit.id, stateAfterTest.activeMuezzinId)
+    assertEquals(100, stateAfterTest.currentVolumePercent)
+    assertTrue(stateAfterTest.isContinuousVibrationActive)
+    assertTrue(stateAfterTest.vibrationPulseCount >= 1)
+
+    // Hardware alarm volume status check
+    val hwStatus = AzanAudioController.getHardwareAlarmVolumeStatus(context)
+    assertTrue(hwStatus.maxSteps > 0)
+    assertTrue(hwStatus.guidanceMessage.isNotBlank())
+
+    // Stop active alarm -> stops both audio and continuous vibration
+    AzanAudioController.stopAlarm(context)
+    assertFalse(AzanAudioController.playbackState.value.isActive)
+    assertFalse(AzanAudioController.playbackState.value.isContinuousVibrationActive)
+
+    // 4. Test standalone continuous vibration test start & stop
+    AzanAudioController.startContinuousVibrationTest(context)
+    val vibTestState = AzanAudioController.playbackState.value
+    assertFalse(vibTestState.isActive)
+    assertTrue(vibTestState.isContinuousVibrationActive)
+    assertTrue(vibTestState.isStandaloneVibrationTest)
+    assertTrue(vibTestState.vibrationPulseCount >= 1)
+
+    AzanAudioController.stopContinuousVibration(context)
+    assertFalse(AzanAudioController.playbackState.value.isContinuousVibrationActive)
+    assertFalse(AzanAudioController.playbackState.value.isStandaloneVibrationTest)
+  }
+
+  @Test
+  fun `verify Friday and all other days calculation notification dispatch and Home Screen state`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val tz = TimeZone.getTimeZone("Asia/Kolkata")
+
+    // 1. Verify all 7 days of the week (Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday) have authentic Sunnah specs
+    val weekdaySpecs = com.example.data.model.DailyDuasDataProvider.weekdaySunnahSpecs
+    assertEquals(7, weekdaySpecs.size)
+    val expectedDays = setOf(
+      Calendar.FRIDAY,
+      Calendar.SATURDAY,
+      Calendar.SUNDAY,
+      Calendar.MONDAY,
+      Calendar.TUESDAY,
+      Calendar.WEDNESDAY,
+      Calendar.THURSDAY
+    )
+    assertEquals(expectedDays, weekdaySpecs.map { it.calendarDayOfWeek }.toSet())
+    assertTrue(weekdaySpecs.all {
+      it.primaryReminderTitle.isNotBlank() &&
+        it.arabicHadithSnippet.isNotBlank() &&
+        it.englishGuidance.isNotBlank() &&
+        it.urduGuidance.isNotBlank() &&
+        it.authenticReference.isNotBlank() &&
+        it.keySunnahBullets.isNotEmpty()
+    })
+
+    // 2. Calculate on a Friday (e.g. Friday, 23 Oct 2026)
+    val fridayCal = Calendar.getInstance(tz).apply {
+      set(2026, Calendar.OCTOBER, 23, 9, 0, 0)
+      set(Calendar.MILLISECOND, 0)
+    }
+    val fridayStatus = com.example.data.prayer.SunnahReminderManager.calculateDayAndWeekStatus(
+      nowMillis = fridayCal.timeInMillis,
+      timeZone = tz,
+      fridayBathTime24h = "09:30"
+    )
+    assertTrue(fridayStatus.isFridayToday)
+    assertEquals(Calendar.FRIDAY, fridayStatus.todayDayOfWeek)
+    assertEquals(0, fridayStatus.daysUntilNextFriday)
+    assertTrue(fridayStatus.nextFridayDateReadable.contains("Today is Blessed Friday", ignoreCase = true))
+    assertEquals(7, fridayStatus.upcoming7DaysSchedule.size)
+    assertTrue(fridayStatus.upcoming7DaysSchedule.first().isToday)
+    assertTrue(fridayStatus.upcoming7DaysSchedule.first().isFridayJumuah)
+    assertTrue(fridayStatus.notificationTitle.contains("Jumu'ah Mubarak", ignoreCase = true))
+
+    // 3. Calculate on a Monday (e.g. Monday, 26 Oct 2026) -> 4 days until Friday, Monday Sunnah Fast active
+    val mondayCal = Calendar.getInstance(tz).apply {
+      set(2026, Calendar.OCTOBER, 26, 8, 30, 0)
+      set(Calendar.MILLISECOND, 0)
+    }
+    val mondayStatus = com.example.data.prayer.SunnahReminderManager.calculateDayAndWeekStatus(
+      nowMillis = mondayCal.timeInMillis,
+      timeZone = tz,
+      fridayBathTime24h = "09:30"
+    )
+    assertFalse(mondayStatus.isFridayToday)
+    assertEquals(Calendar.MONDAY, mondayStatus.todayDayOfWeek)
+    assertEquals(4, mondayStatus.daysUntilNextFriday)
+    assertTrue(mondayStatus.isSunnahFastingDayToday)
+    assertTrue(mondayStatus.nextSunnahFastSummary.contains("Monday Sunnah Fast", ignoreCase = true))
+    assertEquals(7, mondayStatus.upcoming7DaysSchedule.size)
+
+    // 4. Calculate on a Thursday (e.g. Thursday, 29 Oct 2026) -> 1 day until Friday (Tomorrow is Blessed Friday)
+    val thursdayCal = Calendar.getInstance(tz).apply {
+      set(2026, Calendar.OCTOBER, 29, 10, 0, 0)
+      set(Calendar.MILLISECOND, 0)
+    }
+    val thursdayStatus = com.example.data.prayer.SunnahReminderManager.calculateDayAndWeekStatus(
+      nowMillis = thursdayCal.timeInMillis,
+      timeZone = tz,
+      fridayBathTime24h = "09:30"
+    )
+    assertEquals(Calendar.THURSDAY, thursdayStatus.todayDayOfWeek)
+    assertTrue(thursdayStatus.isThursdayJumuahEve)
+    assertEquals(1, thursdayStatus.daysUntilNextFriday)
+    assertTrue(thursdayStatus.nextFridayDateReadable.contains("Tomorrow is Blessed Friday", ignoreCase = true))
+
+    // 5. Verify Android Notification dispatch for Friday and other calculated days
+    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+    val shadowNm = org.robolectric.Shadows.shadowOf(nm)
+    nm.cancelAll()
+
+    val stateAfterFridayNotif = com.example.data.prayer.SunnahReminderManager.postCalculatedDayReminderNotification(
+      context = context,
+      dayOfWeekOverride = Calendar.FRIDAY,
+      nowMillis = fridayCal.timeInMillis
+    )
+    assertEquals(Calendar.FRIDAY, stateAfterFridayNotif.selectedPreviewDayOfWeek)
+    assertTrue(stateAfterFridayNotif.lastNotificationBannerMessage.contains("Jumu'ah Mubarak", ignoreCase = true))
+    assertTrue("Expected notification to be posted in NotificationManager", shadowNm.allNotifications.isNotEmpty())
+
+    // 6. Verify PrayerAlarmReceiver handles ACTION_SUNNAH_REMINDER_ALARM for rem_calculated_daily_day_sunnah
+    nm.cancelAll()
+    val alarmReceiver = com.example.ui.prayer.PrayerAlarmReceiver()
+    val calcAlarmIntent = Intent(context, com.example.ui.prayer.PrayerAlarmReceiver::class.java).apply {
+      action = com.example.data.prayer.SunnahReminderManager.ACTION_SUNNAH_REMINDER_ALARM
+      putExtra(com.example.data.prayer.SunnahReminderManager.EXTRA_REMINDER_ID, "rem_calculated_daily_day_sunnah")
+    }
+    alarmReceiver.onReceive(context, calcAlarmIntent)
+    assertTrue("Expected PrayerAlarmReceiver to post calculated day notification", shadowNm.allNotifications.isNotEmpty())
+  }
+
+  @Test
+  fun `verify Shia and Sunni Hadith and Book libraries pagination Entry Time Retry Coming Soon labels and zero Darussalam in Shia section`() {
+    // 1. Verify Hadith library integrity across all Sunni & Shia collections
+    val integrityReport = ExtendedHadithDataProvider.validateHadithLibraryIntegrity()
+    assertTrue(
+      "Expected valid Hadith library integrity report, got duplicates=${integrityReport.duplicateIds}, invalidNums=${integrityReport.invalidNumberIds}, crossContam=${integrityReport.gradingCrossContaminationIds}",
+      integrityReport.isValid
+    )
+
+    val sunniCols = ExtendedHadithDataProvider.sunniCollections
+    val shiaCols = ExtendedHadithDataProvider.shiaCollections
+    assertTrue("Expected at least 10 Sunni collections", sunniCols.size >= 10)
+    assertTrue("Expected at least 6 Shia collections", shiaCols.size >= 6)
+
+    // 2. Verify zero Darussalam labels, badges, or gradings anywhere in Shia Hadith collections
+    val allHadiths = ExtendedHadithDataProvider.getExtendedHadiths()
+    val shiaHadiths = allHadiths.filter {
+      ExtendedHadithDataProvider.isShiaCollection(it.collectionKey)
+    }
+    assertTrue("Expected multiple Shia Hadiths across all Shia collections", shiaHadiths.size >= 14)
+    shiaHadiths.forEach { h ->
+      val primaryBadge = ExtendedHadithDataProvider.formatPrimaryEditionBadge(h)
+      val inBookBadge = ExtendedHadithDataProvider.formatInBookBadge(h)
+      val methodologyLabel = ExtendedHadithDataProvider.formatGradingMethodologyLabel(h)
+      assertFalse(
+        "Shia primary badge must never contain Darussalam: $primaryBadge",
+        primaryBadge.contains("Darussalam", ignoreCase = true)
+      )
+      assertFalse(
+        "Shia in-book badge must never contain Darussalam: $inBookBadge",
+        inBookBadge.contains("Darussalam", ignoreCase = true)
+      )
+      assertFalse(
+        "Shia grading methodology must never contain Darussalam: $methodologyLabel",
+        methodologyLabel.contains("Darussalam", ignoreCase = true)
+      )
+      assertFalse(
+        "Shia grade string must never contain Darussalam: ${h.grade}",
+        h.grade.contains("Darussalam", ignoreCase = true)
+      )
+      val entryTime = ExtendedHadithDataProvider.getEntryTimestampForHadith(h)
+      assertTrue("Entry Time must be non-blank for ${h.collectionKey}:${h.hadithNumber}", entryTime.isNotBlank())
+    }
+
+    // 3. Verify Sunni Hadiths properly display Darussalam where applicable
+    val bukhariHadith = allHadiths.first { it.collectionKey == "bukhari" }
+    assertTrue(
+      ExtendedHadithDataProvider.formatPrimaryEditionBadge(bukhariHadith).contains("Darussalam", ignoreCase = true)
+    )
+
+    // 4. Verify "English Translation Coming Soon" and "Urdu Translation Coming Soon" fallback formatters
+    assertEquals(
+      "English Translation Coming Soon",
+      ExtendedHadithDataProvider.formatEnglishTranslation("")
+    )
+    assertEquals(
+      "English Translation Coming Soon",
+      ExtendedHadithDataProvider.formatEnglishTranslation("Not available in this source")
+    )
+    assertEquals(
+      "Urdu Translation Coming Soon",
+      ExtendedHadithDataProvider.formatUrduTranslation("")
+    )
+    assertEquals(
+      "Urdu Translation Coming Soon",
+      ExtendedHadithDataProvider.formatUrduTranslation("Not available in this source")
+    )
+    assertEquals(
+      "English Translation Coming Soon",
+      com.example.data.model.IslamicBooksCatalog.formatBookEnglishContent("")
+    )
+    assertEquals(
+      "Urdu Translation Coming Soon",
+      com.example.data.model.IslamicBooksCatalog.formatBookUrduContent("")
+    )
+
+    // 5. Verify Sunni (32) and Shia (6) Classical Books catalog (38 total) & zero Darussalam in Shia books
+    assertEquals(32, com.example.data.model.IslamicBooksCatalog.all32Books.size)
+    assertEquals(6, com.example.data.model.IslamicBooksCatalog.shiaClassicalBooks.size)
+    assertEquals(38, com.example.data.model.IslamicBooksCatalog.allSunniAndShiaBooks.size)
+    com.example.data.model.IslamicBooksCatalog.shiaClassicalBooks.forEach { shiaBook ->
+      assertEquals("SHIA", shiaBook.tradition)
+      assertFalse(shiaBook.numberingSystem.contains("Darussalam", ignoreCase = true))
+      assertFalse(shiaBook.gradingMethodology.contains("Darussalam", ignoreCase = true))
+      assertTrue(shiaBook.officialSourceUrl.startsWith("https://"))
+      assertTrue(shiaBook.entryTimestamp.isNotBlank())
+      assertTrue(shiaBook.chapters.isNotEmpty())
+    }
+
+    // 6. Verify official source links registry covers both Sunni and Shia traditions
+    val links = ExtendedHadithDataProvider.verifiedOfficialSourceLinks
+    assertTrue(links.size >= 9)
+    assertTrue(links.any { it.tradition == "SUNNI" && it.officialUrl.contains("sunnah.com") })
+    assertTrue(links.any { it.tradition == "SHIA" && it.officialUrl.contains("thaqalayn.net") })
+    assertTrue(links.any { it.tradition == "SHIA" && it.officialUrl.contains("al-islam.org") })
+    assertTrue(links.all { it.officialUrl.startsWith("http") && it.apiOrRepoUrl.startsWith("http") })
+
+    // 7. Verify Shia Library Smart Offline Search (diacritic-insensitive Arabic, Urdu, multi-word English, cross-collection & ordinal #)
+    val alkafiLocal = allHadiths.filter { it.collectionKey == "alkafi" }
+    val arabicUnvoweledMatches = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+      localCollectionHadiths = alkafiLocal,
+      rawQuery = "العقل",
+      activeCollectionKey = "alkafi",
+      traditionFilter = "SHIA",
+      includeCrossCollectionMatches = true
+    )
+    assertTrue("Unvoweled Arabic search 'العقل' should match Shia Hadiths", arabicUnvoweledMatches.isNotEmpty())
+
+    val crossCollectionShiaMatches = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+      localCollectionHadiths = alkafiLocal,
+      rawQuery = "Imam Rida",
+      activeCollectionKey = "alkafi",
+      traditionFilter = "SHIA",
+      includeCrossCollectionMatches = true
+    )
+    assertTrue("Searching 'Imam Rida' from Al-Kafi tab in Shia mode should find Uyun Akhbar al-Rida", crossCollectionShiaMatches.any { it.collectionKey == "uyun_akhbar_rida" })
+
+    val urduShiaMatches = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+      localCollectionHadiths = alkafiLocal,
+      rawQuery = "عقل",
+      activeCollectionKey = "alkafi",
+      traditionFilter = "SHIA",
+      includeCrossCollectionMatches = true
+    )
+    assertTrue("Urdu search 'عقل' should match Shia Hadiths", urduShiaMatches.isNotEmpty())
+
+    val ordinalNumberMatch = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+      localCollectionHadiths = alkafiLocal,
+      rawQuery = "3",
+      activeCollectionKey = "alkafi",
+      traditionFilter = "SHIA",
+      includeCrossCollectionMatches = false
+    )
+    assertEquals("Searching #3 in Al-Kafi should resolve 3rd Hadith (Book 2 #201)", 1, ordinalNumberMatch.size)
+  }
 }
-
-
-

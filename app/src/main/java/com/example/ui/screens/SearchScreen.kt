@@ -19,8 +19,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,13 +32,16 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +51,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.ai.GeminiIslamicService
+import com.example.data.ai.GeminiUiState
 import com.example.data.local.ExtendedHadithDataProvider
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
@@ -54,6 +62,7 @@ import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.viewmodels.SearchCategory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -71,6 +80,9 @@ fun SearchScreen(
   modifier: Modifier = Modifier
 ) {
   var hadithTraditionScope by remember { mutableStateOf("BOTH") }
+  val coroutineScope = rememberCoroutineScope()
+  val geminiService = remember { GeminiIslamicService() }
+  val geminiState by geminiService.uiState.collectAsState()
 
   val scopedHadithResults = remember(hadithResults, hadithTraditionScope) {
     if (hadithTraditionScope == "BOTH") {
@@ -87,13 +99,14 @@ fun SearchScreen(
   val suggestions = listOf(
     "2:255",
     "36:1",
+    "Al-Kafi 1",
+    "Nahj al-Balagha 1",
+    "Khisal 1",
+    "Imam Sadiq",
     "Bukhari 5027",
     "Muslim 223",
-    "Abu Dawud 500",
-    "Tirmidhi 1924",
     "Mercy",
-    "Patience",
-    "Intentions"
+    "Knowledge"
   )
 
   Column(modifier = modifier.fillMaxSize()) {
@@ -105,7 +118,13 @@ fun SearchScreen(
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 8.dp)
         .testTag("unified_search_input"),
-      placeholder = { Text("Search Surah:Ayah (2:255), Sunnah.com Hadith (Bukhari 5027), or text...") },
+      placeholder = {
+        Text(
+          text = "Search Quran (2:255), search any hadees (Al-Kafi, Bukhari), or text...",
+          fontSize = 12.sp,
+          maxLines = 1
+        )
+      },
       leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
       trailingIcon = {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -128,40 +147,57 @@ fun SearchScreen(
       shape = RoundedCornerShape(14.dp)
     )
 
-    // Category filter chips
-    Row(
+    // Category filter chips (Scrollable LazyRow so chips never wrap vertically)
+    LazyRow(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 4.dp),
+        .padding(horizontal = 16.dp, vertical = 2.dp),
       horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-      FilterChip(
-        selected = searchCategory == SearchCategory.ALL,
-        onClick = { onSearchCategoryChanged(SearchCategory.ALL) },
-        label = { Text("All Records") },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = EmeraldPrimary,
-          selectedLabelColor = Color.White
+      item {
+        FilterChip(
+          selected = searchCategory == SearchCategory.ALL,
+          onClick = { onSearchCategoryChanged(SearchCategory.ALL) },
+          label = { Text("All Records", fontSize = 11.sp, maxLines = 1, softWrap = false) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          )
         )
-      )
-      FilterChip(
-        selected = searchCategory == SearchCategory.QURAN,
-        onClick = { onSearchCategoryChanged(SearchCategory.QURAN) },
-        label = { Text("Quran (6,236 Verses)") },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = EmeraldPrimary,
-          selectedLabelColor = Color.White
+      }
+      item {
+        FilterChip(
+          selected = searchCategory == SearchCategory.QURAN,
+          onClick = { onSearchCategoryChanged(SearchCategory.QURAN) },
+          label = { Text("Quran (6,236 Verses)", fontSize = 11.sp, maxLines = 1, softWrap = false) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          )
         )
-      )
-      FilterChip(
-        selected = searchCategory == SearchCategory.HADITH,
-        onClick = { onSearchCategoryChanged(SearchCategory.HADITH) },
-        label = { Text("Hadith (Darussalam & In-Book)") },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = EmeraldPrimary,
-          selectedLabelColor = Color.White
+      }
+      item {
+        FilterChip(
+          selected = searchCategory == SearchCategory.HADITH,
+          onClick = { onSearchCategoryChanged(SearchCategory.HADITH) },
+          label = {
+            Text(
+              text = if (hadithTraditionScope == "SHIA") {
+                "Hadith (Shia Canonical & In-Book)"
+              } else {
+                "Hadith (Sunni & Shia Libraries)"
+              },
+              fontSize = 11.sp,
+              maxLines = 1,
+              softWrap = false
+            )
+          },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          )
         )
-      )
+      }
     }
 
     // Hadith Tradition Scope Filter (Search Sunni Hadith, Shia Hadith, or Both Libraries)
@@ -170,37 +206,37 @@ fun SearchScreen(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = 16.dp, vertical = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
       ) {
         FilterChip(
           selected = hadithTraditionScope == "BOTH",
           onClick = { hadithTraditionScope = "BOTH" },
-          label = { Text("Search Both Libraries", fontSize = 11.sp) },
+          label = { Text("Both Libraries", fontSize = 11.sp, maxLines = 1, softWrap = false) },
           colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
           ),
-          modifier = Modifier.testTag("search_hadith_scope_both")
+          modifier = Modifier.weight(1f).testTag("search_hadith_scope_both")
         )
         FilterChip(
           selected = hadithTraditionScope == "SUNNI",
           onClick = { hadithTraditionScope = "SUNNI" },
-          label = { Text("Sunni Hadith Only", fontSize = 11.sp) },
+          label = { Text("Sunni Only", fontSize = 11.sp, maxLines = 1, softWrap = false) },
           colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = EmeraldPrimary,
             selectedLabelColor = Color.White
           ),
-          modifier = Modifier.testTag("search_hadith_scope_sunni")
+          modifier = Modifier.weight(1f).testTag("search_hadith_scope_sunni")
         )
         FilterChip(
           selected = hadithTraditionScope == "SHIA",
           onClick = { hadithTraditionScope = "SHIA" },
-          label = { Text("Shia Hadith Only", fontSize = 11.sp) },
+          label = { Text("Shia Only", fontSize = 11.sp, maxLines = 1, softWrap = false) },
           colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = GoldPrimary,
             selectedLabelColor = Color.Black
           ),
-          modifier = Modifier.testTag("search_hadith_scope_shia")
+          modifier = Modifier.weight(1f).testTag("search_hadith_scope_shia")
         )
       }
     }
@@ -222,13 +258,13 @@ fun SearchScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-          text = "Unified Quran (6,236 Verses) & Sunnah.com Hadith Search",
+          text = "Unified Quran (6,236 Verses), Sunni/Shia Hadith & Gemini Q&A",
           style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
           textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = "Search any verse by Surah:Ayah (e.g. 2:255, 36:1), any Hadith by collection & Darussalam/In-Book number (e.g. Bukhari 5027, Muslim 223, Abu Dawud 500), or keywords in Arabic, Sahih International English, and Urdu.",
+          text = "Search any verse by Surah:Ayah (e.g. 2:255, 36:1), any Hadith by collection & number (e.g. Al-Kafi 1, Bukhari 5027, Muslim 223), or keywords in Arabic, English, and Urdu.",
           style = MaterialTheme.typography.bodyMedium.copy(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -276,13 +312,112 @@ fun SearchScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
       ) {
         item {
-          Text(
-            text = "Found $totalCount verified results for \"$searchQuery\"",
-            style = MaterialTheme.typography.labelMedium.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              fontWeight = FontWeight.SemiBold
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Text(
+              text = "Found $totalCount verified results for \"$searchQuery\"",
+              style = MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold
+              ),
+              modifier = Modifier.weight(1f)
             )
-          )
+            Button(
+              onClick = {
+                coroutineScope.launch {
+                  geminiService.askScholarlyQuestionStream(
+                    userQuestion = searchQuery,
+                    traditionScope = hadithTraditionScope,
+                    matchedAyahs = ayahResults,
+                    matchedHadiths = scopedHadithResults
+                  )
+                }
+              },
+              colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+              modifier = Modifier.height(32.dp).testTag("ask_gemini_search_button")
+            ) {
+              Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("Ask Gemini", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+          }
+        }
+
+        if (geminiState !is GeminiUiState.Idle) {
+          item(key = "gemini_ai_synthesis_card") {
+            Card(
+              modifier = Modifier.fillMaxWidth().testTag("gemini_ai_response_card"),
+              shape = RoundedCornerShape(14.dp),
+              colors = CardDefaults.cardColors(
+                containerColor = EmeraldPrimary.copy(alpha = 0.08f)
+              )
+            ) {
+              Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.AutoAwesome,
+                      contentDescription = null,
+                      tint = EmeraldPrimary,
+                      modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = "Gemini Scholarly Synthesis ($hadithTraditionScope Scope)",
+                      style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = EmeraldPrimary
+                      )
+                    )
+                  }
+                  OutlinedButton(
+                    onClick = { geminiService.resetState() },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.height(26.dp)
+                  ) {
+                    Text("Dismiss", fontSize = 10.sp)
+                  }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                when (val state = geminiState) {
+                  is GeminiUiState.Loading -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                      Spacer(modifier = Modifier.width(8.dp))
+                      Text("Synthesizing verified Quran & Hadith references...", style = MaterialTheme.typography.bodySmall)
+                    }
+                  }
+                  is GeminiUiState.Streaming -> {
+                    Text(
+                      text = state.text,
+                      style = MaterialTheme.typography.bodyMedium
+                    )
+                  }
+                  is GeminiUiState.Success -> {
+                    Text(
+                      text = state.text,
+                      style = MaterialTheme.typography.bodyMedium
+                    )
+                  }
+                  is GeminiUiState.Error -> {
+                    Text(
+                      text = state.message,
+                      style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.error)
+                    )
+                  }
+                  GeminiUiState.Idle -> {}
+                }
+              }
+            }
+          }
         }
 
         if (showAyahs && ayahResults.isNotEmpty()) {
@@ -375,7 +510,11 @@ fun SearchScreen(
         if (showHadiths && scopedHadithResults.isNotEmpty()) {
           item {
             Text(
-              text = "Hadith Narrations — Darussalam & In-Book Editions (${scopedHadithResults.size})",
+              text = if (hadithTraditionScope == "SHIA") {
+                "Shia Hadith Narrations (${scopedHadithResults.size})"
+              } else {
+                "Hadith Narrations — Canonical & In-Book Editions (${scopedHadithResults.size})"
+              },
               style = MaterialTheme.typography.titleSmall.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -386,8 +525,8 @@ fun SearchScreen(
 
           items(scopedHadithResults, key = { "search_hadith_${it.collectionKey}_${it.hadithNumber}" }) { hadith ->
             val isShia = ExtendedHadithDataProvider.isShiaCollection(hadith.collectionKey)
-            val darussalamLabel = if (isShia) {
-              hadith.darussalamReference.ifBlank { "Shia Canonical: #${hadith.hadithNumber}" }
+            val primaryLabel = if (isShia) {
+              ExtendedHadithDataProvider.formatPrimaryEditionBadge(hadith)
             } else {
               hadith.darussalamReference.ifBlank { "Darussalam: #${hadith.hadithNumber}" }
             }
@@ -451,7 +590,7 @@ fun SearchScreen(
                     }
                   ) {
                     Text(
-                      text = darussalamLabel,
+                      text = primaryLabel,
                       modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                       style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,

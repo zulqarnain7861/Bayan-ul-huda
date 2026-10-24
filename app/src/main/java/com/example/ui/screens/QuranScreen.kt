@@ -46,8 +46,10 @@ import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.VolumeUp
+import com.example.ui.quran.TajweedPracticeDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -111,6 +113,7 @@ import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.ScheherazadeFontFamily
+import com.example.ui.theme.UrduNastaliqFontFamily
 import kotlinx.coroutines.launch
 
 @Composable
@@ -533,6 +536,7 @@ fun SurahReaderView(
 
   var showSettingsSheet by remember { mutableStateOf(false) }
   var selectedAyahForTafsir by remember { mutableStateOf<AyahEntity?>(null) }
+  var selectedAyahForTajweed by remember { mutableStateOf<AyahEntity?>(null) }
   var focusedVerseIndex by remember(surah.number) { mutableIntStateOf(0) }
   var verseJumpText by remember(surah.number) { mutableStateOf("") }
 
@@ -899,6 +903,7 @@ fun SurahReaderView(
             arabicFontSizeSp = effectiveArabicFontSizeSp,
             translationFontSizeSp = translationFontSizeSp,
             onPlay = { onPlayAyahRecitation(ayah, surah.nameEnglish) },
+            onTajweedPractice = { selectedAyahForTajweed = ayah },
             onOpenTafsir = { selectedAyahForTafsir = ayah },
             onBookmark = { onBookmarkAyah(ayah, surah.nameEnglish) },
             onCopy = {
@@ -965,6 +970,25 @@ fun SurahReaderView(
         }
       },
       onDismiss = { selectedAyahForTafsir = null }
+    )
+  }
+
+  // Tajweed Practice Dialog (Voice Recording & Pronunciation Check)
+  selectedAyahForTajweed?.let { targetAyah ->
+    val cleanArabic = OfflineQuranAssetLoader.stripDuplicateBismillahPrefix(
+      surahNumber = targetAyah.surahNumber,
+      verseNumber = targetAyah.verseNumber,
+      rawArabic = targetAyah.textArabic
+    )
+    TajweedPracticeDialog(
+      ayah = targetAyah,
+      surah = surah,
+      cleanArabicText = cleanArabic,
+      currentReciterName = currentReciter.name,
+      onPlayAuthenticReciter = {
+        onPlayAyahRecitation(targetAyah, surah.nameEnglish)
+      },
+      onDismiss = { selectedAyahForTajweed = null }
     )
   }
 
@@ -1348,6 +1372,7 @@ fun AyahCardItem(
   arabicFontSizeSp: Float,
   translationFontSizeSp: Float,
   onPlay: () -> Unit,
+  onTajweedPractice: () -> Unit = {},
   onOpenTafsir: () -> Unit,
   onBookmark: () -> Unit,
   onCopy: () -> Unit,
@@ -1433,6 +1458,14 @@ fun AyahCardItem(
           ) {
             Icon(Icons.Default.VolumeUp, contentDescription = "Play Audio", tint = EmeraldPrimary)
           }
+          IconButton(
+            onClick = onTajweedPractice,
+            modifier = Modifier
+              .size(if (isReadingMode) 48.dp else 36.dp)
+              .testTag("ayah_tajweed_button_${ayah.surahNumber}_${ayah.verseNumber}")
+          ) {
+            Icon(Icons.Default.Mic, contentDescription = "Practice Tajweed Recitation", tint = GoldPrimary)
+          }
           if (!isReadingMode) {
             IconButton(onClick = onBookmark, modifier = Modifier.size(36.dp)) {
               Icon(
@@ -1508,6 +1541,7 @@ fun AyahCardItem(
         Text(
           text = ayah.translationUrdu,
           style = MaterialTheme.typography.bodyMedium.copy(
+            fontFamily = UrduNastaliqFontFamily,
             fontSize = translationFontSizeSp.sp,
             lineHeight = (translationFontSizeSp * 1.55f).sp,
             textAlign = TextAlign.Right,

@@ -35,6 +35,13 @@ val AmiriClassicalFontFamily = FontFamily(
   Font(R.font.amiri_bold, FontWeight.Bold)
 )
 
+val UrduNastaliqFontFamily = FontFamily(
+  Font(R.font.noto_nastaliq_urdu, FontWeight.Normal),
+  Font(R.font.noto_nastaliq_urdu, FontWeight.Medium),
+  Font(R.font.noto_nastaliq_urdu, FontWeight.SemiBold),
+  Font(R.font.noto_nastaliq_urdu, FontWeight.Bold)
+)
+
 val Typography =
   Typography(
     displayLarge = TextStyle(

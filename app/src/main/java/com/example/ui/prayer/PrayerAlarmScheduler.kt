@@ -105,7 +105,8 @@ object PrayerAlarmScheduler {
           intent,
           PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        setExactOrFallbackAlarm(appCtx, alarmManager, triggerMillis, pi, isWakeUpAlarmClock = false)
+        val useAlarmClockWakeup = mode == AzanNotificationMode.FULL_AZAN || mode == AzanNotificationMode.SHORT_TONE
+        setExactOrFallbackAlarm(appCtx, alarmManager, triggerMillis, pi, isWakeUpAlarmClock = useAlarmClockWakeup)
         summary.add("$prayerName (${PrayerTimeCalculator.format24hTo12h(time24)}) — ${mode.label}")
       }
     }

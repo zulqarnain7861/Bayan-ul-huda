@@ -66,7 +66,7 @@ fun TopIslamicBar(
       Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
           modifier = Modifier
-            .size(34.dp)
+            .size(32.dp)
             .background(EmeraldPrimary, CircleShape),
           contentAlignment = Alignment.Center
         ) {
@@ -74,32 +74,38 @@ fun TopIslamicBar(
             imageVector = Icons.Default.MenuBook,
             contentDescription = null,
             tint = GoldPrimary,
-            modifier = Modifier.size(19.dp)
+            modifier = Modifier.size(18.dp)
           )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Row(verticalAlignment = Alignment.Bottom) {
+        androidx.compose.foundation.layout.Column {
           Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
+            maxLines = 1,
+            softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.titleMedium.copy(
               fontWeight = FontWeight.Bold,
-              fontSize = 17.sp,
+              fontSize = 15.sp,
+              lineHeight = 17.sp,
               color = MaterialTheme.colorScheme.primary
             )
           )
-          Spacer(modifier = Modifier.width(6.dp))
           Text(
             text = arabicSubtitle,
-            style = MaterialTheme.typography.titleMedium.copy(
+            maxLines = 1,
+            softWrap = false,
+            style = MaterialTheme.typography.labelSmall.copy(
               fontFamily = ScheherazadeFontFamily,
               color = GoldPrimary,
               fontWeight = FontWeight.Bold,
-              fontSize = 17.sp
+              fontSize = 13.sp,
+              lineHeight = 14.sp
             )
           )
         }
         if (isOfflineMode) {
-          Spacer(modifier = Modifier.width(8.dp))
+          Spacer(modifier = Modifier.width(6.dp))
           Surface(
             shape = RoundedCornerShape(6.dp),
             color = Color(0xFFB71C1C),
@@ -108,22 +114,24 @@ fun TopIslamicBar(
               .testTag("top_bar_offline_mode_badge")
           ) {
             Row(
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+              modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
               verticalAlignment = Alignment.CenterVertically
             ) {
               Icon(
                 imageVector = Icons.Default.CloudOff,
                 contentDescription = "Offline Mode Active",
                 tint = Color.White,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(11.dp)
               )
-              Spacer(modifier = Modifier.width(4.dp))
+              Spacer(modifier = Modifier.width(3.dp))
               Text(
-                text = "Offline Mode",
+                text = "Offline",
+                maxLines = 1,
+                softWrap = false,
                 style = MaterialTheme.typography.labelSmall.copy(
                   color = Color.White,
                   fontWeight = FontWeight.Bold,
-                  fontSize = 10.sp
+                  fontSize = 9.sp
                 )
               )
             }
@@ -134,37 +142,40 @@ fun TopIslamicBar(
     actions = {
       IconButton(
         onClick = onOpenQiblaClick,
-        modifier = Modifier.testTag("top_bar_qibla_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_qibla_action")
       ) {
         Icon(
           imageVector = Icons.Default.Explore,
           contentDescription = "Qibla Direction Compass",
-          tint = GoldPrimary
+          tint = GoldPrimary,
+          modifier = Modifier.size(18.dp)
         )
       }
       IconButton(
         onClick = onOpenEvidenceClick,
-        modifier = Modifier.testTag("top_bar_evidence_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_evidence_action")
       ) {
         Icon(
           imageVector = Icons.Default.FactCheck,
           contentDescription = "Islam with Evidence",
-          tint = EmeraldPrimary
+          tint = EmeraldPrimary,
+          modifier = Modifier.size(18.dp)
         )
       }
       IconButton(
         onClick = onOpenDownloadsClick,
-        modifier = Modifier.testTag("top_bar_downloads_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_downloads_action")
       ) {
         Icon(
           imageVector = if (isOfflineMode) Icons.Default.CloudOff else Icons.Default.CloudDownload,
           contentDescription = "Offline Downloads",
-          tint = if (isOfflineMode) Color(0xFFB71C1C) else EmeraldPrimary
+          tint = if (isOfflineMode) Color(0xFFB71C1C) else EmeraldPrimary,
+          modifier = Modifier.size(18.dp)
         )
       }
       IconButton(
         onClick = onCycleThemeMode,
-        modifier = Modifier.testTag("top_bar_theme_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_theme_action")
       ) {
         val icon = when (themeMode) {
           AppThemeMode.LIGHT -> Icons.Default.LightMode
@@ -176,27 +187,30 @@ fun TopIslamicBar(
         Icon(
           imageVector = icon,
           contentDescription = "Appearance: ${themeMode.label}",
-          tint = GoldPrimary
+          tint = GoldPrimary,
+          modifier = Modifier.size(18.dp)
         )
       }
       IconButton(
         onClick = onSearchClick,
-        modifier = Modifier.testTag("top_bar_search_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_search_action")
       ) {
         Icon(
           imageVector = Icons.Default.Search,
           contentDescription = "Search",
-          tint = MaterialTheme.colorScheme.onSurface
+          tint = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.size(18.dp)
         )
       }
       IconButton(
         onClick = onAboutClick,
-        modifier = Modifier.testTag("top_bar_about_action")
+        modifier = Modifier.size(30.dp).testTag("top_bar_about_action")
       ) {
         Icon(
           imageVector = Icons.Default.Info,
           contentDescription = "About & Diagnostics",
-          tint = MaterialTheme.colorScheme.onSurface
+          tint = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.size(18.dp)
         )
       }
     },

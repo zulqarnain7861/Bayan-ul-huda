@@ -47,6 +47,7 @@ enum class MainNavigationTab {
   HOME,
   QURAN,
   HADITH,
+  DUAS,
   SEARCH,
   LIBRARY
 }
@@ -112,8 +113,18 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     null
   }
   val audioPlayerManager = AudioPlayerManager(application)
+  val duaAudioController = com.example.ui.audio.DuaAudioController(application, audioPlayerManager)
   val downloadManager = com.example.data.download.DownloadManager.getInstance(application)
   val evidenceEngine = com.example.data.evidence.EvidenceVerificationEngine(application)
+
+  private val _sunnahRemindersState = MutableStateFlow(
+    com.example.data.prayer.SunnahReminderManager.loadState(application)
+  )
+  val sunnahRemindersState: StateFlow<com.example.data.prayer.SunnahRemindersUiState> =
+    _sunnahRemindersState.asStateFlow()
+
+  val duaAudioState: StateFlow<com.example.ui.audio.DuaAudioPlaybackState> =
+    duaAudioController.playbackState
 
   private val _uiState = MutableStateFlow(
     BayanUiState(
@@ -250,6 +261,9 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
       loadDailyContent()
       loadCollectionHadiths("bukhari")
       refreshPrayerSchedule(forceRemote = false)
+      com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(getApplication())
+      _sunnahRemindersState.value =
+        com.example.data.prayer.SunnahReminderManager.ensureTodayCalculatedNotificationSentIfEnabled(getApplication())
       refreshAuditReport(checkNetworkLive = false)
     }
   }
@@ -299,12 +313,25 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
-  fun testAzanOrFajrAlarm(prayerName: String, isSpecialFajrAlarm: Boolean) {
+  fun testAzanOrFajrAlarm(prayerName: String, isSpecialFajrAlarm: Boolean, muezzinOverrideId: String? = null) {
     AzanAudioController.startAzanOrFajrAlarm(
       context = getApplication(),
       prayerName = prayerName,
-      isSpecial15MinFajrAlarm = isSpecialFajrAlarm
+      isSpecial15MinFajrAlarm = isSpecialFajrAlarm,
+      muezzinOverrideId = muezzinOverrideId
     )
+  }
+
+  fun testMuezzinAzan(muezzin: com.example.data.prayer.MuezzinAudioOption) {
+    AzanAudioController.testMuezzinAzan(getApplication(), muezzin)
+  }
+
+  fun startContinuousVibrationTest() {
+    AzanAudioController.startContinuousVibrationTest(getApplication())
+  }
+
+  fun stopContinuousVibration() {
+    AzanAudioController.stopContinuousVibration(getApplication())
   }
 
   fun stopActiveAzanOrAlarm() {
@@ -647,8 +674,92 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     _uiState.value = _uiState.value.copy(showErrorReportDialog = false)
   }
 
+  // Daily Masnoon Duas & Friday Bath / Necessary Sunnah Reminders Actions
+  fun playDuaVocal(dua: com.example.data.model.DailyDuaItem, preferQuranReciter: Boolean = false) {
+    duaAudioController.playDuaVocal(dua, preferQuranReciter)
+  }
+
+  fun stopDuaAudio() {
+    duaAudioController.stop()
+  }
+
+  fun setDuaAudioLanguageMode(mode: com.example.ui.audio.DuaAudioLanguageMode) {
+    duaAudioController.setLanguageMode(mode)
+  }
+
+  fun toggleDuaAudioRepeatMode() {
+    duaAudioController.toggleRepeatTarget()
+  }
+
+  fun toggleFavoriteDua(duaId: String) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.toggleFavoriteDua(getApplication(), duaId)
+  }
+
+  fun incrementDuaTasbih(duaId: String, reset: Boolean = false) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.incrementDuaTasbih(getApplication(), duaId, reset)
+  }
+
+  fun updateFridayBathReminder(enabled: Boolean, time24h: String) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.setFridayBathReminder(getApplication(), enabled, time24h)
+  }
+
+  fun toggleFridayChecklistItem(itemId: String) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.toggleFridayChecklistItem(getApplication(), itemId)
+  }
+
+  fun incrementFridaySalawat(delta: Int) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.incrementFridaySalawat(getApplication(), delta)
+  }
+
+  fun updateNecessaryReminder(reminderId: String, enabled: Boolean, time24h: String) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.updateReminderConfig(
+        getApplication(),
+        reminderId,
+        enabled,
+        time24h
+      )
+  }
+
+  fun triggerTestSunnahReminder(spec: com.example.data.model.NecessaryReminderSpec) {
+    com.example.data.prayer.SunnahReminderManager.triggerTestReminder(getApplication(), spec)
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.loadState(getApplication())
+  }
+
+  fun selectPreviewDayOfWeek(calendarDayOfWeek: Int) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.selectPreviewDayOfWeek(
+        getApplication(),
+        calendarDayOfWeek
+      )
+  }
+
+  fun sendCalculatedDayNotificationNow(dayOfWeekOverride: Int? = null) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.postCalculatedDayReminderNotification(
+        context = getApplication(),
+        dayOfWeekOverride = dayOfWeekOverride
+      )
+  }
+
+  fun updateDailyCalculatedReminder(enabled: Boolean, time24h: String) {
+    _sunnahRemindersState.value =
+      com.example.data.prayer.SunnahReminderManager.setDailyCalculatedReminder(
+        getApplication(),
+        enabled,
+        time24h
+      )
+  }
+
   override fun onCleared() {
     super.onCleared()
     audioPlayerManager.stop()
+    duaAudioController.stop()
   }
 }

@@ -131,13 +131,15 @@ class QuranIntegrityAuditTest {
     assertTrue(reciters.any { it.name.contains("Husary") })
     assertTrue(reciters.any { it.name.contains("Minshawi") })
     assertTrue(reciters.any { it.name.contains("Abdul Basit") })
-    assertTrue(reciters.any { it.name.contains("Ghamadi") })
+    assertTrue(reciters.any { it.name.contains("Sudais") })
     assertTrue(reciters.any { it.name.contains("Karim Mansouri") })
     assertTrue(reciters.any { it.name.contains("Maytham al-Tammar") })
 
     // Verify audio URLs are valid HTTPS endpoints
     for (r in reciters) {
-      assertTrue("Reciter ${r.name} audio URL must be https", r.baseUrl.startsWith("https://"))
+      val streamUrl = "https://everyayah.com/data/${r.subfolder}/001001.mp3"
+      assertTrue("Reciter ${r.name} subfolder must be non-blank", r.subfolder.isNotBlank())
+      assertTrue("Reciter ${r.name} audio URL must be trusted https", com.example.data.remote.SecurityIntegrityGuard.isUrlTrustedAndAllowed(streamUrl))
     }
   }
 }

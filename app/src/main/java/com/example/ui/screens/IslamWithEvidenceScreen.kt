@@ -47,6 +47,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
@@ -55,6 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -72,6 +75,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.ai.GeminiIslamicService
+import com.example.data.ai.GeminiUiState
 import com.example.data.evidence.ClaimVerificationResponse
 import com.example.data.evidence.ClaimVerificationStatus
 import com.example.data.evidence.EvidenceQuickAction
@@ -93,6 +98,8 @@ fun IslamWithEvidenceScreen(
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
+  val geminiService = remember { GeminiIslamicService() }
+  val geminiState by geminiService.uiState.collectAsState()
 
   var selectedTab by remember { mutableIntStateOf(0) }
   var queryInput by remember { mutableStateOf("Actions are judged by intentions") }
@@ -271,23 +278,107 @@ fun IslamWithEvidenceScreen(
                   verticalAlignment = Alignment.CenterVertically
                 ) {
                   Text(
-                    text = "Supports Arabic, Urdu, English & Roman Transliteration",
+                    text = "Arabic, Urdu, English & Transliteration",
                     style = MaterialTheme.typography.labelSmall.copy(
                       color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    ),
+                    modifier = Modifier.weight(1f)
                   )
-                  Button(
-                    onClick = {
-                      scope.launch {
-                        activeResponse = evidenceEngine.verifyClaimOrQuestion(queryInput)
-                      }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
-                    modifier = Modifier.testTag("evidence_verify_submit_button")
+                  Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    FilledTonalButton(
+                      onClick = {
+                        scope.launch {
+                          activeResponse = evidenceEngine.verifyClaimOrQuestion(queryInput)
+                          geminiService.askScholarlyQuestionStream(
+                            userQuestion = queryInput,
+                            traditionScope = "BOTH"
+                          )
+                        }
+                      },
+                      contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                      modifier = Modifier.testTag("evidence_ask_gemini_button")
+                    ) {
+                      Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(15.dp))
+                      Spacer(modifier = Modifier.width(4.dp))
+                      Text("Ask Gemini", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                      onClick = {
+                        scope.launch {
+                          activeResponse = evidenceEngine.verifyClaimOrQuestion(queryInput)
+                        }
+                      },
+                      colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                      contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                      modifier = Modifier.testTag("evidence_verify_submit_button")
+                    ) {
+                      Icon(Icons.Default.Verified, contentDescription = null, modifier = Modifier.size(16.dp))
+                      Spacer(modifier = Modifier.width(4.dp))
+                      Text("Verify Evidence", fontSize = 12.sp)
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          if (geminiState !is GeminiUiState.Idle) {
+            item(key = "evidence_gemini_response_card") {
+              ElevatedCard(
+                modifier = Modifier.fillMaxWidth().testTag("evidence_gemini_card"),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.elevatedCardColors(
+                  containerColor = EmeraldPrimary.copy(alpha = 0.08f)
+                )
+              ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                  Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                   ) {
-                    Icon(Icons.Default.Verified, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Verify Evidence")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(18.dp)
+                      )
+                      Spacer(modifier = Modifier.width(6.dp))
+                      Text(
+                        text = "Gemini Scholarly Synthesis (Sunni & Shia Evidence)",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                          fontWeight = FontWeight.Bold,
+                          color = EmeraldPrimary
+                        )
+                      )
+                    }
+                    TextButton(onClick = { geminiService.resetState() }) {
+                      Text("Dismiss", fontSize = 11.sp)
+                    }
+                  }
+                  Spacer(modifier = Modifier.height(6.dp))
+                  when (val state = geminiState) {
+                    is GeminiUiState.Loading -> {
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Generating scholarly synthesis...", style = MaterialTheme.typography.bodySmall)
+                      }
+                    }
+                    is GeminiUiState.Streaming -> {
+                      Text(text = state.text, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    is GeminiUiState.Success -> {
+                      Text(text = state.text, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    is GeminiUiState.Error -> {
+                      Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.error)
+                      )
+                    }
+                    GeminiUiState.Idle -> {}
                   }
                 }
               }

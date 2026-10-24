@@ -25,7 +25,16 @@ object SecurityIntegrityGuard {
     "everyayah.com",
     "api.quran.com",
     "quranenc.com",
-    "download.quranicaudio.com"
+    "download.quranicaudio.com",
+    "islamcan.com",
+    "archive.org",
+    "ia800304.us.archive.org",
+    "ia802606.us.archive.org",
+    "server14.mp3quran.net",
+    "server16.mp3quran.net",
+    "mp3quran.net",
+    "wa.me",
+    "api.whatsapp.com"
   )
 
   private val BLOCKED_AD_AND_TRACKER_KEYWORDS = listOf(
@@ -81,12 +90,59 @@ object SecurityIntegrityGuard {
   }
 
   /**
-   * Strips any script, iframe, HTML tag, or ad-injection payload from text while preserving
-   * authentic Arabic diacritics (Tashkeel), Uthmani script marks, Urdu nastaliq characters, and English punctuation.
+   * Neutralizes BiDi (Bidirectional) Override characters (\u202A-\u202E, \u2066-\u2069) and zero-width
+   * cloaking characters (\u200B-\u200D, \uFEFF) commonly exploited by penetration testers and adversaries
+   * to visually spoof Arabic text, disguise malicious payloads, or bypass verification filters.
+   */
+  fun stripUnicodeCloakingAndBidiTrojan(raw: String): String {
+    if (raw.isEmpty()) return ""
+    return raw
+      .replace(Regex("[\u202A-\u202E\u2066-\u2069\u200B-\u200D\uFEFF]"), "")
+      .replace(Regex("""[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]"""), "") // Control characters
+  }
+
+  /**
+   * Defense-in-depth verification against arbitrary intent injection or malicious redirects.
+   * Only trusted, HTTPS-encrypted endpoints matching the strictly defined allowlist can be launched.
+   */
+  fun isExternalIntentSafe(rawUrl: String): Boolean {
+    val trimmed = rawUrl.trim()
+    if (trimmed.isEmpty()) return false
+    return try {
+      val uri = URI(trimmed)
+      val scheme = uri.scheme?.lowercase(Locale.ROOT)
+      if (scheme != "https") return false
+      val host = uri.host?.lowercase(Locale.ROOT)?.removePrefix("www.") ?: return false
+      ALLOWED_HTTPS_HOSTS.contains(host)
+    } catch (_: Exception) {
+      false
+    }
+  }
+
+  /**
+   * Checks whether incoming text contains dangerous injection strings, eval/script tags,
+   * or inappropriate altered payloads intended to corrupt Islamic scripture.
+   */
+  fun containsInappropriateOrAlteredPayload(raw: String): Boolean {
+    if (raw.isEmpty()) return false
+    val lower = raw.lowercase(Locale.ROOT)
+    if (DANGEROUS_BLOCK_REGEX.containsMatchIn(raw) || DANGEROUS_INJECTION_REGEX.containsMatchIn(raw)) {
+      return true
+    }
+    return lower.contains("javascript:") ||
+      lower.contains("data:text/html") ||
+      lower.contains("<svg") ||
+      lower.contains("onload=") ||
+      lower.contains("onerror=")
+  }
+
+  /**
+   * Sanitizes sacred text with full anti-tamper, BiDi neutralizing, and script stripping protections.
    */
   fun sanitizeSacredText(rawText: String): String {
     if (rawText.isEmpty()) return ""
-    var cleaned = rawText.replace(DANGEROUS_BLOCK_REGEX, "")
+    val deBidi = stripUnicodeCloakingAndBidiTrojan(rawText)
+    var cleaned = deBidi.replace(DANGEROUS_BLOCK_REGEX, "")
     cleaned = cleaned.replace(DANGEROUS_INJECTION_REGEX, "")
     // Remove any stray HTML tags while keeping legitimate angle-bracket-free religious text intact
     cleaned = cleaned.replace(Regex("""</?[a-zA-Z][^>]{0,120}>"""), "")
@@ -117,6 +173,7 @@ object SecurityIntegrityGuard {
 
   fun getSecurityAuditSummary(): String {
     return "HTTPS-Only Host Pinning Active (${ALLOWED_HTTPS_HOSTS.size} Allowlisted Islamic APIs) • " +
-      "Ad-Injection & Script Sanitizer Active • Cleartext Traffic Disabled • Room Canonical Quran Guard Enabled"
+      "Anti-Penetration BiDi Shield Active • Ad-Injection & Script Sanitizer Active • " +
+      "Cleartext Disabled • Room Canonical Scripture Protection Enabled"
   }
 }

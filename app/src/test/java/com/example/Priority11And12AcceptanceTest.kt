@@ -400,12 +400,12 @@ class Priority11And12AcceptanceTest {
 
   @Test
   fun `priority 11 test 16 - existing features SunnahDotComImporter Surah Ar-Rad 13_1 small alif and multiple themes work`() = runBlocking {
-    // 1. Verify Surah Ar-Ra'd (13:1) contains the Uthmani small alif in الٓـمّٓرٰ and Surah 2:1 remains الٓمٓ
+    // 1. Verify Surah Ar-Ra'd (13:1) preserves canonical Tanzil Uthmani الٓمٓر and dagger alif (\u0670) and Surah 2:1 remains الٓمٓ
     val surah13 = OfflineQuranAssetLoader.loadSurahFromAssets(context, 13)
     assertTrue(surah13.isNotEmpty())
     assertTrue(
-      "Expected Surah 13:1 to contain الٓـمّٓرٰ but was: ${surah13.first().textArabic}",
-      surah13.first().textArabic.startsWith("الٓـمّٓرٰ")
+      "Expected Surah 13:1 to start with canonical الٓمٓر but was: ${surah13.first().textArabic}",
+      surah13.first().textArabic.startsWith("الٓمٓر") && surah13.first().textArabic.contains('\u0670')
     )
     val surah2 = OfflineQuranAssetLoader.loadSurahFromAssets(context, 2)
     assertEquals("الٓمٓ", surah2.first().textArabic)

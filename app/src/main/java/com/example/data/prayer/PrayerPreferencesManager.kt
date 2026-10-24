@@ -14,32 +14,156 @@ enum class MuezzinAudioOption(
   val title: String,
   val subtitle: String,
   val streamUrl: String,
-  val includesFajrTathwib: Boolean = false
+  val includesFajrTathwib: Boolean = false,
+  val originMasjid: String = "Masjid al-Haram, Makkah",
+  val maqamOrStyle: String = "Traditional Hijazi Maqam",
+  val tradition: String = "SUNNI",
+  val fallbackUrls: List<String> = emptyList(),
+  val localAssetPath: String = "adhan/$id.wav",
+  val isOfflineBundled: Boolean = true
 ) {
-  MAKKAH_HARAM(
-    id = "makkah_haram",
-    title = "Makkah al-Mukarramah (Masjid al-Haram)",
-    subtitle = "Pure Vocal Haramain Azan Recording (No Music)",
-    streamUrl = "https://www.islamcan.com/audio/adhan/azan1.mp3"
-  ),
   MADINAH_NABAWI(
     id = "madinah_nabawi",
-    title = "Al-Madinah al-Munawwarah (Masjid an-Nabawi)",
-    subtitle = "Pure Vocal Madinah Classical Azan Recording (No Music)",
-    streamUrl = "https://www.islamcan.com/audio/adhan/azan2.mp3"
+    title = "Masjid an-Nabawi — Sheikh Essam Bukhari (Madinah)",
+    subtitle = "Masjid an-Nabawi • Verified Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan2.mp3",
+    originMasjid = "Masjid an-Nabawi, Al-Madinah",
+    maqamOrStyle = "Madani Maqam Rast (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/madinah_nabawi.wav"
+  ),
+  MAKKAH_HARAM(
+    id = "makkah_haram",
+    title = "Masjid al-Haram — Sheikh Ali Ahmed Mulla (Makkah)",
+    subtitle = "Bilal of Masjid al-Haram • Verified Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan1.mp3",
+    originMasjid = "Masjid al-Haram, Makkah",
+    maqamOrStyle = "Maqam Hijaz • Grand Mosque (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/makkah_haram.wav"
+  ),
+  MADINAH_SURAYHI(
+    id = "madinah_surayhi",
+    title = "Masjid an-Nabawi — Sheikh Abdul Majeed al-Surayhi",
+    subtitle = "Masjid an-Nabawi • Verified Offline Prophet's Mosque Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan7.mp3",
+    originMasjid = "Masjid an-Nabawi, Al-Madinah",
+    maqamOrStyle = "Madani Maqam Sikah (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/madinah_surayhi.wav"
+  ),
+  MADINAH_OMAR_SUNBUL(
+    id = "madinah_omar_sunbul",
+    title = "Masjid an-Nabawi — Sheikh Omar Sunbul",
+    subtitle = "Masjid an-Nabawi • Traditional Madani Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan8.mp3",
+    originMasjid = "Masjid an-Nabawi, Al-Madinah",
+    maqamOrStyle = "Madani Traditional (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/madinah_omar_sunbul.wav"
+  ),
+  MAKKAH_NAIF_SALEH(
+    id = "makkah_naif_saleh",
+    title = "Masjid al-Haram — Sheikh Naif Saleh Faidah",
+    subtitle = "Masjid al-Haram Senior Muezzin • Offline Melodious Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan4.mp3",
+    originMasjid = "Masjid al-Haram, Makkah",
+    maqamOrStyle = "Maqam Bayati & Hijaz (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/makkah_naif_saleh.wav"
+  ),
+  MAKKAH_FAROOQ_HADRAWI(
+    id = "makkah_farooq_hadrawi",
+    title = "Masjid al-Haram — Sheikh Farooq Abdur-Rahman Hadrawi",
+    subtitle = "Masjid al-Haram • Reverent Offline Makkah Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan5.mp3",
+    originMasjid = "Masjid al-Haram, Makkah",
+    maqamOrStyle = "Classical Haramain Vocal (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/makkah_farooq_hadrawi.wav"
+  ),
+  MAKKAH_HAMAD_DEGHRERI(
+    id = "makkah_hamad_deghreri",
+    title = "Makkah — Sheikh Hamad Deghreri",
+    subtitle = "Heart-Touching Haramain Style Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan6.mp3",
+    originMasjid = "Makkah / Riyadh",
+    maqamOrStyle = "Maqam Saba & Hijaz (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/makkah_hamad_deghreri.wav"
   ),
   AL_AQSA(
     id = "al_aqsa",
-    title = "Al-Quds (Masjid al-Aqsa Vocal Azan)",
-    subtitle = "Pure Vocal Al-Aqsa Azan Recording (No Music)",
-    streamUrl = "https://www.islamcan.com/audio/adhan/azan3.mp3"
+    title = "Al-Quds — Masjid al-Aqsa (Sheikh Naji Qazzaz)",
+    subtitle = "Historic Jerusalem Sanctuary Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan3.mp3",
+    originMasjid = "Masjid al-Aqsa, Al-Quds",
+    maqamOrStyle = "Levantine Maqam Bayati (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/al_aqsa.wav"
+  ),
+  EGYPT_ABDUL_BASIT(
+    id = "egypt_abdul_basit",
+    title = "Cairo — Sheikh Abdul Basit Abdus Samad",
+    subtitle = "Legendary Egyptian Qari • Golden Voice Offline Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan9.mp3",
+    originMasjid = "Imam Shafi'i Mosque, Cairo",
+    maqamOrStyle = "Egyptian Maqam Nahawand & Rast (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/egypt_abdul_basit.wav"
+  ),
+  EGYPT_HUSARY(
+    id = "egypt_husary",
+    title = "Al-Azhar Cairo — Sheikh Mahmoud Khalil Al-Hussary",
+    subtitle = "Al-Azhar Mosque • Classical Mujawwad Offline Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan10.mp3",
+    originMasjid = "Al-Azhar Mosque, Cairo",
+    maqamOrStyle = "Classical Azhari Maqam (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/egypt_husary.wav"
+  ),
+  EGYPT_MINSHAWI(
+    id = "egypt_minshawi",
+    title = "Cairo — Sheikh Muhammad Siddiq Al-Minshawi",
+    subtitle = "Deeply Spiritual Cairo Offline Pure Vocal Adhan (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan11.mp3",
+    originMasjid = "Cairo Traditional",
+    maqamOrStyle = "Maqam Bayati & Saba (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/egypt_minshawi.wav"
   ),
   FAJR_TATHWIB(
     id = "fajr_tathwib",
-    title = "Verified Fajr Azan (With As-salatu khayrun minan-nawm)",
-    subtitle = "Pure Vocal Fajr Azan with الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ (No Music)",
-    streamUrl = "https://www.islamcan.com/audio/adhan/azan1.mp3",
-    includesFajrTathwib = true
+    title = "Makkah Fajr Special Adhan (With As-salatu khayrun minan-nawm)",
+    subtitle = "Offline Haramain Fajr Adhan with الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan12.mp3",
+    includesFajrTathwib = true,
+    originMasjid = "Masjid al-Haram, Makkah (Dawn)",
+    maqamOrStyle = "Dawn Fajr Tathwib (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/fajr_tathwib.wav"
+  ),
+  MADINAH_FAJR_TATHWIB(
+    id = "madinah_fajr_tathwib",
+    title = "Masjid an-Nabawi Fajr Special Adhan (Madinah Dawn)",
+    subtitle = "Offline Madinah Dawn Adhan with الصَّلَاةُ خَيْرٌ مِنَ النَّوْمِ (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan13.mp3",
+    includesFajrTathwib = true,
+    originMasjid = "Masjid an-Nabawi, Al-Madinah (Dawn)",
+    maqamOrStyle = "Madani Dawn Tathwib (Offline Local Recording)",
+    tradition = "SUNNI",
+    localAssetPath = "adhan/madinah_fajr_tathwib.wav"
+  ),
+  SHIA_KARBALA_NAJAF(
+    id = "shia_karbala_najaf",
+    title = "Karbala & Najaf Sanctuary Adhan (Ja'fari Tradition)",
+    subtitle = "Offline Pure Vocal Shia Adhan with حَيَّ عَلَىٰ خَيْرِ الْعَمَلِ (No Music)",
+    streamUrl = "https://www.islamcan.com/audio/adhan/azan14.mp3",
+    includesFajrTathwib = false,
+    originMasjid = "Imam Ali & Imam Hussain Shrines",
+    maqamOrStyle = "Ja'fari Classical Vocal (Offline Local Recording)",
+    tradition = "SHIA",
+    localAssetPath = "adhan/shia_karbala_najaf.wav"
   )
 }
 
@@ -79,7 +203,7 @@ data class PrayerAndAlarmConfig(
   val asrAzanMode: AzanNotificationMode = AzanNotificationMode.FULL_AZAN,
   val maghribAzanMode: AzanNotificationMode = AzanNotificationMode.FULL_AZAN,
   val ishaAzanMode: AzanNotificationMode = AzanNotificationMode.FULL_AZAN,
-  val selectedMuezzinId: String = MuezzinAudioOption.MAKKAH_HARAM.id,
+  val selectedMuezzinId: String = MuezzinAudioOption.MADINAH_NABAWI.id,
   val prePrayerReminderMinutes: Int = 10, // 0, 5, 10, 15, 20
   // Dedicated 15-Minute Fajr Wake-Up Alarm
   val fajrWakeUpAlarmEnabled: Boolean = true,
@@ -87,13 +211,17 @@ data class PrayerAndAlarmConfig(
   val tahajjudWakeUpEnabled: Boolean = false,
   val wakeUpLanguage: String = "ALL", // "ALL", "AR", "UR", "EN"
   val progressiveSequence: Boolean = true, // Gentle tone -> Fajr Azan -> Progressive Wake-Up
-  val alarmVolumePercent: Int = 85,
-  val boostSystemAlarmStream: Boolean = false,
+  val alarmVolumePercent: Int = 100, // 0..100% (Default 100% of permitted device alarm volume)
+  val boostSystemAlarmStream: Boolean = true, // Uses Android STREAM_ALARM at highest permitted device volume
   val vibrationEnabled: Boolean = true,
+  val continuousVibration: Boolean = true, // Continuous non-stop vibration until dismissed
   val defaultSnoozeMinutes: Int = 5, // 5 or 10
   // Appearance theme
   val themeMode: AppThemeMode = AppThemeMode.LIGHT
-)
+) {
+  val is200PercentBoostActive: Boolean
+    get() = alarmVolumePercent >= 100
+}
 
 object PrayerPreferencesManager {
 
@@ -117,17 +245,18 @@ object PrayerPreferencesManager {
       asrAzanMode = parseAzanMode(prefs.getString("asrAzanMode", AzanNotificationMode.FULL_AZAN.name)),
       maghribAzanMode = parseAzanMode(prefs.getString("maghribAzanMode", AzanNotificationMode.FULL_AZAN.name)),
       ishaAzanMode = parseAzanMode(prefs.getString("ishaAzanMode", AzanNotificationMode.FULL_AZAN.name)),
-      selectedMuezzinId = prefs.getString("selectedMuezzinId", MuezzinAudioOption.MAKKAH_HARAM.id)
-        ?: MuezzinAudioOption.MAKKAH_HARAM.id,
+      selectedMuezzinId = prefs.getString("selectedMuezzinId", MuezzinAudioOption.MADINAH_NABAWI.id)
+        ?: MuezzinAudioOption.MADINAH_NABAWI.id,
       prePrayerReminderMinutes = prefs.getInt("prePrayerReminderMinutes", 10),
       fajrWakeUpAlarmEnabled = prefs.getBoolean("fajrWakeUpAlarmEnabled", true),
       fajrWakeUpOffsetMinutes = prefs.getInt("fajrWakeUpOffsetMinutes", 30),
       tahajjudWakeUpEnabled = prefs.getBoolean("tahajjudWakeUpEnabled", false),
       wakeUpLanguage = prefs.getString("wakeUpLanguage", "ALL") ?: "ALL",
       progressiveSequence = prefs.getBoolean("progressiveSequence", true),
-      alarmVolumePercent = prefs.getInt("alarmVolumePercent", 85).coerceIn(20, 100),
-      boostSystemAlarmStream = prefs.getBoolean("boostSystemAlarmStream", false),
+      alarmVolumePercent = prefs.getInt("alarmVolumePercent", 100).coerceIn(0, 100),
+      boostSystemAlarmStream = prefs.getBoolean("boostSystemAlarmStream", true),
       vibrationEnabled = prefs.getBoolean("vibrationEnabled", true),
+      continuousVibration = prefs.getBoolean("continuousVibration", true),
       defaultSnoozeMinutes = prefs.getInt("defaultSnoozeMinutes", 5),
       themeMode = parseThemeMode(prefs.getString("themeMode", AppThemeMode.LIGHT.name))
     )
@@ -158,12 +287,25 @@ object PrayerPreferencesManager {
       .putBoolean("tahajjudWakeUpEnabled", config.tahajjudWakeUpEnabled)
       .putString("wakeUpLanguage", config.wakeUpLanguage)
       .putBoolean("progressiveSequence", config.progressiveSequence)
-      .putInt("alarmVolumePercent", config.alarmVolumePercent)
+      .putInt("alarmVolumePercent", config.alarmVolumePercent.coerceIn(0, 100))
       .putBoolean("boostSystemAlarmStream", config.boostSystemAlarmStream)
       .putBoolean("vibrationEnabled", config.vibrationEnabled)
+      .putBoolean("continuousVibration", config.continuousVibration)
       .putInt("defaultSnoozeMinutes", config.defaultSnoozeMinutes)
       .putString("themeMode", config.themeMode.name)
       .apply()
+  }
+
+  fun saveSelectedMuezzin(context: Context, muezzinId: String): PrayerAndAlarmConfig {
+    val updated = loadConfig(context).copy(selectedMuezzinId = muezzinId)
+    saveConfig(context, updated)
+    return updated
+  }
+
+  fun saveAlarmVolumePercent(context: Context, volumePercent: Int): PrayerAndAlarmConfig {
+    val updated = loadConfig(context).copy(alarmVolumePercent = volumePercent.coerceIn(0, 100))
+    saveConfig(context, updated)
+    return updated
   }
 
   private fun parseAzanMode(raw: String?): AzanNotificationMode {

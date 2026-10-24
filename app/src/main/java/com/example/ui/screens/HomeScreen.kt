@@ -63,16 +63,26 @@ import androidx.compose.ui.unit.sp
 import android.content.Intent
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
 import com.example.data.local.entities.PrayerScheduleEntity
 import com.example.data.local.entities.SurahEntity
+import com.example.data.model.DailyDuasDataProvider
 import com.example.data.model.ReflectionCategory
 import com.example.data.model.ReflectionDataProvider
 import com.example.data.model.WisdomAttributionStatus
 import com.example.data.prayer.PrayerAndAlarmConfig
+import com.example.data.prayer.SunnahRemindersUiState
 import com.example.ui.components.BismillahHeader
 import com.example.ui.components.SahihGradeBadge
 import com.example.ui.components.SalahAndFajrAlarmCard
@@ -81,6 +91,7 @@ import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.ScheherazadeFontFamily
+import java.util.Calendar
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -91,11 +102,18 @@ fun HomeScreen(
   prayerSchedule: PrayerScheduleEntity? = null,
   prayerConfig: PrayerAndAlarmConfig = PrayerAndAlarmConfig(),
   alarmPlaybackState: FajrAlarmPlaybackState = FajrAlarmPlaybackState(),
+  sunnahRemindersState: SunnahRemindersUiState = SunnahRemindersUiState(),
   onUpdatePrayerConfig: (PrayerAndAlarmConfig) -> Unit = {},
   onRefreshPrayerSchedule: () -> Unit = {},
   onTestAzanOrFajrAlarm: (String, Boolean) -> Unit = { _, _ -> },
   onStopActiveAlarm: () -> Unit = {},
   onSnoozeActiveAlarm: (Int) -> Unit = {},
+  onSelectPreviewDayOfWeek: (Int) -> Unit = {},
+  onSendCalculatedDayNotificationNow: (Int?) -> Unit = {},
+  onUpdateFridayBathReminder: (Boolean, String) -> Unit = { _, _ -> },
+  onUpdateDailyCalculatedReminder: (Boolean, String) -> Unit = { _, _ -> },
+  onToggleFridayChecklistItem: (String) -> Unit = {},
+  onIncrementFridaySalawat: (Int) -> Unit = {},
   onOpenSurah: (SurahEntity) -> Unit,
   onPlayRecitation: (AyahEntity, String) -> Unit,
   onBookmarkAyah: (AyahEntity, String) -> Unit,
@@ -106,6 +124,7 @@ fun HomeScreen(
   onNavigateToDownloads: () -> Unit = {},
   onNavigateToEvidence: () -> Unit = {},
   onNavigateToQibla: () -> Unit = {},
+  onNavigateToDailyDuas: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -138,6 +157,23 @@ fun HomeScreen(
         onStopActiveAlarm = onStopActiveAlarm,
         onSnoozeActiveAlarm = onSnoozeActiveAlarm,
         onOpenQiblaCompass = onNavigateToQibla
+      )
+      Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    // Specially Present on Home Screen: Calculated Friday & All Other Days Sunnah & Notification Card
+    item {
+      CalculatedFridayAndDailySunnahHomeCard(
+        remindersState = sunnahRemindersState,
+        surahs = surahs,
+        onSelectPreviewDayOfWeek = onSelectPreviewDayOfWeek,
+        onSendCalculatedDayNotificationNow = onSendCalculatedDayNotificationNow,
+        onUpdateFridayBathReminder = onUpdateFridayBathReminder,
+        onUpdateDailyCalculatedReminder = onUpdateDailyCalculatedReminder,
+        onToggleFridayChecklistItem = onToggleFridayChecklistItem,
+        onIncrementFridaySalawat = onIncrementFridaySalawat,
+        onOpenSurah = onOpenSurah,
+        onNavigateToDailyDuas = onNavigateToDailyDuas
       )
       Spacer(modifier = Modifier.height(16.dp))
     }
@@ -204,25 +240,50 @@ fun HomeScreen(
         }
       }
       Spacer(modifier = Modifier.height(10.dp))
-      FilledTonalButton(
-        onClick = onNavigateToQibla,
-        modifier = Modifier
-          .fillMaxWidth()
-          .testTag("home_open_qibla_compass_btn"),
-        shape = RoundedCornerShape(12.dp)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
-        Icon(
-          imageVector = Icons.Default.Explore,
-          contentDescription = null,
-          tint = GoldPrimary,
-          modifier = Modifier.size(18.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-          text = "Qibla Direction Compass (Kaaba Finder)",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold
-        )
+        FilledTonalButton(
+          onClick = onNavigateToQibla,
+          modifier = Modifier
+            .weight(1f)
+            .testTag("home_open_qibla_compass_btn"),
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.Explore,
+            contentDescription = null,
+            tint = GoldPrimary,
+            modifier = Modifier.size(18.dp)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          Text(
+            text = "Qibla Compass",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        }
+        FilledTonalButton(
+          onClick = onNavigateToDailyDuas,
+          modifier = Modifier
+            .weight(1f)
+            .testTag("home_open_daily_duas_btn"),
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.AutoStories,
+            contentDescription = null,
+            tint = EmeraldPrimary,
+            modifier = Modifier.size(18.dp)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          Text(
+            text = "Daily Duas & Reminders",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        }
       }
       Spacer(modifier = Modifier.height(16.dp))
     }
@@ -938,6 +999,519 @@ fun HomeScreen(
       }
 
       Spacer(modifier = Modifier.height(24.dp))
+    }
+  }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun CalculatedFridayAndDailySunnahHomeCard(
+  remindersState: SunnahRemindersUiState,
+  surahs: List<SurahEntity>,
+  onSelectPreviewDayOfWeek: (Int) -> Unit,
+  onSendCalculatedDayNotificationNow: (Int?) -> Unit,
+  onUpdateFridayBathReminder: (Boolean, String) -> Unit,
+  onUpdateDailyCalculatedReminder: (Boolean, String) -> Unit,
+  onToggleFridayChecklistItem: (String) -> Unit,
+  onIncrementFridaySalawat: (Int) -> Unit,
+  onOpenSurah: (SurahEntity) -> Unit,
+  onNavigateToDailyDuas: () -> Unit
+) {
+  val context = LocalContext.current
+  val calcStatus = remindersState.calculatedDayStatus
+  val selectedDow = remindersState.selectedPreviewDayOfWeek
+  val selectedUpcomingItem = calcStatus.upcoming7DaysSchedule.find {
+    it.calendarDayOfWeek == selectedDow
+  } ?: calcStatus.upcoming7DaysSchedule.first()
+  val selectedSpec = selectedUpcomingItem.weekdaySpec
+  val isFridayBathDone = remindersState.completedFridayChecklistIds.contains("friday_ghusl_bath")
+  val completedFridayCount = DailyDuasDataProvider.fridaySunnahChecklist.count {
+    remindersState.completedFridayChecklistIds.contains(it.id)
+  }
+  val totalFridayCount = DailyDuasDataProvider.fridaySunnahChecklist.size
+
+  ElevatedCard(
+    modifier = Modifier
+      .fillMaxWidth()
+      .testTag("home_calculated_friday_and_days_card"),
+    shape = RoundedCornerShape(22.dp),
+    colors = CardDefaults.elevatedCardColors(
+      containerColor = MaterialTheme.colorScheme.surface
+    ),
+    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
+  ) {
+    Column(modifier = Modifier.padding(18.dp)) {
+      // 1. Top Header Banner: Calculated Friday & Daily Sunnah Reminder
+      Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = EmeraldPrimary
+      ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "Calculated Friday & Daily Sunnah Reminder",
+                style = MaterialTheme.typography.titleMedium.copy(
+                  color = Color.White,
+                  fontWeight = FontWeight.Bold
+                )
+              )
+              Text(
+                text = "${calcStatus.gregorianReadable} • ${calcStatus.hijriInfo.formattedReadable}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = GoldPrimary,
+                  fontWeight = FontWeight.SemiBold
+                )
+              )
+            }
+            Text(
+              text = calcStatus.todayWeekdaySpec.arabicDayName,
+              style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = ScheherazadeFontFamily,
+                color = GoldPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+              )
+            )
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          // Today's Calculated Status Pills
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = if (calcStatus.isFridayToday) GoldPrimary else Color.White.copy(alpha = 0.16f)
+            ) {
+              Text(
+                text = calcStatus.nextFridayDateReadable,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = if (calcStatus.isFridayToday) Color(0xFF102018) else Color.White,
+                  fontWeight = FontWeight.Bold
+                )
+              )
+            }
+
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = Color.White.copy(alpha = 0.16f)
+            ) {
+              Text(
+                text = calcStatus.nextSunnahFastSummary,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = Color.White,
+                  fontWeight = FontWeight.SemiBold
+                )
+              )
+            }
+
+            calcStatus.hijriInfo.specialOccasionBadge?.let { badge ->
+              Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = GoldPrimary.copy(alpha = 0.25f)
+              ) {
+                Text(
+                  text = badge,
+                  modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                  style = MaterialTheme.typography.labelSmall.copy(
+                    color = GoldPrimary,
+                    fontWeight = FontWeight.Bold
+                  )
+                )
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Text(
+              text = "Auto-Send Calculated Daily & Friday Notifications (${remindersState.dailyCalculatedNotifTime24h})",
+              style = MaterialTheme.typography.labelSmall.copy(
+                color = Color.White.copy(alpha = 0.9f),
+                fontWeight = FontWeight.SemiBold
+              ),
+              modifier = Modifier.weight(1f)
+            )
+            Switch(
+              checked = remindersState.dailyCalculatedNotifEnabled,
+              onCheckedChange = { enabled ->
+                onUpdateDailyCalculatedReminder(enabled, remindersState.dailyCalculatedNotifTime24h)
+              },
+              colors = SwitchDefaults.colors(
+                checkedThumbColor = EmeraldPrimary,
+                checkedTrackColor = GoldPrimary
+              ),
+              modifier = Modifier.testTag("home_calculated_day_notif_switch")
+            )
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // 2. Special Friday (Yawm al-Jumu'ah) Highlight Box on Home Screen
+      Surface(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("home_friday_special_highlight_box"),
+        shape = RoundedCornerShape(14.dp),
+        color = GoldPrimary.copy(alpha = 0.14f)
+      ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.weight(1f)
+            ) {
+              Icon(
+                imageVector = Icons.Default.WaterDrop,
+                contentDescription = "Friday Ghusl",
+                tint = EmeraldPrimary,
+                modifier = Modifier.size(18.dp)
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Column {
+                Text(
+                  text = if (calcStatus.isFridayToday) {
+                    "Blessed Friday (Jumu'ah) Special Reminder — TODAY"
+                  } else {
+                    "Special Friday (Jumu'ah) Bath & Sunnah Preparation"
+                  },
+                  style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = EmeraldPrimary
+                  )
+                )
+                Text(
+                  text = "${calcStatus.nextFridayBathAlertSummary} • Checklist: $completedFridayCount/$totalFridayCount",
+                  style = MaterialTheme.typography.labelSmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold
+                  )
+                )
+              }
+            }
+
+            Switch(
+              checked = remindersState.fridayBathReminderEnabled,
+              onCheckedChange = { enabled ->
+                onUpdateFridayBathReminder(enabled, remindersState.fridayBathReminderTime24h)
+              },
+              modifier = Modifier.testTag("home_friday_bath_switch")
+            )
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            FilledTonalButton(
+              onClick = { onToggleFridayChecklistItem("friday_ghusl_bath") },
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.testTag("home_friday_bath_done_btn")
+            ) {
+              Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = if (isFridayBathDone) "Friday Ghusl Done ✓" else "Mark Friday Ghusl",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+              )
+            }
+
+            FilledTonalButton(
+              onClick = {
+                surahs.find { it.number == 18 }?.let { onOpenSurah(it) }
+              },
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.testTag("home_friday_open_kahf_btn")
+            ) {
+              Icon(Icons.Default.MenuBook, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("Surah Al-Kahf (18)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+
+            FilledTonalButton(
+              onClick = { onIncrementFridaySalawat(1) },
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.testTag("home_friday_salawat_btn")
+            ) {
+              Text(
+                text = "Salawat +1 (${remindersState.fridaySalawatCount}/100)",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+              )
+            }
+
+            OutlinedButton(
+              onClick = {
+                onSendCalculatedDayNotificationNow(Calendar.FRIDAY)
+                Toast.makeText(
+                  context,
+                  "Sent Friday (Jumu'ah) Ghusl, Surah Al-Kahf & Salawat reminder notification",
+                  Toast.LENGTH_SHORT
+                ).show()
+              },
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.testTag("home_send_friday_bath_notif_btn")
+            ) {
+              Icon(Icons.Default.NotificationsActive, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("Notify Friday Alert", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
+      // 3. 7-Day Calculated Schedule Selector (Today + Next 6 Days)
+      Text(
+        text = "Calculated 7-Day Schedule (Tap Friday or Any Day to View & Notify):",
+        style = MaterialTheme.typography.labelSmall.copy(
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      )
+      Spacer(modifier = Modifier.height(6.dp))
+
+      FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("home_7day_calculated_row")
+      ) {
+        calcStatus.upcoming7DaysSchedule.forEach { dayItem ->
+          val isSelected = selectedDow == dayItem.calendarDayOfWeek
+          val chipLabel = buildString {
+            append(dayItem.weekdaySpec.shortDayLabel)
+            if (dayItem.isToday) append(" (Today)")
+            else if (dayItem.isFridayJumuah) append(" (Jumu'ah)")
+          }
+          FilterChip(
+            selected = isSelected,
+            onClick = { onSelectPreviewDayOfWeek(dayItem.calendarDayOfWeek) },
+            label = {
+              Text(
+                text = chipLabel,
+                fontSize = 11.sp,
+                fontWeight = if (dayItem.isToday || dayItem.isFridayJumuah) FontWeight.Bold else FontWeight.Medium
+              )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = if (dayItem.isFridayJumuah) GoldPrimary else EmeraldPrimary,
+              selectedLabelColor = if (dayItem.isFridayJumuah) Color.Black else Color.White
+            ),
+            modifier = Modifier.testTag("home_calculated_day_chip_${dayItem.calendarDayOfWeek}")
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(10.dp))
+
+      // 4. Selected / Today Calculated Day Detailed Sunnah Card
+      Surface(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("home_selected_calculated_day_detail"),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+      ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "${selectedSpec.dayNameEnglish} — ${selectedSpec.islamicDayTitle}",
+                style = MaterialTheme.typography.titleSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary
+                )
+              )
+              Text(
+                text = "${selectedUpcomingItem.gregorianFullDate} • ${selectedUpcomingItem.hijriReadable}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = GoldPrimary,
+                  fontWeight = FontWeight.Bold
+                )
+              )
+            }
+            Surface(
+              shape = RoundedCornerShape(6.dp),
+              color = EmeraldPrimary.copy(alpha = 0.14f)
+            ) {
+              Text(
+                text = selectedUpcomingItem.specialBadge,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                style = MaterialTheme.typography.labelSmall.copy(
+                  color = EmeraldPrimary,
+                  fontWeight = FontWeight.Bold
+                )
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Text(
+            text = selectedSpec.primaryReminderTitle,
+            style = MaterialTheme.typography.bodyMedium.copy(
+              fontWeight = FontWeight.Bold
+            )
+          )
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          Text(
+            text = selectedSpec.arabicHadithSnippet,
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontFamily = AmiriFontFamily,
+              fontSize = 19.sp,
+              lineHeight = 31.sp,
+              textAlign = TextAlign.Right,
+              color = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier.fillMaxWidth()
+          )
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          Text(
+            text = selectedSpec.englishGuidance,
+            style = MaterialTheme.typography.bodySmall.copy(
+              fontSize = 12.sp,
+              lineHeight = 18.sp
+            )
+          )
+
+          Spacer(modifier = Modifier.height(4.dp))
+
+          Text(
+            text = selectedSpec.urduGuidance,
+            style = MaterialTheme.typography.bodySmall.copy(
+              fontSize = 12.sp,
+              lineHeight = 19.sp,
+              textAlign = TextAlign.Right,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.fillMaxWidth()
+          )
+
+          Spacer(modifier = Modifier.height(8.dp))
+          HorizontalDivider()
+          Spacer(modifier = Modifier.height(6.dp))
+
+          selectedSpec.keySunnahBullets.forEach { bullet ->
+            Text(
+              text = "• $bullet",
+              style = MaterialTheme.typography.labelSmall.copy(
+                color = MaterialTheme.colorScheme.onSurface
+              ),
+              modifier = Modifier.padding(vertical = 1.dp)
+            )
+          }
+
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+            text = "Authentic Source: ${selectedSpec.authenticReference}",
+            style = MaterialTheme.typography.labelSmall.copy(
+              color = EmeraldPrimary,
+              fontWeight = FontWeight.Bold
+            )
+          )
+        }
+      }
+
+      if (remindersState.lastNotificationBannerMessage.isNotBlank()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Surface(
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag("home_calculated_notif_status_banner"),
+          shape = RoundedCornerShape(10.dp),
+          color = EmeraldPrimary.copy(alpha = 0.12f)
+        ) {
+          Text(
+            text = "✓ ${remindersState.lastNotificationBannerMessage}",
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.labelSmall.copy(
+              color = EmeraldPrimary,
+              fontWeight = FontWeight.Bold
+            )
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.height(10.dp))
+
+      // 5. Action Buttons: Send Today's Notification / Notify Selected Day / Open All Reminders
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        Button(
+          onClick = {
+            onSendCalculatedDayNotificationNow(selectedSpec.calendarDayOfWeek)
+            Toast.makeText(
+              context,
+              "Sent ${selectedSpec.dayNameEnglish} Sunnah reminder notification",
+              Toast.LENGTH_SHORT
+            ).show()
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+          modifier = Modifier
+            .weight(1f)
+            .testTag("home_send_calculated_day_notif_btn"),
+          shape = RoundedCornerShape(10.dp),
+          contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+          Icon(Icons.Default.NotificationsActive, contentDescription = null, modifier = Modifier.size(15.dp))
+          Spacer(modifier = Modifier.width(6.dp))
+          Text(
+            text = "Send ${selectedSpec.dayNameEnglish} Notification",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+          )
+        }
+
+        OutlinedButton(
+          onClick = onNavigateToDailyDuas,
+          modifier = Modifier.testTag("home_open_all_reminders_btn"),
+          shape = RoundedCornerShape(10.dp),
+          contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+          Text("All Duas & Reminders", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
+      }
     }
   }
 }

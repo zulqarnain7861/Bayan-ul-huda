@@ -50,6 +50,7 @@ import com.example.ui.components.TopIslamicBar
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.AddNoteDialog
 import com.example.ui.screens.AuthScreen
+import com.example.ui.screens.DailyDuasScreen
 import com.example.ui.screens.DownloadCenterScreen
 import com.example.ui.screens.HadithScreen
 import com.example.ui.screens.HomeScreen
@@ -65,11 +66,13 @@ import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodels.BayanViewModel
 import com.example.ui.viewmodels.MainNavigationTab
+import androidx.compose.material.icons.filled.VolunteerActivism
 
 object BayanNavRoutes {
   const val HOME = "home"
   const val QURAN = "quran"
   const val HADITH = "hadith"
+  const val DUAS = "duas"
   const val SEARCH = "search"
   const val LIBRARY = "library"
   const val ABOUT = "about"
@@ -89,6 +92,8 @@ data class BottomNavDestination(
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    // STEP 1: Configure App Check with launch intent before any UI, ViewModels, or Firebase operations
+    configureAppCheck(this, intent)
     enableEdgeToEdge()
     setContent {
       val bayanViewModel: BayanViewModel = viewModel()
@@ -121,6 +126,8 @@ fun BayanApp(
   val searchAyahs by viewModel.searchAyahResults.collectAsStateWithLifecycle()
   val searchHadiths by viewModel.searchHadithResults.collectAsStateWithLifecycle()
   val syncBadgeState by viewModel.downloadManager.syncBadgeState.collectAsStateWithLifecycle()
+  val sunnahRemindersState by viewModel.sunnahRemindersState.collectAsStateWithLifecycle()
+  val duaAudioState by viewModel.duaAudioState.collectAsStateWithLifecycle()
 
   var pendingNoteRef by remember { mutableStateOf<String?>(null) }
 
@@ -146,6 +153,13 @@ fun BayanApp(
         label = "Hadith",
         icon = Icons.Default.AutoStories,
         testTag = "nav_tab_hadith"
+      ),
+      BottomNavDestination(
+        route = BayanNavRoutes.DUAS,
+        tab = MainNavigationTab.DUAS,
+        label = "Duas",
+        icon = Icons.Default.VolunteerActivism,
+        testTag = "nav_tab_duas"
       ),
       BottomNavDestination(
         route = BayanNavRoutes.SEARCH,
@@ -262,8 +276,8 @@ fun BayanApp(
     },
     bottomBar = {
       Column(modifier = Modifier.navigationBarsPadding()) {
-        // Global Azan / Fajr Alarm Popup Control when user is on tabs other than Home
-        if (alarmPlaybackState.isActive && currentRoute != BayanNavRoutes.HOME) {
+        // Global Azan / Fajr Alarm / Continuous Vibration Popup Control when user is on tabs other than Home
+        if ((alarmPlaybackState.isActive || alarmPlaybackState.isContinuousVibrationActive) && currentRoute != BayanNavRoutes.HOME) {
           androidx.compose.material3.Surface(
             modifier = Modifier
               .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -280,7 +294,7 @@ fun BayanApp(
             ) {
               Column(modifier = Modifier.weight(1f)) {
                 Text(
-                  text = alarmPlaybackState.prayerOrAlarmTitle,
+                  text = alarmPlaybackState.prayerOrAlarmTitle.ifBlank { "200% Boosted Azan & Continuous Vibration" },
                   style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = GoldPrimary
@@ -293,10 +307,12 @@ fun BayanApp(
                   )
                 )
               }
-              androidx.compose.material3.TextButton(
-                onClick = { viewModel.snoozeActiveAzanOrAlarm(5) }
-              ) {
-                Text("Snooze 5m", color = GoldPrimary, fontSize = 11.sp)
+              if (alarmPlaybackState.isActive) {
+                androidx.compose.material3.TextButton(
+                  onClick = { viewModel.snoozeActiveAzanOrAlarm(5) }
+                ) {
+                  Text("Snooze 5m", color = GoldPrimary, fontSize = 11.sp)
+                }
               }
               androidx.compose.material3.Button(
                 onClick = { viewModel.stopActiveAzanOrAlarm() },
@@ -358,11 +374,28 @@ fun BayanApp(
           prayerSchedule = todayPrayerSchedule,
           prayerConfig = uiState.prayerConfig,
           alarmPlaybackState = alarmPlaybackState,
+          sunnahRemindersState = sunnahRemindersState,
           onUpdatePrayerConfig = { viewModel.updatePrayerAndAlarmConfig(it) },
           onRefreshPrayerSchedule = { viewModel.refreshPrayerSchedule(forceRemote = true) },
           onTestAzanOrFajrAlarm = { prayer, isFajr -> viewModel.testAzanOrFajrAlarm(prayer, isFajr) },
           onStopActiveAlarm = { viewModel.stopActiveAzanOrAlarm() },
           onSnoozeActiveAlarm = { mins -> viewModel.snoozeActiveAzanOrAlarm(mins) },
+          onSelectPreviewDayOfWeek = { dow -> viewModel.selectPreviewDayOfWeek(dow) },
+          onSendCalculatedDayNotificationNow = { dowOverride ->
+            viewModel.sendCalculatedDayNotificationNow(dowOverride)
+          },
+          onUpdateFridayBathReminder = { enabled, time ->
+            viewModel.updateFridayBathReminder(enabled, time)
+          },
+          onUpdateDailyCalculatedReminder = { enabled, time ->
+            viewModel.updateDailyCalculatedReminder(enabled, time)
+          },
+          onToggleFridayChecklistItem = { itemId ->
+            viewModel.toggleFridayChecklistItem(itemId)
+          },
+          onIncrementFridaySalawat = { delta ->
+            viewModel.incrementFridaySalawat(delta)
+          },
           onOpenSurah = { surah ->
             viewModel.openSurahReader(surah)
             navigateToTab(BayanNavRoutes.QURAN, MainNavigationTab.QURAN)
@@ -381,6 +414,9 @@ fun BayanApp(
           },
           onNavigateToQibla = {
             navController.navigate(BayanNavRoutes.QIBLA) { launchSingleTop = true }
+          },
+          onNavigateToDailyDuas = {
+            navigateToTab(BayanNavRoutes.DUAS, MainNavigationTab.DUAS)
           }
         )
       }
@@ -449,6 +485,37 @@ fun BayanApp(
           },
           onOpenEvidenceVerification = {
             navController.navigate(BayanNavRoutes.EVIDENCE) { launchSingleTop = true }
+          }
+        )
+      }
+
+      composable(BayanNavRoutes.DUAS) {
+        DailyDuasScreen(
+          remindersState = sunnahRemindersState,
+          duaAudioState = duaAudioState,
+          showEnglish = uiState.showEnglish,
+          showUrdu = uiState.showUrdu,
+          showTransliteration = uiState.showTransliteration,
+          onToggleEnglish = { viewModel.toggleEnglishTranslation() },
+          onToggleUrdu = { viewModel.toggleUrduTranslation() },
+          onToggleTransliteration = { viewModel.toggleTransliteration() },
+          onPlayDuaVocal = { dua, preferReciter -> viewModel.playDuaVocal(dua, preferReciter) },
+          onStopDuaAudio = { viewModel.stopDuaAudio() },
+          onSelectAudioLanguageMode = { viewModel.setDuaAudioLanguageMode(it) },
+          onToggleAudioRepeatMode = { viewModel.toggleDuaAudioRepeatMode() },
+          onToggleFavoriteDua = { viewModel.toggleFavoriteDua(it) },
+          onIncrementDuaTasbih = { duaId, reset -> viewModel.incrementDuaTasbih(duaId, reset) },
+          onUpdateFridayBathReminder = { enabled, time -> viewModel.updateFridayBathReminder(enabled, time) },
+          onToggleFridayChecklistItem = { viewModel.toggleFridayChecklistItem(it) },
+          onIncrementFridaySalawat = { viewModel.incrementFridaySalawat(it) },
+          onUpdateNecessaryReminder = { id, enabled, time -> viewModel.updateNecessaryReminder(id, enabled, time) },
+          onTriggerTestReminder = { viewModel.triggerTestSunnahReminder(it) },
+          onOpenSurahByNumber = { surahNum ->
+            val targetSurah = surahs.find { it.number == surahNum }
+            if (targetSurah != null) {
+              viewModel.openSurahReader(targetSurah)
+              navigateToTab(BayanNavRoutes.QURAN, MainNavigationTab.QURAN)
+            }
           }
         )
       }

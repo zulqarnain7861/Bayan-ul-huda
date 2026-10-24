@@ -1,7 +1,12 @@
 package com.example.ui.components
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,11 +45,29 @@ import com.example.ui.theme.OnEmeraldContainer
 import com.example.ui.theme.SahihBadgeColor
 import com.example.ui.theme.ScheherazadeFontFamily
 
+const val WHATSAPP_SUPPORT_URL = "https://wa.me/7889632693?text=Assalamu%20Alaikum"
+
+fun openWhatsAppSupport(context: Context) {
+  try {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(WHATSAPP_SUPPORT_URL)).apply {
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
+  } catch (_: Exception) {
+    Toast.makeText(
+      context,
+      "Assalamu Alaikum! Support WhatsApp: +91 7889632693 (wa.me/7889632693)",
+      Toast.LENGTH_LONG
+    ).show()
+  }
+}
+
 @Composable
 fun BismillahHeader(
   modifier: Modifier = Modifier,
   showBorder: Boolean = true
 ) {
+  val context = LocalContext.current
   Card(
     modifier = modifier.fillMaxWidth(),
     colors = CardDefaults.cardColors(
@@ -54,21 +79,38 @@ fun BismillahHeader(
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = 18.dp, horizontal = 16.dp),
+        .padding(vertical = 14.dp, horizontal = 16.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
+      Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = EmeraldPrimary.copy(alpha = 0.14f),
+        modifier = Modifier
+          .clickable { openWhatsAppSupport(context) }
+          .testTag("clickable_assalamu_alaikum_greeting")
+      ) {
+        Text(
+          text = "السَّلَامُ عَلَيْكُمْ • Assalamu Alaikum — Support Our App",
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+          style = MaterialTheme.typography.labelSmall.copy(
+            fontWeight = FontWeight.Bold,
+            color = EmeraldPrimary
+          )
+        )
+      }
+      Spacer(modifier = Modifier.height(6.dp))
       Text(
         text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
         style = MaterialTheme.typography.headlineMedium.copy(
           fontFamily = AmiriFontFamily,
-          fontSize = 28.sp,
-          lineHeight = 52.sp,
+          fontSize = 26.sp,
+          lineHeight = 46.sp,
           fontWeight = FontWeight.Normal,
           color = MaterialTheme.colorScheme.primary,
           textAlign = TextAlign.Center
         )
       )
-      Spacer(modifier = Modifier.height(4.dp))
+      Spacer(modifier = Modifier.height(2.dp))
       Text(
         text = "In the name of Allah, the Entirely Merciful, the Especially Merciful",
         style = MaterialTheme.typography.bodySmall.copy(

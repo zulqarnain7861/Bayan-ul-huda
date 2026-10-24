@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.example.MainActivity
 import com.example.R
@@ -26,6 +27,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
     when (action) {
       PrayerAlarmScheduler.ACTION_STOP_ALARM -> {
         AzanAudioController.stopAlarm(appCtx)
+        AzanForegroundService.releaseAlarmWakeLock()
         appCtx.stopService(Intent(appCtx, AzanForegroundService::class.java))
         val nm = appCtx.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         nm?.cancel(AzanForegroundService.NOTIFICATION_ID)
@@ -34,6 +36,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
       PrayerAlarmScheduler.ACTION_SNOOZE_ALARM -> {
         val snoozeMins = intent.getIntExtra(PrayerAlarmScheduler.EXTRA_SNOOZE_MINUTES, 5)
         AzanAudioController.snoozeActiveAlarm(appCtx, snoozeMins)
+        AzanForegroundService.releaseAlarmWakeLock()
         appCtx.stopService(Intent(appCtx, AzanForegroundService::class.java))
         val nm = appCtx.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         nm?.cancel(AzanForegroundService.NOTIFICATION_ID)
@@ -41,6 +44,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
 
       PrayerAlarmScheduler.ACTION_FAJR_WAKEUP_ALARM,
       PrayerAlarmScheduler.ACTION_PRAYER_AZAN_ALARM -> {
+        AzanForegroundService.acquireAlarmWakeLock(appCtx)
         val prayerName = intent.getStringExtra(PrayerAlarmScheduler.EXTRA_PRAYER_NAME) ?: "Fajr"
         val isSpecialFajr = intent.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_SPECIAL_FAJR, false)
         val isTahajjud = intent.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_TAHAJJUD, false)
@@ -49,6 +53,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
 
         if (!isSpecialFajr && modeName == AzanNotificationMode.SILENT.name) {
           AzanForegroundService.postSilentPrayerNotification(appCtx, prayerName)
+          AzanForegroundService.releaseAlarmWakeLock()
         } else {
           val serviceIntent = Intent(appCtx, AzanForegroundService::class.java).apply {
             putExtra(PrayerAlarmScheduler.EXTRA_PRAYER_NAME, prayerName)
@@ -82,15 +87,41 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         // Automatically reschedule tomorrow's prayer alarms
         PrayerAlarmScheduler.scheduleAllDailyAlarms(appCtx)
       }
+
+      com.example.data.prayer.SunnahReminderManager.ACTION_SUNNAH_REMINDER_ALARM -> {
+        val remId = intent.getStringExtra(com.example.data.prayer.SunnahReminderManager.EXTRA_REMINDER_ID)
+          ?: "rem_friday_bath_ghusl"
+
+        if (remId == "rem_calculated_daily_day_sunnah") {
+          com.example.data.prayer.SunnahReminderManager.postCalculatedDayReminderNotification(appCtx)
+        } else {
+          val remTitle = intent.getStringExtra(com.example.data.prayer.SunnahReminderManager.EXTRA_REMINDER_TITLE)
+            ?: "Friday Bath (Jumu'ah Ghusl) & Sunnah Reminder"
+          val remBody = intent.getStringExtra(com.example.data.prayer.SunnahReminderManager.EXTRA_REMINDER_BODY)
+            ?: "Perform Jumu'ah Ghusl, use Miswak, wear clean garments, and recite Surah Al-Kahf."
+          val remRef = intent.getStringExtra(com.example.data.prayer.SunnahReminderManager.EXTRA_REMINDER_REF)
+            ?: "Sahih al-Bukhari 877"
+
+          com.example.data.prayer.SunnahReminderManager.postSunnahReminderNotification(
+            context = appCtx,
+            reminderId = remId,
+            title = remTitle,
+            body = remBody,
+            authenticReference = remRef
+          )
+        }
+        com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(appCtx)
+      }
     }
   }
 }
 
 /**
- * Reschedules all five daily Salah alarms and the 15-minute Fajr wake-up alarm after:
+ * Reschedules all five daily Salah alarms, the 15-minute Fajr wake-up alarm, and Sunnah/Friday Ghusl reminders after:
  * - Device reboot (BOOT_COMPLETED)
  * - Time-zone changes (TIMEZONE_CHANGED)
  * - Manual clock changes (TIME_SET)
+ * - Date changes (DATE_CHANGED)
  * - App update (MY_PACKAGE_REPLACED)
  * - Exact alarm permission restoration (ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED)
  */
@@ -104,8 +135,13 @@ class BootAndTimeChangeReceiver : BroadcastReceiver() {
       action == Intent.ACTION_MY_PACKAGE_REPLACED ||
       action == "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
     ) {
-      val config = PrayerPreferencesManager.loadConfig(context.applicationContext)
-      PrayerAlarmScheduler.scheduleAllDailyAlarms(context.applicationContext, null, config)
+      val appCtx = context.applicationContext
+      val config = PrayerPreferencesManager.loadConfig(appCtx)
+      PrayerAlarmScheduler.scheduleAllDailyAlarms(appCtx, null, config)
+      com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(appCtx)
+      if (action == Intent.ACTION_DATE_CHANGED) {
+        com.example.data.prayer.SunnahReminderManager.ensureTodayCalculatedNotificationSentIfEnabled(appCtx)
+      }
     }
   }
 }
@@ -115,6 +151,7 @@ class AzanForegroundService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    acquireAlarmWakeLock(this)
     val prayerName = intent?.getStringExtra(PrayerAlarmScheduler.EXTRA_PRAYER_NAME) ?: "Fajr"
     val isSpecialFajr = intent?.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_SPECIAL_FAJR, false) ?: false
     val isTahajjud = intent?.getBooleanExtra(PrayerAlarmScheduler.EXTRA_IS_TAHAJJUD, false) ?: false
@@ -141,6 +178,7 @@ class AzanForegroundService : Service() {
 
   override fun onDestroy() {
     AzanAudioController.stopAlarm(this)
+    releaseAlarmWakeLock()
     super.onDestroy()
   }
 
@@ -148,6 +186,31 @@ class AzanForegroundService : Service() {
     private const val LEGACY_CHANNEL_ID = "bayan_azan_and_fajr_alarm_channel"
     const val CHANNEL_ID = "bayan_pure_vocal_azan_alarm_channel_v2"
     const val NOTIFICATION_ID = 4001
+    private var activeWakeLock: PowerManager.WakeLock? = null
+
+    fun acquireAlarmWakeLock(context: Context) {
+      try {
+        val pm = context.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        val wl = activeWakeLock ?: pm.newWakeLock(
+          PowerManager.PARTIAL_WAKE_LOCK,
+          "bayan:adhan_alarm_wakelock"
+        ).apply {
+          setReferenceCounted(false)
+        }
+        wl.acquire(15 * 60 * 1000L)
+        activeWakeLock = wl
+      } catch (_: Exception) {
+      }
+    }
+
+    fun releaseAlarmWakeLock() {
+      try {
+        if (activeWakeLock?.isHeld == true) {
+          activeWakeLock?.release()
+        }
+      } catch (_: Exception) {
+      }
+    }
 
     fun ensureNotificationChannel(context: Context) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -160,7 +223,7 @@ class AzanForegroundService : Service() {
         ).apply {
           description = "Pure vocal Azan notifications and 15-minute Fajr wake-up alarm without system ringtone music"
           setSound(null, null)
-          enableVibration(true)
+          enableVibration(false)
           lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
         nm.createNotificationChannel(channel)

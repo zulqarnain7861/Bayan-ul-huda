@@ -114,6 +114,99 @@ fun AboutScreen(
     contentPadding = PaddingValues(vertical = 16.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
+    // Top "Support Play Store Publication" & Clickable "Assalamu Alaikum" WhatsApp Card (Single instance at top)
+    item {
+      ElevatedCard(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("top_support_our_app_card"),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.elevatedCardColors(
+          containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)
+      ) {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+          verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "Support Bayan al-Huda • Google Play Store Publication",
+                style = MaterialTheme.typography.titleMedium.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary
+                )
+              )
+              Text(
+                text = "We need US$25 for publication: One-time Google Play Console registration fee",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.SemiBold,
+                  color = GoldPrimary
+                )
+              )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+              shape = RoundedCornerShape(16.dp),
+              color = GoldPrimary.copy(alpha = 0.18f),
+              modifier = Modifier
+                .clickable { com.example.ui.components.openWhatsAppSupport(context) }
+                .testTag("about_assalamu_alaikum_greeting_btn")
+            ) {
+              Text(
+                text = "السَّلَامُ عَلَيْكُمْ • Assalamu Alaikum",
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = EmeraldPrimary
+                )
+              )
+            }
+          }
+
+          Text(
+            text = "Community support helps cover the one-time US$25 Google Play Console registration fee so we can publish Bayan al-Huda on the Google Play Store and enable more people worldwide to benefit from verified Quran, Hadith, and Salah tools.",
+            style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp)
+          )
+
+          Text(
+            text = "100% Free & Ad-Free Pledge: Bayan al-Huda is completely free of cost and contains zero advertisements. Supporting the Play Store registration is completely optional—tap below to connect on WhatsApp.",
+            style = MaterialTheme.typography.labelSmall.copy(
+              fontWeight = FontWeight.SemiBold,
+              color = EmeraldPrimary,
+              lineHeight = 16.sp
+            )
+          )
+
+          Button(
+            onClick = { com.example.ui.components.openWhatsAppSupport(context) },
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+              containerColor = EmeraldPrimary,
+              contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("support_our_app_whatsapp_button")
+          ) {
+            Text(
+              text = "Assalamu Alaikum — Support $25 Play Store Publication on WhatsApp",
+              fontWeight = FontWeight.Bold,
+              fontSize = 13.sp
+            )
+          }
+        }
+      }
+    }
+
     // App Header Card
     item {
       ElevatedCard(
@@ -357,17 +450,10 @@ fun AboutScreen(
                       }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    if (isVerifiedDeveloper) {
-                      Text(
-                        text = "Protected Developer Docs: ${entry.officialDocsUrl}",
-                        style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
-                      )
-                    } else {
-                      Text(
-                        text = "Attribution: Verified Scholarly Source (Technical API Endpoints Protected)",
-                        style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
-                      )
-                    }
+                    Text(
+                      text = "Attribution: Verified Authentic Scholarly Publication • Links Protected for App Security",
+                      style = MaterialTheme.typography.labelSmall.copy(color = GoldPrimary, fontWeight = FontWeight.SemiBold)
+                    )
                     Text(
                       text = "Books & Languages: ${entry.availableBooksAndLanguages}",
                       style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
@@ -510,15 +596,29 @@ fun AboutScreen(
                           style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
                         )
                       }
-                      if (isVerifiedDeveloper && src.officialUrl.isNotBlank()) {
-                        Text(
-                          text = "Protected Developer Endpoint: ${src.officialUrl}",
-                          style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        )
-                      }
+                      Text(
+                        text = "Endpoint: Verified Canonical Local Schema • Links Protected for App Security",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      )
                     }
                   }
                 }
+              }
+
+              Spacer(modifier = Modifier.height(10.dp))
+              OutlinedButton(
+                onClick = { com.example.ui.components.openWhatsAppSupport(context) },
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .testTag("audit_whatsapp_support_button")
+              ) {
+                Text(
+                  text = "Assalamu Alaikum — Audit & Source Inquiries on WhatsApp",
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 12.sp,
+                  color = EmeraldPrimary
+                )
               }
             }
           }
@@ -722,43 +822,6 @@ fun AboutScreen(
                 Text(text = "Message on Facebook", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
                 Text(text = "Facebook / Messenger Direct Link", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
               }
-            }
-          }
-
-          Spacer(modifier = Modifier.height(14.dp))
-          HorizontalDivider()
-          Spacer(modifier = Modifier.height(12.dp))
-
-          // Support Our App — US$25 Google Play Console Registration Fee Notice
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = GoldPrimary.copy(alpha = 0.12f),
-            modifier = Modifier
-              .fillMaxWidth()
-              .testTag("support_play_console_card")
-          ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-              Text(
-                text = "Support Our App • Google Play Store Publication",
-                style = MaterialTheme.typography.titleSmall.copy(
-                  fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary
-                )
-              )
-              Spacer(modifier = Modifier.height(6.dp))
-              Text(
-                text = "Community support helps cover the one-time US$25 Google Play Console registration fee so we can publish Bayan al-Huda on the Google Play Store and enable more people worldwide to benefit from verified Quran, Hadith, and Salah tools.",
-                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp)
-              )
-              Spacer(modifier = Modifier.height(6.dp))
-              Text(
-                text = "100% Free & Ad-Free Pledge: Bayan al-Huda is completely free of cost and contains zero advertisements. Supporting the Play Store registration is completely optional—reach out via Email, Instagram, or Facebook above if you would like to contribute or share feedback.",
-                style = MaterialTheme.typography.labelSmall.copy(
-                  fontWeight = FontWeight.SemiBold,
-                  color = EmeraldPrimary,
-                  lineHeight = 16.sp
-                )
-              )
             }
           }
         }
