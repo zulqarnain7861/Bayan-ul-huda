@@ -646,5 +646,92 @@ object InitialDataLoader {
   fun getFoundationalHadiths(): List<HadithEntity> {
     return ExtendedHadithDataProvider.getExtendedHadiths()
   }
+
+  fun getFoundationalTranslations(): List<com.example.data.local.entities.TranslationEntity> {
+    return listOf(
+      // Ali Quli Qara'i - Al-Fatihah
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:1",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 1,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "In the Name of Allah, the All-beneficent, the All-merciful."
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:2",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 2,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "All praise belongs to Allah, Lord of all the worlds,"
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:3",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 3,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "the All-beneficent, the All-merciful,"
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:4",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 4,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "Master of the Day of Retribution."
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:5",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 5,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "You [alone] do we worship, and to You [alone] do we turn for help."
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:6",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 6,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "Guide us on the straight path,"
+      ),
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "1:7",
+        surahOrBookNumber = 1,
+        verseOrHadithNumber = 7,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "the path of those whom You have blessed — such as have not incurred Your wrath, nor are they astray."
+      ),
+      // Ayat al-Kursi (2:255) - Ali Quli Qara'i
+      com.example.data.local.entities.TranslationEntity(
+        sourceType = "QURAN",
+        referenceKey = "2:255",
+        surahOrBookNumber = 2,
+        verseOrHadithNumber = 255,
+        editionKey = "en.qarai",
+        editionTitle = "Ali Quli Qara'i",
+        languageCode = "en",
+        text = "Allah —there is no god except Him— is the Living One, the All-sustainer. Neither drowsiness befalls Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that may intercede with Him except with His permission? He knows that which is before them and that which is behind them, and they do not comprehend anything of His knowledge except what He wishes. His seat embraces the heavens and the earth, and He is not wearied by their preservation, and He is the All-exalted, the All-supreme."
+      )
+    )
+  }
 }
 

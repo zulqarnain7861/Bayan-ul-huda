@@ -95,6 +95,11 @@ class IslamicRepository(
     hadithDao.insertHadiths(foundationalHadiths)
     seedHadithTranslations(foundationalHadiths)
 
+    val foundationalTranslations = InitialDataLoader.getFoundationalTranslations()
+    if (foundationalTranslations.isNotEmpty()) {
+      translationDao.insertTranslations(foundationalTranslations)
+    }
+
     refreshHadithCollectionsMetadata()
     sourceRegistryRepo.ensureDefaultSourcesSeeded()
   }
@@ -274,13 +279,28 @@ class IslamicRepository(
       }
     }
 
-    // 3. Standard DAO search across all 6,236 offline verses
-    val daoMatches = ayahDao.searchAyahs(q).first()
-    for (a in daoMatches) {
-      results["${a.surahNumber}:${a.verseNumber}"] = a
+    // 3. Standard DAO search across all 6,236 offline verses using FTS
+    // Sanitize query for FTS: keep only alphanumeric and spaces for simplicity, or wrap in quotes
+    val ftsQuery = q.split(Regex("\\s+")).filter { it.length > 1 }.joinToString(" ") { "$it*" }
+    if (ftsQuery.isNotBlank()) {
+      val daoMatches = ayahDao.searchAyahs(ftsQuery).first()
+      for (a in daoMatches) {
+        results["${a.surahNumber}:${a.verseNumber}"] = a
+      }
     }
 
     results.values.toList()
+  }
+
+  /**
+   * Searches across all Quran and Hadith translations using FTS5.
+   */
+  suspend fun searchTranslationsSmart(rawQuery: String): List<TranslationEntity> = withContext(Dispatchers.IO) {
+    val q = rawQuery.trim()
+    if (q.isEmpty()) return@withContext emptyList()
+    val ftsQuery = q.split(Regex("\\s+")).filter { it.length > 1 }.joinToString(" ") { "$it*" }
+    if (ftsQuery.isBlank()) return@withContext emptyList()
+    translationDao.searchTranslations(ftsQuery).first()
   }
 
   /**
@@ -350,10 +370,13 @@ class IslamicRepository(
       }
     }
 
-    // 4. Local Room full-text & reference search for non-numeric queries
-    val daoMatches = hadithDao.searchHadiths(q).first()
-    for (h in daoMatches) {
-      results["${h.collectionKey}_${h.hadithNumber}"] = h
+    // 4. Local Room full-text search using FTS
+    val ftsQuery = q.split(Regex("\\s+")).filter { it.length > 1 }.joinToString(" ") { "$it*" }
+    if (ftsQuery.isNotBlank()) {
+      val daoMatches = hadithDao.searchHadiths(ftsQuery).first()
+      for (h in daoMatches) {
+        results["${h.collectionKey}_${h.hadithNumber}"] = h
+      }
     }
 
     // 5. Diacritic-insensitive & multi-word search across all 38 verified Sunni & Shia collections
@@ -658,6 +681,66 @@ class IslamicRepository(
   // Translations
   fun getTranslationsForReference(sourceType: String, referenceKey: String): Flow<List<TranslationEntity>> =
     translationDao.getTranslationsForReference(sourceType, referenceKey)
+
+  fun getTranslationsForSurah(surahNumber: Int): Flow<List<TranslationEntity>> =
+    translationDao.getTranslationsBySurah(surahNumber)
+
+  suspend fun ensureSurahTranslationsLoaded(surahNumber: Int) = withContext(Dispatchers.IO) {
+    val existing = translationDao.getTranslationsForReferenceSnapshot("QURAN", "$surahNumber:1")
+    val existingEditionKeys = existing.map { it.editionKey }.toSet()
+    val ayahs = ayahDao.getAyahsBySurahSnapshot(surahNumber).ifEmpty {
+      OfflineQuranAssetLoader.loadSurahFromAssets(appContext, surahNumber)
+    }
+    if (ayahs.isEmpty()) return@withContext
+
+    val allSpecs = com.example.data.local.ShiaTranslationDataProvider.sunniEditions +
+      com.example.data.local.ShiaTranslationDataProvider.shiaEditions
+    val missingSpecs = allSpecs.filter { it.key !in existingEditionKeys }
+    if (missingSpecs.isEmpty()) return@withContext
+
+    val batch = ArrayList<TranslationEntity>()
+    for (spec in missingSpecs) {
+      for (a in ayahs) {
+        val translatedText = com.example.data.local.ShiaTranslationDataProvider.getSpecificTranslation(
+          surahNumber = a.surahNumber,
+          verseNumber = a.verseNumber,
+          editionKey = spec.key,
+          baseEnglish = a.translationEnglish,
+          baseUrdu = a.translationUrdu
+        )
+        batch.add(
+          TranslationEntity(
+            sourceType = "QURAN",
+            referenceKey = "${a.surahNumber}:${a.verseNumber}",
+            surahOrBookNumber = a.surahNumber,
+            verseOrHadithNumber = a.verseNumber,
+            editionKey = spec.key,
+            editionTitle = "${spec.title} (${spec.translator})",
+            languageCode = spec.languageCode,
+            text = translatedText
+          )
+        )
+      }
+    }
+    if (batch.isNotEmpty()) {
+      translationDao.insertTranslations(batch)
+    }
+  }
+
+  suspend fun searchTafsirSmart(query: String, traditionScope: String = "BOTH"): List<AyahTafsirResult> = withContext(Dispatchers.IO) {
+    val q = query.trim()
+    if (q.isEmpty()) return@withContext emptyList()
+    val matchedAyahs = searchAyahsSmart(q).take(15)
+    val foundationalAyahs = listOfNotNull(
+      ayahDao.getAyah(1, 1),
+      ayahDao.getAyah(2, 255),
+      ayahDao.getAyah(36, 1),
+      ayahDao.getAyah(112, 1)
+    )
+    val combinedAyahs = (matchedAyahs + foundationalAyahs).distinctBy { "${it.surahNumber}:${it.verseNumber}" }
+    val hadiths = ExtendedHadithDataProvider.getExtendedHadiths()
+    TafsirRepository.searchTafsirCommentary(q, traditionScope, combinedAyahs, hadiths)
+  }
 
   // Bookmarks
   fun getAllBookmarks(): Flow<List<BookmarkEntity>> = bookmarkDao.getAllBookmarks()

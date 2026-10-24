@@ -1157,7 +1157,7 @@ private fun MasnoonDuaCard(
         Text(
           text = dua.urduTranslation,
           style = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = AmiriFontFamily,
+            fontFamily = com.example.ui.theme.UrduNastaliqFontFamily,
             fontSize = 18.sp,
             lineHeight = 30.sp,
             color = MaterialTheme.colorScheme.onSurface

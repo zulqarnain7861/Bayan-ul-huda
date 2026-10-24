@@ -72,6 +72,7 @@ fun SearchScreen(
   ayahResults: List<AyahEntity>,
   hadithResults: List<HadithEntity>,
   surahs: List<SurahEntity>,
+  tafsirResults: List<com.example.data.repository.AyahTafsirResult> = emptyList(),
   isSearchingRemote: Boolean = false,
   onSearchQueryChanged: (String) -> Unit,
   onSearchCategoryChanged: (SearchCategory) -> Unit,
@@ -93,6 +94,14 @@ fun SearchScreen(
         .map { it.key }
         .toSet()
       hadithResults.filter { it.collectionKey in allowedKeys }
+    }
+  }
+
+  val scopedTafsirResults = remember(tafsirResults, hadithTraditionScope) {
+    when (hadithTraditionScope) {
+      "SUNNI" -> tafsirResults.filter { !it.edition.eraBadge.contains("Shia", ignoreCase = true) }
+      "SHIA" -> tafsirResults.filter { it.edition.eraBadge.contains("Shia", ignoreCase = true) }
+      else -> tafsirResults
     }
   }
 
@@ -198,10 +207,21 @@ fun SearchScreen(
           )
         )
       }
+      item {
+        FilterChip(
+          selected = searchCategory == SearchCategory.TAFSIR,
+          onClick = { onSearchCategoryChanged(SearchCategory.TAFSIR) },
+          label = { Text("Tafsir (14 Exegeses)", fontSize = 11.sp, maxLines = 1, softWrap = false) },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          )
+        )
+      }
     }
 
-    // Hadith Tradition Scope Filter (Search Sunni Hadith, Shia Hadith, or Both Libraries)
-    if (searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.HADITH) {
+    // Tradition Scope Filter (Search Sunni, Shia, or Both Libraries across Hadith & Tafsir)
+    if (searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.HADITH || searchCategory == SearchCategory.TAFSIR) {
       Row(
         modifier = Modifier
           .fillMaxWidth()
@@ -211,7 +231,7 @@ fun SearchScreen(
         FilterChip(
           selected = hadithTraditionScope == "BOTH",
           onClick = { hadithTraditionScope = "BOTH" },
-          label = { Text("Both Libraries", fontSize = 11.sp, maxLines = 1, softWrap = false) },
+          label = { Text("Both Traditions", fontSize = 11.sp, maxLines = 1, softWrap = false) },
           colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary
@@ -303,8 +323,11 @@ fun SearchScreen(
     } else {
       val showAyahs = searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.QURAN
       val showHadiths = searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.HADITH
+      val showTafsirs = searchCategory == SearchCategory.ALL || searchCategory == SearchCategory.TAFSIR
 
-      val totalCount = (if (showAyahs) ayahResults.size else 0) + (if (showHadiths) scopedHadithResults.size else 0)
+      val totalCount = (if (showAyahs) ayahResults.size else 0) +
+        (if (showHadiths) scopedHadithResults.size else 0) +
+        (if (showTafsirs) scopedTafsirResults.size else 0)
 
       LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -496,6 +519,7 @@ fun SearchScreen(
                 Text(
                   text = ayah.translationUrdu,
                   style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = com.example.ui.theme.UrduNastaliqFontFamily,
                     fontSize = 13.sp,
                     textAlign = TextAlign.Right,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -643,16 +667,141 @@ fun SearchScreen(
                   style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
                   text = hadith.urduText,
                   style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = com.example.ui.theme.UrduNastaliqFontFamily,
                     fontSize = 13.sp,
                     textAlign = TextAlign.Right,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                   ),
                   modifier = Modifier.fillMaxWidth()
+                )
+              }
+            }
+          }
+        }
+
+        if (showTafsirs && scopedTafsirResults.isNotEmpty()) {
+          item {
+            Text(
+              text = if (hadithTraditionScope == "SHIA") {
+                "Shia Exegesis & Commentary Matches (${scopedTafsirResults.size})"
+              } else if (hadithTraditionScope == "SUNNI") {
+                "Sunni Exegesis & Commentary Matches (${scopedTafsirResults.size})"
+              } else {
+                "Classical & Contemporary Tafsir Commentary Matches (${scopedTafsirResults.size})"
+              },
+              style = MaterialTheme.typography.titleSmall.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+              ),
+              modifier = Modifier.padding(top = 10.dp)
+            )
+          }
+
+          items(scopedTafsirResults, key = { "search_tafsir_${it.edition.key}_${it.verseRef}" }) { tafsir ->
+            val parts = tafsir.verseRef.split(":")
+            val sNum = parts.getOrNull(0)?.toIntOrNull() ?: 1
+            val surah = surahs.find { it.number == sNum }
+
+            Card(
+              modifier = Modifier
+                .fillMaxWidth()
+                .clickable { surah?.let { onOpenSurah(it) } },
+              shape = RoundedCornerShape(14.dp),
+              colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+              Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Column {
+                    Text(
+                      text = "${tafsir.edition.titleEnglish} • Surah ${tafsir.verseRef}",
+                      style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (tafsir.edition.eraBadge.contains("Shia", ignoreCase = true)) GoldPrimary else EmeraldPrimary
+                      )
+                    )
+                    Text(
+                      text = "${tafsir.edition.scholarName} (${tafsir.edition.eraBadge})",
+                      style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                      )
+                    )
+                  }
+                  Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = EmeraldPrimary.copy(alpha = 0.12f)
+                  ) {
+                    Text(
+                      text = "Open in Reader",
+                      modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                      style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = EmeraldPrimary
+                      )
+                    )
+                  }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                  text = tafsir.commentaryEnglish,
+                  style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                  maxLines = 4
+                )
+
+                if (tafsir.commentaryUrdu.isNotBlank()) {
+                  Spacer(modifier = Modifier.height(4.dp))
+                  Text(
+                    text = tafsir.commentaryUrdu,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                      fontFamily = com.example.ui.theme.UrduNastaliqFontFamily,
+                      fontSize = 13.sp,
+                      textAlign = TextAlign.Right,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                  )
+                }
+              }
+            }
+          }
+        }
+
+        if (totalCount == 0) {
+          item {
+            Card(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+              shape = RoundedCornerShape(14.dp),
+              colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+              Column(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                Text(
+                  text = "No matching records found in the installed and indexed sources for \"$searchQuery\"",
+                  style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                  textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                  text = "Search across 6,236 Quran verses, 14 Tafsir exegeses, and Kutub al-Sittah / Shia Four Books by verse reference (e.g. 2:255), Hadith reference (e.g. Bukhari 5027, Al-Kafi 1), or broader English, Urdu, or Arabic terms.",
+                  style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                  )
                 )
               }
             }

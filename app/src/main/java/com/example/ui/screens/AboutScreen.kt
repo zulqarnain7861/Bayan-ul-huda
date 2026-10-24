@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -95,6 +96,7 @@ fun AboutScreen(
   isGuestMode: Boolean = false,
   remainingGuestDays: Int = 7,
   onSignOut: () -> Unit = {},
+  onClearAudioCache: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -312,6 +314,64 @@ fun AboutScreen(
                 modifier = Modifier.testTag("theme_chip_${mode.name.lowercase()}")
               )
             }
+          }
+        }
+      }
+    }
+
+    // Priority 11 — Storage Cleaner & Audio Cache Management
+    item {
+      Card(
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("storage_cleaner_card"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(GoldPrimary.copy(alpha = 0.15f)),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(Icons.Default.Refresh, contentDescription = null, tint = GoldPrimary, modifier = Modifier.size(18.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+              Text(
+                text = "Storage Cleaner",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+              )
+              Text(
+                text = "Manage cached audio and temporary files",
+                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(12.dp))
+
+          Text(
+            text = "Bayan al-Huda caches streamed Quran audio for smooth offline playback. You can clear this cache at any time to free up device space.",
+            style = MaterialTheme.typography.bodySmall,
+            lineHeight = 18.sp
+          )
+
+          Spacer(modifier = Modifier.height(12.dp))
+
+          Button(
+            onClick = {
+              onClearAudioCache()
+              Toast.makeText(context, "Audio cache cleared successfully", Toast.LENGTH_SHORT).show()
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.fillMaxWidth().testTag("clear_audio_cache_btn")
+          ) {
+            Text("Clear Cached Quran Audio", fontWeight = FontWeight.Bold, fontSize = 12.sp)
           }
         }
       }

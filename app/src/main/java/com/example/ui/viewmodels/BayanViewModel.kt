@@ -14,6 +14,7 @@ import com.example.data.local.entities.NoteEntity
 import com.example.data.local.entities.PrayerScheduleEntity
 import com.example.data.local.SourceRegistry
 import com.example.data.local.entities.SurahEntity
+import com.example.data.local.entities.TranslationEntity
 import com.example.data.model.ReflectionDataProvider
 import com.example.data.model.ReflectionItem
 import com.example.data.prayer.AppThemeMode
@@ -32,6 +33,8 @@ import com.example.ui.prayer.FajrAlarmPlaybackState
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +58,8 @@ enum class MainNavigationTab {
 enum class SearchCategory {
   ALL,
   QURAN,
-  HADITH
+  HADITH,
+  TAFSIR
 }
 
 enum class HadithEditionFilterMode(val label: String) {
@@ -170,6 +174,10 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   private val _collectionHadiths = MutableStateFlow<List<HadithEntity>>(emptyList())
   val collectionHadiths: StateFlow<List<HadithEntity>> = _collectionHadiths.asStateFlow()
 
+  // Dynamic Translations for current Surah/Reference
+  private val _currentTranslations = MutableStateFlow<List<TranslationEntity>>(emptyList())
+  val currentTranslations: StateFlow<List<TranslationEntity>> = _currentTranslations.asStateFlow()
+
   // All cached Hadiths for Tafsir verse-to-hadith cross-linking
   val allHadithsForLinks: List<HadithEntity> = ExtendedHadithDataProvider.getExtendedHadiths()
 
@@ -248,12 +256,14 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     result
   }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-  // Search results
   private val _searchAyahResults = MutableStateFlow<List<AyahEntity>>(emptyList())
   val searchAyahResults: StateFlow<List<AyahEntity>> = _searchAyahResults.asStateFlow()
 
   private val _searchHadithResults = MutableStateFlow<List<HadithEntity>>(emptyList())
   val searchHadithResults: StateFlow<List<HadithEntity>> = _searchHadithResults.asStateFlow()
+
+  private val _searchTafsirResults = MutableStateFlow<List<com.example.data.repository.AyahTafsirResult>>(emptyList())
+  val searchTafsirResults: StateFlow<List<com.example.data.repository.AyahTafsirResult>> = _searchTafsirResults.asStateFlow()
 
   init {
     viewModelScope.launch {
@@ -265,6 +275,23 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
       _sunnahRemindersState.value =
         com.example.data.prayer.SunnahReminderManager.ensureTodayCalculatedNotificationSentIfEnabled(getApplication())
       refreshAuditReport(checkNetworkLive = false)
+      cleanupOldWavFiles()
+    }
+  }
+
+  private fun cleanupOldWavFiles() {
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        val app = getApplication<Application>()
+        val dir = File(app.filesDir, "adhan")
+        if (dir.exists()) {
+          dir.listFiles()?.forEach { file ->
+            if (file.name.endsWith(".wav")) {
+              file.delete()
+            }
+          }
+        }
+      } catch (_: Exception) {}
     }
   }
 
@@ -379,8 +406,17 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     surahAyahsJob?.cancel()
     surahAyahsJob = viewModelScope.launch {
       repository.ensureSurahAyahsLoaded(surah.number)
-      repository.getAyahsBySurah(surah.number).collect { ayahs ->
-        _currentAyahs.value = ayahs
+      repository.ensureSurahTranslationsLoaded(surah.number)
+      launch {
+        repository.getAyahsBySurah(surah.number).collect { ayahs ->
+          _currentAyahs.value = ayahs
+        }
+      }
+      launch {
+        // Load all Quran translations for this Surah e.g. en.qarai, ur.jalandhry, etc.
+        repository.getTranslationsForSurah(surah.number).collect { trans ->
+          _currentTranslations.value = trans
+        }
       }
     }
   }
@@ -474,6 +510,27 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     audioPlayerManager.setReciter(reciter)
   }
 
+  fun setQuranReciter(reciter: Reciter, tradition: String) {
+    val currentConfig = _uiState.value.prayerConfig
+    val updatedConfig = if (tradition == "SUNNI") {
+      currentConfig.copy(sunniQuranReciterId = reciter.id)
+    } else {
+      currentConfig.copy(shiaQuranReciterId = reciter.id)
+    }
+    updatePrayerAndAlarmConfig(updatedConfig)
+    audioPlayerManager.setReciter(reciter)
+  }
+
+  fun setQuranTranslationKey(key: String, tradition: String) {
+    val currentConfig = _uiState.value.prayerConfig
+    val updatedConfig = if (tradition == "SUNNI") {
+      currentConfig.copy(sunniTranslationKey = key)
+    } else {
+      currentConfig.copy(shiaTranslationKey = key)
+    }
+    updatePrayerAndAlarmConfig(updatedConfig)
+  }
+
   // Hadith Actions
   fun selectHadithCollection(collectionKey: String) {
     _uiState.value = _uiState.value.copy(
@@ -534,20 +591,52 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     if (query.isBlank()) {
       _searchAyahResults.value = emptyList()
       _searchHadithResults.value = emptyList()
+      _searchTafsirResults.value = emptyList()
       _uiState.value = _uiState.value.copy(isSearchingRemote = false)
       return
     }
 
     searchJob = viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isSearchingRemote = true)
+      
       val ayahs = repository.searchAyahsSmart(query)
-      _searchAyahResults.value = ayahs
+      val translationMatches = repository.searchTranslationsSmart(query)
+      
+      // If translations matched but not ayahs, fetch the corresponding ayahs
+      val extraAyahs = mutableListOf<AyahEntity>()
+      translationMatches.filter { it.sourceType == "QURAN" }.forEach { trans ->
+        val parts = trans.referenceKey.split(":")
+        val sNum = parts.getOrNull(0)?.toIntOrNull()
+        val vNum = parts.getOrNull(1)?.toIntOrNull()
+        if (sNum != null && vNum != null) {
+          repository.getAyah(sNum, vNum)?.let { extraAyahs.add(it) }
+        }
+      }
+
+      _searchAyahResults.value = (ayahs + extraAyahs).distinctBy { "${it.surahNumber}:${it.verseNumber}" }
 
       val hadiths = repository.searchHadithsSmart(
         rawQuery = query,
         activeCollectionKey = _uiState.value.selectedCollectionKey
       )
-      _searchHadithResults.value = hadiths
+      
+      // Add Hadiths matched by translations
+      val extraHadiths = mutableListOf<HadithEntity>()
+      translationMatches.filter { it.sourceType == "HADITH" }.forEach { trans ->
+        val parts = trans.referenceKey.split(":")
+        val colKey = parts.getOrNull(0)
+        val hNum = parts.getOrNull(1)?.toIntOrNull()
+        if (colKey != null && hNum != null) {
+          repository.getHadith(colKey, hNum)?.let { extraHadiths.add(it) }
+        }
+      }
+      
+      _searchHadithResults.value = (hadiths + extraHadiths).distinctBy { "${it.collectionKey}:${it.hadithNumber}" }
+
+      // Real full-text search across Tafsir commentaries (Classical & Contemporary Sunni & Shia)
+      val tafsirMatches = repository.searchTafsirSmart(query, traditionScope = "BOTH")
+      _searchTafsirResults.value = tafsirMatches
+      
       _uiState.value = _uiState.value.copy(isSearchingRemote = false)
     }
   }
@@ -755,6 +844,10 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
         enabled,
         time24h
       )
+  }
+
+  fun clearAudioCache() {
+    audioPlayerManager.clearAudioCache()
   }
 
   override fun onCleared() {

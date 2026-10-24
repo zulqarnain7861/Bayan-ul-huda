@@ -13,17 +13,19 @@ import java.util.Locale
 
 enum class TajweedWordGrade {
   CORRECT,        // Green: fully matching word
-  SMALL_MISTAKE,  // Yellow: small mistake (minor acoustic mismatch, edit distance = 1, prefix variation)
-  WRONG_OR_MISSED // Red: wrong word of text or missed word
+  SMALL_MISTAKE,  // Yellow: small mistake (minor acoustic mismatch)
+  WRONG_OR_MISSED, // Red: wrong word or explicitly missed in sequence
+  PENDING         // Neutral/Gray: not yet reached or evaluated
 }
 
 data class TajweedWordStatus(
   val index: Int,
   val canonicalWord: String,
-  val grade: TajweedWordGrade = TajweedWordGrade.CORRECT,
+  val grade: TajweedWordGrade = TajweedWordGrade.PENDING,
   val isMatched: Boolean = grade == TajweedWordGrade.CORRECT,
   val isSmallMistake: Boolean = grade == TajweedWordGrade.SMALL_MISTAKE,
-  val isMissedOrWrong: Boolean = grade == TajweedWordGrade.WRONG_OR_MISSED
+  val isMissedOrWrong: Boolean = grade == TajweedWordGrade.WRONG_OR_MISSED,
+  val isPending: Boolean = grade == TajweedWordGrade.PENDING
 )
 
 data class TajweedEvaluationResult(
@@ -133,12 +135,20 @@ object TajweedCorrectionEngine {
         }
       }
 
-      // Step 3: Otherwise, mark as WRONG_OR_MISSED (RED)
-      val finalGrade = detectedGrade ?: TajweedWordGrade.WRONG_OR_MISSED
+      // Step 3: Determine final grade. 
+      // If we haven't found the word in the lookahead but there's still more speech, it's MISSED.
+      // If we haven't reached this part of the speech yet, it's PENDING.
+      val finalGrade = when {
+        detectedGrade != null -> detectedGrade
+        recognizedSpokenArabic.isNotBlank() -> TajweedWordGrade.WRONG_OR_MISSED
+        else -> TajweedWordGrade.PENDING
+      }
+
       when (finalGrade) {
         TajweedWordGrade.CORRECT -> exactMatches++
         TajweedWordGrade.SMALL_MISTAKE -> smallMistakes++
         TajweedWordGrade.WRONG_OR_MISSED -> wrongOrMissed++
+        TajweedWordGrade.PENDING -> { /* Neutral */ }
       }
 
       wordStatuses.add(
@@ -148,7 +158,8 @@ object TajweedCorrectionEngine {
           grade = finalGrade,
           isMatched = finalGrade == TajweedWordGrade.CORRECT,
           isSmallMistake = finalGrade == TajweedWordGrade.SMALL_MISTAKE,
-          isMissedOrWrong = finalGrade == TajweedWordGrade.WRONG_OR_MISSED
+          isMissedOrWrong = finalGrade == TajweedWordGrade.WRONG_OR_MISSED,
+          isPending = finalGrade == TajweedWordGrade.PENDING
         )
       )
     }

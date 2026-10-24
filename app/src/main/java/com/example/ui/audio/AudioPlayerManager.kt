@@ -6,6 +6,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.media.MediaPlayer
 import android.util.Log
+import java.io.File
 import com.example.data.remote.SecurityIntegrityGuard
 import kotlin.math.PI
 import kotlin.math.sin
@@ -258,6 +259,13 @@ class AudioPlayerManager(private val context: Context) {
         }
       } else null
 
+      // Priority 11 Addition: Catch streamed audio for offline play (on-demand caching)
+      val cacheFile = getCachedAudioFile(reciterId, surah, ayah)
+      if (cacheFile.exists() && cacheFile.length() > 4096L) {
+        playFromLocalFile(cacheFile, surah, ayah, surahName, "${currentReciter.name} • Playing from Cache")
+        return
+      }
+
       if (!SecurityIntegrityGuard.isUrlTrustedAndAllowed(url)) {
         return
       }
@@ -307,6 +315,11 @@ class AudioPlayerManager(private val context: Context) {
           )
           mp.start()
           startProgressTracking()
+          
+          // Background "catch" streamed audio for offline play
+          scope.launch(Dispatchers.IO) {
+            catchAudioForOffline(url, cacheFile)
+          }
         }
         setOnCompletionListener {
           stopProgressTracking()
@@ -570,5 +583,74 @@ class AudioPlayerManager(private val context: Context) {
   private fun stopProgressTracking() {
     progressJob?.cancel()
     progressJob = null
+  }
+
+  private fun getCachedAudioFile(reciterId: String, surah: Int, ayah: Int): File {
+    val dir = File(context.filesDir, "audio_cache/$reciterId")
+    if (!dir.exists()) dir.mkdirs()
+    val name = if (surah > 0 && ayah > 0) "${surah}_${ayah}.mp3" else "${surah}.mp3"
+    return File(dir, name)
+  }
+
+  private fun playFromLocalFile(file: File, surah: Int, ayah: Int, surahName: String, status: String) {
+    runCatching {
+      mediaPlayer = MediaPlayer().apply {
+        setAudioAttributes(
+          AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build()
+        )
+        setDataSource(file.absolutePath)
+        prepare()
+        start()
+      }
+      _audioState.value = _audioState.value.copy(
+        isVisible = true,
+        isBuffering = false,
+        isPlaying = true,
+        surahNumber = surah,
+        ayahNumber = ayah,
+        surahName = surahName,
+        currentPositionMs = 0,
+        durationMs = (mediaPlayer?.duration ?: 8000).coerceAtLeast(1000),
+        statusMessage = status
+      )
+      startProgressTracking()
+    }
+  }
+
+  private suspend fun catchAudioForOffline(url: String, targetFile: File) {
+    if (targetFile.exists() && targetFile.length() > 4096L) return
+    try {
+      val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+      conn.connectTimeout = 5000
+      conn.readTimeout = 10000
+      if (conn.responseCode == 200) {
+        val tmp = File(targetFile.parentFile, "${targetFile.name}.tmp")
+        conn.inputStream.use { input ->
+          tmp.outputStream().use { output ->
+            input.copyTo(output)
+          }
+        }
+        if (tmp.exists() && tmp.length() > 4096L) {
+          tmp.renameTo(targetFile)
+        }
+      }
+    } catch (_: Exception) {}
+  }
+
+  /**
+   * Priority 11 Addition: Clear all cached audio files to free up storage.
+   */
+  fun clearAudioCache() {
+    scope.launch(Dispatchers.IO) {
+      try {
+        val dir = File(context.filesDir, "audio_cache")
+        if (dir.exists()) {
+          dir.deleteRecursively()
+        }
+      } catch (_: Exception) {}
+    }
   }
 }

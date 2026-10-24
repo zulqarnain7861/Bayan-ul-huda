@@ -265,8 +265,8 @@ fun LibraryScreen(
           Column(modifier = Modifier.fillMaxSize()) {
             // Sunni / Shia / Both Tradition Filter + Entry Time + Retry Bar
             LazyRow(
-              contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+              horizontalArrangement = Arrangement.spacedBy(6.dp),
               verticalAlignment = Alignment.CenterVertically
             ) {
               item {
@@ -491,8 +491,8 @@ fun LibraryScreen(
 
             LazyColumn(
               modifier = Modifier.fillMaxSize(),
-              contentPadding = PaddingValues(16.dp),
-              verticalArrangement = Arrangement.spacedBy(12.dp)
+              contentPadding = PaddingValues(12.dp),
+              verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               items(paginatedBooks, key = { it.id }) { book ->
                 val isShiaBook = book.tradition.equals("SHIA", ignoreCase = true)
@@ -508,9 +508,9 @@ fun LibraryScreen(
                   colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                   ),
-                  elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.5.dp)
+                  elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
                 ) {
-                  Column(modifier = Modifier.padding(16.dp)) {
+                  Column(modifier = Modifier.padding(10.dp)) {
                     Row(
                       modifier = Modifier.fillMaxWidth(),
                       horizontalArrangement = Arrangement.SpaceBetween,

@@ -125,6 +125,7 @@ fun BayanApp(
   val notes by viewModel.notes.collectAsStateWithLifecycle()
   val searchAyahs by viewModel.searchAyahResults.collectAsStateWithLifecycle()
   val searchHadiths by viewModel.searchHadithResults.collectAsStateWithLifecycle()
+  val searchTafsirs by viewModel.searchTafsirResults.collectAsStateWithLifecycle()
   val syncBadgeState by viewModel.downloadManager.syncBadgeState.collectAsStateWithLifecycle()
   val sunnahRemindersState by viewModel.sunnahRemindersState.collectAsStateWithLifecycle()
   val duaAudioState by viewModel.duaAudioState.collectAsStateWithLifecycle()
@@ -451,8 +452,10 @@ fun BayanApp(
           onToggleReadingMode = { viewModel.toggleReadingMode() },
           isContinuousMushafFlow = uiState.isContinuousMushafFlow,
           onToggleContinuousMushafFlow = { viewModel.toggleContinuousMushafFlow() },
-          currentReciter = audioState.reciter,
-          onSelectReciter = { viewModel.setReciter(it) }
+          prayerConfig = uiState.prayerConfig,
+          currentTranslations = viewModel.currentTranslations.collectAsStateWithLifecycle().value,
+          onSelectReciter = { reciter, tradition -> viewModel.setQuranReciter(reciter, tradition) },
+          onSelectTranslation = { key, tradition -> viewModel.setQuranTranslationKey(key, tradition) }
         )
       }
 
@@ -526,6 +529,7 @@ fun BayanApp(
           searchCategory = uiState.searchCategory,
           ayahResults = searchAyahs,
           hadithResults = searchHadiths,
+          tafsirResults = searchTafsirs,
           surahs = surahs,
           isSearchingRemote = uiState.isSearchingRemote,
           onSearchQueryChanged = { viewModel.onSearchQueryChanged(it) },
@@ -604,7 +608,8 @@ fun BayanApp(
           onSignOut = {
             navController.popBackStack()
             viewModel.signOut()
-          }
+          },
+          onClearAudioCache = { viewModel.clearAudioCache() }
         )
       }
     }

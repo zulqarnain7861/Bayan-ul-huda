@@ -19,7 +19,7 @@ enum class MuezzinAudioOption(
   val maqamOrStyle: String = "Traditional Hijazi Maqam",
   val tradition: String = "SUNNI",
   val fallbackUrls: List<String> = emptyList(),
-  val localAssetPath: String = "adhan/$id.wav",
+  val localAssetPath: String = "adhan/$id.mp3",
   val isOfflineBundled: Boolean = true
 ) {
   MADINAH_NABAWI(
@@ -30,7 +30,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid an-Nabawi, Al-Madinah",
     maqamOrStyle = "Madani Maqam Rast (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/madinah_nabawi.wav"
+    localAssetPath = "adhan/madinah_nabawi.mp3"
   ),
   MAKKAH_HARAM(
     id = "makkah_haram",
@@ -40,7 +40,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid al-Haram, Makkah",
     maqamOrStyle = "Maqam Hijaz • Grand Mosque (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/makkah_haram.wav"
+    localAssetPath = "adhan/makkah_haram.mp3"
   ),
   MADINAH_SURAYHI(
     id = "madinah_surayhi",
@@ -50,7 +50,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid an-Nabawi, Al-Madinah",
     maqamOrStyle = "Madani Maqam Sikah (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/madinah_surayhi.wav"
+    localAssetPath = "adhan/madinah_surayhi.mp3"
   ),
   MADINAH_OMAR_SUNBUL(
     id = "madinah_omar_sunbul",
@@ -60,7 +60,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid an-Nabawi, Al-Madinah",
     maqamOrStyle = "Madani Traditional (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/madinah_omar_sunbul.wav"
+    localAssetPath = "adhan/madinah_omar_sunbul.mp3"
   ),
   MAKKAH_NAIF_SALEH(
     id = "makkah_naif_saleh",
@@ -70,7 +70,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid al-Haram, Makkah",
     maqamOrStyle = "Maqam Bayati & Hijaz (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/makkah_naif_saleh.wav"
+    localAssetPath = "adhan/makkah_naif_saleh.mp3"
   ),
   MAKKAH_FAROOQ_HADRAWI(
     id = "makkah_farooq_hadrawi",
@@ -80,7 +80,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid al-Haram, Makkah",
     maqamOrStyle = "Classical Haramain Vocal (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/makkah_farooq_hadrawi.wav"
+    localAssetPath = "adhan/makkah_farooq_hadrawi.mp3"
   ),
   MAKKAH_HAMAD_DEGHRERI(
     id = "makkah_hamad_deghreri",
@@ -90,7 +90,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Makkah / Riyadh",
     maqamOrStyle = "Maqam Saba & Hijaz (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/makkah_hamad_deghreri.wav"
+    localAssetPath = "adhan/makkah_hamad_deghreri.mp3"
   ),
   AL_AQSA(
     id = "al_aqsa",
@@ -100,7 +100,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid al-Aqsa, Al-Quds",
     maqamOrStyle = "Levantine Maqam Bayati (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/al_aqsa.wav"
+    localAssetPath = "adhan/al_aqsa.mp3"
   ),
   EGYPT_ABDUL_BASIT(
     id = "egypt_abdul_basit",
@@ -110,7 +110,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Imam Shafi'i Mosque, Cairo",
     maqamOrStyle = "Egyptian Maqam Nahawand & Rast (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/egypt_abdul_basit.wav"
+    localAssetPath = "adhan/egypt_abdul_basit.mp3"
   ),
   EGYPT_HUSARY(
     id = "egypt_husary",
@@ -120,7 +120,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Al-Azhar Mosque, Cairo",
     maqamOrStyle = "Classical Azhari Maqam (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/egypt_husary.wav"
+    localAssetPath = "adhan/egypt_husary.mp3"
   ),
   EGYPT_MINSHAWI(
     id = "egypt_minshawi",
@@ -130,7 +130,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Cairo Traditional",
     maqamOrStyle = "Maqam Bayati & Saba (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/egypt_minshawi.wav"
+    localAssetPath = "adhan/egypt_minshawi.mp3"
   ),
   FAJR_TATHWIB(
     id = "fajr_tathwib",
@@ -141,7 +141,7 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid al-Haram, Makkah (Dawn)",
     maqamOrStyle = "Dawn Fajr Tathwib (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/fajr_tathwib.wav"
+    localAssetPath = "adhan/fajr_tathwib.mp3"
   ),
   MADINAH_FAJR_TATHWIB(
     id = "madinah_fajr_tathwib",
@@ -152,18 +152,18 @@ enum class MuezzinAudioOption(
     originMasjid = "Masjid an-Nabawi, Al-Madinah (Dawn)",
     maqamOrStyle = "Madani Dawn Tathwib (Offline Local Recording)",
     tradition = "SUNNI",
-    localAssetPath = "adhan/madinah_fajr_tathwib.wav"
+    localAssetPath = "adhan/madinah_fajr_tathwib.mp3"
   ),
   SHIA_KARBALA_NAJAF(
     id = "shia_karbala_najaf",
     title = "Karbala & Najaf Sanctuary Adhan (Ja'fari Tradition)",
-    subtitle = "Offline Pure Vocal Shia Adhan with حَيَّ عَلَىٰ خَيْرِ الْعَمَلِ (No Music)",
+    subtitle = "Offline Pure Vocal Shia Adhan with حَيَّ عَلَىٰ خَيْرِ الْعَمَلِ • High-Fidelity Recording (No Music)",
     streamUrl = "https://www.islamcan.com/audio/adhan/azan14.mp3",
     includesFajrTathwib = false,
     originMasjid = "Imam Ali & Imam Hussain Shrines",
     maqamOrStyle = "Ja'fari Classical Vocal (Offline Local Recording)",
     tradition = "SHIA",
-    localAssetPath = "adhan/shia_karbala_najaf.wav"
+    localAssetPath = "adhan/shia_karbala_najaf.mp3"
   )
 }
 
@@ -214,8 +214,13 @@ data class PrayerAndAlarmConfig(
   val alarmVolumePercent: Int = 100, // 0..100% (Default 100% of permitted device alarm volume)
   val boostSystemAlarmStream: Boolean = true, // Uses Android STREAM_ALARM at highest permitted device volume
   val vibrationEnabled: Boolean = true,
-  val continuousVibration: Boolean = true, // Continuous non-stop vibration until dismissed
+  val continuousVibration: Boolean = true,
   val defaultSnoozeMinutes: Int = 5, // 5 or 10
+  // Quran reader preferences
+  val sunniQuranReciterId: String = "husary",
+  val shiaQuranReciterId: String = "karim_mansouri",
+  val sunniTranslationKey: String = "en.sahih",
+  val shiaTranslationKey: String = "en.qarai",
   // Appearance theme
   val themeMode: AppThemeMode = AppThemeMode.LIGHT
 ) {
@@ -255,9 +260,13 @@ object PrayerPreferencesManager {
       progressiveSequence = prefs.getBoolean("progressiveSequence", true),
       alarmVolumePercent = prefs.getInt("alarmVolumePercent", 100).coerceIn(0, 100),
       boostSystemAlarmStream = prefs.getBoolean("boostSystemAlarmStream", true),
-      vibrationEnabled = prefs.getBoolean("vibrationEnabled", true),
-      continuousVibration = prefs.getBoolean("continuousVibration", true),
+      vibrationEnabled = prefs.getBoolean("vibrationEnabled", false),
+      continuousVibration = prefs.getBoolean("continuousVibration", false),
       defaultSnoozeMinutes = prefs.getInt("defaultSnoozeMinutes", 5),
+      sunniQuranReciterId = prefs.getString("sunniQuranReciterId", "husary") ?: "husary",
+      shiaQuranReciterId = prefs.getString("shiaQuranReciterId", "karim_mansouri") ?: "karim_mansouri",
+      sunniTranslationKey = prefs.getString("sunniTranslationKey", "en.sahih") ?: "en.sahih",
+      shiaTranslationKey = prefs.getString("shiaTranslationKey", "en.qarai") ?: "en.qarai",
       themeMode = parseThemeMode(prefs.getString("themeMode", AppThemeMode.LIGHT.name))
     )
   }
@@ -292,6 +301,10 @@ object PrayerPreferencesManager {
       .putBoolean("vibrationEnabled", config.vibrationEnabled)
       .putBoolean("continuousVibration", config.continuousVibration)
       .putInt("defaultSnoozeMinutes", config.defaultSnoozeMinutes)
+      .putString("sunniQuranReciterId", config.sunniQuranReciterId)
+      .putString("shiaQuranReciterId", config.shiaQuranReciterId)
+      .putString("sunniTranslationKey", config.sunniTranslationKey)
+      .putString("shiaTranslationKey", config.shiaTranslationKey)
       .putString("themeMode", config.themeMode.name)
       .apply()
   }

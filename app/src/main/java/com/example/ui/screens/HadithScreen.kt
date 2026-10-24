@@ -273,100 +273,94 @@ fun HadithScreen(
   }
 
   Column(modifier = modifier.fillMaxSize()) {
-    // 1. Compact Single-Line Entry Points: Sunni | Shia | Both (Equal weights prevent vertical letter wrapping!)
-    Row(
+    // 1. Compact Single-Line Entry Points: Sunni | Shia | Both (LazyRow prevents vertical letter wrapping on small screens)
+    LazyRow(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 4.dp),
+        .padding(horizontal = 10.dp, vertical = 2.dp),
       horizontalArrangement = Arrangement.spacedBy(6.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      FilterChip(
-        selected = selectedTraditionFilter == "SUNNI",
-        onClick = {
-          selectedTraditionFilter = "SUNNI"
-          selectedBookNumber = 0
-          if (activeCollectionMeta?.tradition != "SUNNI") {
-            ExtendedHadithDataProvider.sunniCollections.firstOrNull()?.let { onSelectCollection(it.key) }
-          }
-        },
-        label = {
-          Text(
-            text = "Sunni (${ExtendedHadithDataProvider.sunniCollections.size})",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis
-          )
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = EmeraldPrimary,
-          selectedLabelColor = Color.White
-        ),
-        modifier = Modifier
-          .weight(1f)
-          .height(34.dp)
-          .testTag("hadith_library_sunni_button")
-      )
+      item {
+        FilterChip(
+          selected = selectedTraditionFilter == "SUNNI",
+          onClick = {
+            selectedTraditionFilter = "SUNNI"
+            selectedBookNumber = 0
+            if (activeCollectionMeta?.tradition != "SUNNI") {
+              ExtendedHadithDataProvider.sunniCollections.firstOrNull()?.let { onSelectCollection(it.key) }
+            }
+          },
+          label = {
+            Text(
+              text = "Sunni Collections",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              maxLines = 1,
+              softWrap = false
+            )
+          },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = EmeraldPrimary,
+            selectedLabelColor = Color.White
+          ),
+          modifier = Modifier.height(32.dp).testTag("hadith_library_sunni_button")
+        )
+      }
 
-      FilterChip(
-        selected = selectedTraditionFilter == "SHIA",
-        onClick = {
-          selectedTraditionFilter = "SHIA"
-          selectedBookNumber = 0
-          if (selectedEditionFilterMode == HadithEditionFilterMode.DARUSSALAM) {
-            onSelectEditionFilterMode(HadithEditionFilterMode.ALL_EDITIONS)
-          }
-          if (activeCollectionMeta?.tradition != "SHIA") {
-            ExtendedHadithDataProvider.shiaCollections.firstOrNull()?.let { onSelectCollection(it.key) }
-          }
-        },
-        label = {
-          Text(
-            text = "Shia (${ExtendedHadithDataProvider.shiaCollections.size})",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis
-          )
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = GoldPrimary,
-          selectedLabelColor = Color.Black
-        ),
-        modifier = Modifier
-          .weight(1f)
-          .height(34.dp)
-          .testTag("hadith_library_shia_button")
-      )
+      item {
+        FilterChip(
+          selected = selectedTraditionFilter == "SHIA",
+          onClick = {
+            selectedTraditionFilter = "SHIA"
+            selectedBookNumber = 0
+            if (selectedEditionFilterMode == HadithEditionFilterMode.DARUSSALAM) {
+              onSelectEditionFilterMode(HadithEditionFilterMode.ALL_EDITIONS)
+            }
+            if (activeCollectionMeta?.tradition != "SHIA") {
+              ExtendedHadithDataProvider.shiaCollections.firstOrNull()?.let { onSelectCollection(it.key) }
+            }
+          },
+          label = {
+            Text(
+              text = "Shia Collections",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              maxLines = 1,
+              softWrap = false
+            )
+          },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = GoldPrimary,
+            selectedLabelColor = Color.Black
+          ),
+          modifier = Modifier.height(32.dp).testTag("hadith_library_shia_button")
+        )
+      }
 
-      FilterChip(
-        selected = selectedTraditionFilter == "BOTH",
-        onClick = {
-          selectedTraditionFilter = "BOTH"
-          selectedBookNumber = 0
-        },
-        label = {
-          Text(
-            text = "Both (${ExtendedHadithDataProvider.primaryCollections.size})",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Ellipsis
-          )
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = MaterialTheme.colorScheme.primary,
-          selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        modifier = Modifier
-          .weight(1f)
-          .height(34.dp)
-          .testTag("hadith_library_both_button")
-      )
+      item {
+        FilterChip(
+          selected = selectedTraditionFilter == "BOTH",
+          onClick = {
+            selectedTraditionFilter = "BOTH"
+            selectedBookNumber = 0
+          },
+          label = {
+            Text(
+              text = "All Libraries",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              maxLines = 1,
+              softWrap = false
+            )
+          },
+          colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+          ),
+          modifier = Modifier.height(32.dp).testTag("hadith_library_both_button")
+        )
+      }
     }
 
     // 2. Hadith Collections Tabs for Selected Library
@@ -411,7 +405,7 @@ fun HadithScreen(
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 4.dp),
+        .padding(horizontal = 10.dp, vertical = 2.dp),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -500,12 +494,12 @@ fun HadithScreen(
     LazyColumn(
       state = listState,
       modifier = Modifier.fillMaxSize(),
-      contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-      verticalArrangement = Arrangement.spacedBy(6.dp)
+      contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+      verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
       // Compact Header Item inside LazyColumn so Hadith cards have full screen space
       item(key = "hadith_compact_header_controls") {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
           // Tradition, Sub-Tradition & Scholarly Attribution Banner
           activeCollectionMeta?.let { meta ->
             Surface(
@@ -540,7 +534,7 @@ fun HadithScreen(
 
           // Action Row: Offline Library | Official Sources & Links | Retry
           Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
@@ -1585,11 +1579,11 @@ fun HadithCardItem(
       .fillMaxWidth()
       .clickable { onOpenDetail() }
       .testTag("hadith_card_${hadith.collectionKey}_${hadith.hadithNumber}"),
-    shape = RoundedCornerShape(16.dp),
+    shape = RoundedCornerShape(10.dp),
     colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.5.dp)
+    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
   ) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(10.dp)) {
       // Header: Reference, Chapter/Book, and Authenticity Grade
       Row(
         modifier = Modifier.fillMaxWidth(),
@@ -1632,10 +1626,10 @@ fun HadithCardItem(
             )
           }
         }
-        SahihGradeBadge(grade = displayGrade)
+        SahihGradeBadge(grade = displayGrade, modifier = Modifier.padding(start = 4.dp))
       }
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(6.dp))
 
       // Clickable Separate Dual Edition Numbering Badges on Top (Never show Darussalam in Shia mode)
       FlowRow(
@@ -1691,7 +1685,7 @@ fun HadithCardItem(
         }
       }
 
-      Spacer(modifier = Modifier.height(14.dp))
+      Spacer(modifier = Modifier.height(6.dp))
 
       // Arabic Hadith Text in Amiri Classical Naskh Font
       Text(
@@ -1719,7 +1713,7 @@ fun HadithCardItem(
         )
       }
 
-      Spacer(modifier = Modifier.height(10.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
       // English Translation (displays "English Translation Coming Soon" if unavailable)
       Text(
@@ -1731,7 +1725,7 @@ fun HadithCardItem(
         )
       )
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(6.dp))
       // Urdu Translation (displays "Urdu Translation Coming Soon" if unavailable)
       Text(
         text = ExtendedHadithDataProvider.formatUrduTranslation(hadith.urduText),
@@ -1747,7 +1741,7 @@ fun HadithCardItem(
 
       // Clickable Linked Quran Verses
       if (hadith.linkedQuranVerses.isNotBlank()) {
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         FlowRow(
           horizontalArrangement = Arrangement.spacedBy(6.dp),
           verticalArrangement = Arrangement.spacedBy(6.dp)

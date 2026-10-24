@@ -19,14 +19,10 @@ interface AyahDao {
   suspend fun getAyah(surahNumber: Int, verseNumber: Int): AyahEntity?
 
   @Query("""
-    SELECT * FROM ayahs 
-    WHERE (CAST(surahNumber AS TEXT) || ':' || CAST(verseNumber AS TEXT)) = :query
-       OR CAST(verseNumber AS TEXT) = :query
-       OR textArabic LIKE '%' || :query || '%' 
-       OR translationEnglish LIKE '%' || :query || '%' 
-       OR translationUrdu LIKE '%' || :query || '%'
-       OR transliteration LIKE '%' || :query || '%'
-    ORDER BY surahNumber ASC, verseNumber ASC
+    SELECT a.* FROM ayahs a
+    JOIN ayahs_fts fts ON a.rowid = fts.rowid
+    WHERE ayahs_fts MATCH :query
+    ORDER BY a.surahNumber ASC, a.verseNumber ASC
     LIMIT 150
   """)
   fun searchAyahs(query: String): Flow<List<AyahEntity>>
@@ -38,14 +34,10 @@ interface AyahDao {
   suspend fun getAyahsBySurahSnapshot(surahNumber: Int): List<AyahEntity>
 
   @Query("""
-    SELECT * FROM ayahs 
-    WHERE (CAST(surahNumber AS TEXT) || ':' || CAST(verseNumber AS TEXT)) = :query
-       OR CAST(verseNumber AS TEXT) = :query
-       OR textArabic LIKE '%' || :query || '%' 
-       OR translationEnglish LIKE '%' || :query || '%' 
-       OR translationUrdu LIKE '%' || :query || '%'
-       OR transliteration LIKE '%' || :query || '%'
-    ORDER BY surahNumber ASC, verseNumber ASC
+    SELECT a.* FROM ayahs a
+    JOIN ayahs_fts fts ON a.rowid = fts.rowid
+    WHERE ayahs_fts MATCH :query
+    ORDER BY a.surahNumber ASC, a.verseNumber ASC
     LIMIT 150
   """)
   suspend fun searchAyahsSnapshot(query: String): List<AyahEntity>

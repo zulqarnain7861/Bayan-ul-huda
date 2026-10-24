@@ -29,22 +29,10 @@ interface HadithDao {
   suspend fun getHadithsForVerse(verseRef: String): List<HadithEntity>
 
   @Query("""
-    SELECT * FROM hadiths 
-    WHERE CAST(hadithNumber AS TEXT) = :query
-       OR darussalamReference LIKE '%' || :query || '%'
-       OR inBookReference LIKE '%' || :query || '%'
-       OR reference LIKE '%' || :query || '%'
-       OR collectionName LIKE '%' || :query || '%'
-       OR collectionKey LIKE '%' || :query || '%'
-       OR arabicText LIKE '%' || :query || '%' 
-       OR englishText LIKE '%' || :query || '%' 
-       OR urduText LIKE '%' || :query || '%'
-       OR transliteration LIKE '%' || :query || '%'
-       OR narrator LIKE '%' || :query || '%'
-       OR bookName LIKE '%' || :query || '%'
-       OR chapterName LIKE '%' || :query || '%'
-       OR linkedQuranVerses LIKE '%' || :query || '%'
-    ORDER BY collectionKey ASC, hadithNumber ASC
+    SELECT h.* FROM hadiths h
+    JOIN hadiths_fts fts ON h.rowid = fts.rowid
+    WHERE hadiths_fts MATCH :query
+    ORDER BY h.collectionKey ASC, h.hadithNumber ASC
     LIMIT 200
   """)
   fun searchHadiths(query: String): Flow<List<HadithEntity>>
@@ -62,22 +50,10 @@ interface HadithDao {
   suspend fun getHadithByNumber(collectionKey: String, hadithNumber: Int): HadithEntity?
 
   @Query("""
-    SELECT * FROM hadiths 
-    WHERE CAST(hadithNumber AS TEXT) = :query
-       OR darussalamReference LIKE '%' || :query || '%'
-       OR inBookReference LIKE '%' || :query || '%'
-       OR reference LIKE '%' || :query || '%'
-       OR collectionName LIKE '%' || :query || '%'
-       OR collectionKey LIKE '%' || :query || '%'
-       OR arabicText LIKE '%' || :query || '%' 
-       OR englishText LIKE '%' || :query || '%' 
-       OR urduText LIKE '%' || :query || '%'
-       OR transliteration LIKE '%' || :query || '%'
-       OR narrator LIKE '%' || :query || '%'
-       OR bookName LIKE '%' || :query || '%'
-       OR chapterName LIKE '%' || :query || '%'
-       OR linkedQuranVerses LIKE '%' || :query || '%'
-    ORDER BY collectionKey ASC, hadithNumber ASC
+    SELECT h.* FROM hadiths h
+    JOIN hadiths_fts fts ON h.rowid = fts.rowid
+    WHERE hadiths_fts MATCH :query
+    ORDER BY h.collectionKey ASC, h.hadithNumber ASC
     LIMIT 200
   """)
   suspend fun searchHadithsSnapshot(query: String): List<HadithEntity>

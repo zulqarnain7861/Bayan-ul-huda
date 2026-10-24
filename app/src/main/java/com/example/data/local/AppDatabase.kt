@@ -18,25 +18,31 @@ import com.example.data.local.dao.SourceRegistryDao
 import com.example.data.local.dao.SurahDao
 import com.example.data.local.dao.TranslationDao
 import com.example.data.local.entities.AyahEntity
+import com.example.data.local.entities.AyahFtsEntity
 import com.example.data.local.entities.BookmarkEntity
 import com.example.data.local.entities.ContentLicenceEntity
 import com.example.data.local.entities.DownloadItemEntity
 import com.example.data.local.entities.DownloadPackageManifestEntity
 import com.example.data.local.entities.HadithCollectionEntity
 import com.example.data.local.entities.HadithEntity
+import com.example.data.local.entities.HadithFtsEntity
 import com.example.data.local.entities.IncorrectReferenceReportEntity
 import com.example.data.local.entities.NoteEntity
 import com.example.data.local.entities.PrayerScheduleEntity
 import com.example.data.local.entities.SurahEntity
 import com.example.data.local.entities.TranslationEntity
+import com.example.data.local.entities.TranslationFtsEntity
 
 @Database(
   entities = [
     SurahEntity::class,
     AyahEntity::class,
+    AyahFtsEntity::class,
     HadithCollectionEntity::class,
     HadithEntity::class,
     TranslationEntity::class,
+    TranslationFtsEntity::class,
+    HadithFtsEntity::class,
     PrayerScheduleEntity::class,
     BookmarkEntity::class,
     NoteEntity::class,
@@ -46,7 +52,7 @@ import com.example.data.local.entities.TranslationEntity
     ContentLicenceEntity::class,
     IncorrectReferenceReportEntity::class
   ],
-  version = 6,
+  version = 7,
   exportSchema = false
 )
 @TypeConverters(SourceRegistryConverters::class)

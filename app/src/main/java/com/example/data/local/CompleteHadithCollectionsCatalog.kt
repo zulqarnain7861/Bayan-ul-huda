@@ -1453,6 +1453,114 @@ object CompleteHadithCollectionsCatalog {
       gradingScholar = "'Allamah Muhammad Baqir al-Majlisi (Mir'at al-'Uqul 12:19)",
       reference = "Al-Kafi Vol. 2, Kitab al-Du'a, #2",
       linkedQuranVerses = "40:60, 2:186"
+    ),
+
+    // ==================== HADITH AL-KISA (THE CLOAK) — SHIA TRADITION ====================
+    HadithEntity(
+      collectionKey = "shia_foundational",
+      collectionName = "Shia Foundational Narrations (Ghadir, Kisa, Manzilah)",
+      bookNumber = 1,
+      bookName = "Hadith al-Kisa (Tradition of the Cloak)",
+      chapterNumber = 1,
+      chapterName = "The Purification of the Ahl al-Bayt (AS) under the Cloak",
+      hadithNumber = 1,
+      darussalamReference = "Al-Ihtijaj / Bihar al-Anwar Vol. 37",
+      inBookReference = "Bihar al-Anwar, Vol. 37, p. 35 • 'Awalim al-'Ulum Vol. 11",
+      arabicText = "اللَّهُمَّ إِنَّ هَؤُلَاءِ أَهْلُ بَيْتِي وَخَاصَّتِي وَحَامَّتِي، لَحْمُهُمْ لَحْمِي وَدَمُهُمْ دَمِي، يُؤْلِمُنِي مَا يُؤْلِمُهُمْ وَيُحْزِنُنِي مَا يُحْزِنُهُمْ",
+      transliteration = "Allahumma inna ha'ula'i ahlu bayti wa khassati wa hammati, lahmuhum lahmi wa damuhum dami...",
+      englishText = "The Prophet (ﷺ) said while gathered with 'Ali, Fatimah, al-Hasan, and al-Husayn under the Cloak: 'O Allah! These are the People of my House (Ahl al-Bayt), my closest ones and my support; their flesh is my flesh and their blood is my blood. What pains them pains me, and what grieves them grieves me.'",
+      urduText = "رسول اللہ ﷺ نے حضرت علی، فاطمہ، حسن اور حسین (علیہم السلام) کو چادر تلے جمع کر کے فرمایا: اے اللہ! یہ میرے اہل بیت ہیں، میرے خاص لوگ اور میرے مددگار ہیں؛ ان کا گوشت میرا گوشت ہے اور ان کا خون میرا خون ہے؛ جو چیز انہیں تکلیف دیتی ہے وہ مجھے تکلیف دیتی ہے اور جو انہیں رنجیدہ کرتی ہے وہ مجھے رنجیدہ کرتی ہے۔",
+      narrator = "Fatimah al-Zahra (SA) and Jabir ibn 'Abdullah al-Ansari",
+      grade = "Mutawatir / Highly Authenticated Shia Tradition",
+      gradingScholar = "Shaykh al-Saduq, Sharif al-Radi, Allama al-Majlisi",
+      reference = "Bihar al-Anwar 37:35",
+      linkedQuranVerses = "33:33, 42:23"
+    ),
+
+    // ==================== HADITH AL-GHADIR — SHIA DETAILED TRADITION ====================
+    HadithEntity(
+      collectionKey = "shia_foundational",
+      collectionName = "Shia Foundational Narrations (Ghadir, Kisa, Manzilah)",
+      bookNumber = 1,
+      bookName = "Hadith al-Ghadir (The Declaration at Khumm)",
+      chapterNumber = 2,
+      chapterName = "Appointment of Amir al-Mu'minin 'Ali (AS) as the Wali",
+      hadithNumber = 2,
+      darussalamReference = "Al-Kafi Vol. 1 / Bihar al-Anwar Vol. 37",
+      inBookReference = "Al-Kafi Vol. 1, p. 287 • Al-Ihtijaj Vol. 1, p. 58",
+      arabicText = "مَنْ كُنْتُ مَوْلَاهُ فَعَلِيٌّ مَوْلَاهُ، اللَّهُمَّ وَالِ مَنْ وَالَاهُ وَعَادِ مَنْ عَادَاهُ وَانْصُرْ مَنْ نَصَرَهُ وَاخْذُلْ مَنْ خَذَلَهُ",
+      transliteration = "Man kuntu mawlahu fa-'Aliyyun mawlahu. Allahumma wali man walahu wa 'adi man 'adahu...",
+      englishText = "The Prophet (ﷺ) declared at Ghadir Khumm: 'Of whomever I am the Master (Mawla), 'Ali is his Master. O Allah! Befriend whoever befriends him, and be the enemy of whoever opposes him; support whoever supports him, and forsake whoever forsakes him.'",
+      urduText = "نبی اکرم ﷺ نے غدیر خم کے مقام پر اعلان فرمایا: جس کا میں مولا ہوں، علی اس کے مولا ہیں۔ اے اللہ! تو اس کو دوست رکھ جو اسے دوست رکھے، اور اس سے دشمنی رکھ جو اس سے دشمنی رکھے؛ اس کی مدد فرما جو اس کی مدد کرے، اور اسے چھوڑ دے جو اسے (تنہا) چھوڑ دے۔",
+      narrator = "Zayd ibn Arqam & Over 110 Companions",
+      grade = "Mutawatir (Universal Consensus)",
+      gradingScholar = "'Allamah al-Amini (Al-Ghadir) & Classical Imami Scholars",
+      reference = "Al-Kafi 1:287",
+      linkedQuranVerses = "5:67, 5:3, 5:55"
+    ),
+
+    // ==================== HADITH AL-MANZILAH (STATION OF 'ALI) — SHIA VERSION ====================
+    HadithEntity(
+      collectionKey = "shia_foundational",
+      collectionName = "Shia Foundational Narrations (Ghadir, Kisa, Manzilah)",
+      bookNumber = 1,
+      bookName = "Hadith al-Manzilah (Position of Aaron)",
+      chapterNumber = 3,
+      chapterName = "Position of 'Ali (AS) in Relation to the Prophet (ﷺ)",
+      hadithNumber = 3,
+      darussalamReference = "Al-Kafi Vol. 8 / Bihar al-Anwar Vol. 37",
+      inBookReference = "Al-Kafi Vol. 8, p. 107 • Al-Irshad Vol. 1, p. 156",
+      arabicText = "أَنْتَ مِنِّي بِمَنْزِلَةِ هَارُونَ مِنْ مُوسَى إِلَّا أَنَّهُ لَا نَبِيَّ بَعْدِي",
+      transliteration = "Anta minni bi-manzilati Haruna min Musa illa annahu la nabiyya ba'di.",
+      englishText = "The Prophet (ﷺ) said to 'Ali (AS): 'You are to me as Aaron (Harun) was to Moses (Musa), except that there is no Prophet after me.'",
+      urduText = "رسول اللہ ﷺ نے حضرت علی علیہ السلام سے فرمایا: تمہاری مجھ سے وہی نسبت ہے جو ہارونؑ کی موسیٰؑ سے تھی، سوائے اس کے کہ میرے بعد کوئی نبی نہیں۔",
+      narrator = "Sa'd ibn Abi Waqqas & Asma' bint 'Umays",
+      grade = "Sahih / Mutawatir",
+      gradingScholar = "Shaykh al-Mufid & Allama al-Hilli",
+      reference = "Al-Irshad 1:156",
+      linkedQuranVerses = "20:29, 20:30, 20:31, 20:32"
+    ),
+
+    // ==================== FOUNDATIONAL SUNNI NARRATIONS (BUKHARI & MUSLIM) ====================
+    HadithEntity(
+      collectionKey = "bukhari",
+      collectionName = "Sahih al-Bukhari",
+      bookNumber = 2,
+      bookName = "Book 2: Kitab al-Iman (كتاب الإيمان)",
+      chapterNumber = 7,
+      chapterName = "Modesty is Part of Faith",
+      hadithNumber = 9,
+      darussalamReference = "Sahih al-Bukhari #9",
+      inBookReference = "In-Book: Book 2, Hadith 2",
+      arabicText = "الْإِيمَانُ بِضْعٌ وَسِتُّونَ شُعْبَةً، وَالْحَيَاءُ شُعْبَةٌ مِنَ الْإِيمَانِ",
+      transliteration = "Al-imanu bid'un wa sittuna shu'batan, wal-hayau shu'batun minal-iman.",
+      englishText = "The Prophet (ﷺ) said: 'Faith (Iman) has over sixty branches (or seventy according to Muslim); and modesty (Al-Haya) is a branch of faith.'",
+      urduText = "رسول اللہ ﷺ نے فرمایا: ایمان کی ساٹھ سے زائد شاخیں ہیں، اور حیا بھی ایمان کی ایک شاخ ہے۔",
+      narrator = "Abu Hurairah (RA)",
+      grade = "Sahih (Muttafaqun 'Alayh)",
+      gradingScholar = "Imam al-Bukhari & Imam Muslim",
+      reference = "Sahih al-Bukhari 9 • Sahih Muslim 35",
+      linkedQuranVerses = "24:30, 24:31"
+    ),
+    HadithEntity(
+      collectionKey = "tirmidhi",
+      collectionName = "Jami` at-Tirmidhi",
+      bookNumber = 27,
+      bookName = "Book 27: Kitab al-Birr was-Silah (كتاب البر والصلة)",
+      chapterNumber = 62,
+      chapterName = "Excellence of Good Character",
+      hadithNumber = 2003,
+      darussalamReference = "Jami' at-Tirmidhi #2003",
+      inBookReference = "In-Book: Book 27, Hadith 109",
+      arabicText = "مَا مِنْ شَيْءٍ أَثْقَلُ فِي مِيزَانِ الْمُؤْمِنِ يَوْمَ الْقِيَامَةِ مِنْ حُسْنِ الْخُلُقِ",
+      transliteration = "Ma min shay'in athqalu fi mizani al-mu'mini yawma al-qiyamati min husni al-khuluq.",
+      englishText = "The Prophet (ﷺ) said: 'Nothing is heavier on the believer's Scale on the Day of Judgment than good character.'",
+      urduText = "رسول اللہ ﷺ نے فرمایا: قیامت کے دن مومن کے میزان میں حسنِ اخلاق سے زیادہ وزنی کوئی چیز نہیں ہوگی۔",
+      narrator = "Abu ad-Darda (RA)",
+      grade = "Sahih",
+      gradingScholar = "Imam at-Tirmidhi & Shaykh al-Albani",
+      reference = "Jami` at-Tirmidhi 2003",
+      linkedQuranVerses = "68:4"
     )
   )
 }

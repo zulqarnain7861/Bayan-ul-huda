@@ -75,6 +75,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,6 +94,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -144,57 +147,124 @@ fun QuranScreen(
   onToggleReadingMode: () -> Unit = {},
   isContinuousMushafFlow: Boolean = false,
   onToggleContinuousMushafFlow: () -> Unit = {},
-  currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
-  onSelectReciter: (com.example.ui.audio.Reciter) -> Unit = {},
+  prayerConfig: com.example.data.prayer.PrayerAndAlarmConfig,
+  currentTranslations: List<com.example.data.local.entities.TranslationEntity> = emptyList(),
+  onSelectReciter: (com.example.ui.audio.Reciter, String) -> Unit = { _, _ -> },
+  onSelectTranslation: (String, String) -> Unit = { _, _ -> },
   modifier: Modifier = Modifier
 ) {
+  var selectedTradition by remember { mutableStateOf("SUNNI") } // "SUNNI" or "SHIA"
   var showRecitersSheet by remember { mutableStateOf(false) }
 
-  if (isReaderOpen && selectedSurah != null) {
-    SurahReaderView(
-      surah = selectedSurah,
-      ayahs = currentAyahs,
-      bookmarks = bookmarks,
-      showEnglish = showEnglish,
-      showUrdu = showUrdu,
-      showTransliteration = showTransliteration,
-      arabicFontSizeSp = arabicFontSizeSp,
-      translationFontSizeSp = translationFontSizeSp,
-      onBack = onCloseReader,
-      onPreviousSurah = { onNavigateAdjacentSurah(-1) },
-      onNextSurah = { onNavigateAdjacentSurah(1) },
-      onToggleEnglish = onToggleEnglish,
-      onToggleUrdu = onToggleUrdu,
-      onToggleTransliteration = onToggleTransliteration,
-      onSetArabicFontSize = onSetArabicFontSize,
-      onPlayAyahRecitation = onPlayAyahRecitation,
-      onBookmarkAyah = onBookmarkAyah,
-      onAddNote = onAddNote,
-      allHadithsForTafsir = allHadithsForTafsir,
-      isReadingMode = isReadingMode,
-      onToggleReadingMode = onToggleReadingMode,
-      isContinuousMushafFlow = isContinuousMushafFlow,
-      onToggleContinuousMushafFlow = onToggleContinuousMushafFlow,
-      currentReciter = currentReciter,
-      onOpenRecitersSheet = { showRecitersSheet = true },
-      modifier = modifier
-    )
-  } else {
-    SurahCatalogView(
-      surahs = surahs,
-      onOpenSurah = onOpenSurah,
-      onOpenOfflineDownloads = onOpenOfflineDownloads,
-      currentReciter = currentReciter,
-      onOpenRecitersSheet = { showRecitersSheet = true },
-      modifier = modifier
-    )
+  // Independent reciter choices for each tradition (Initialized from persisted config)
+  var sunniSelectedReciter by remember(prayerConfig.sunniQuranReciterId) {
+    mutableStateOf(com.example.ui.audio.availableReciters.find { it.id == prayerConfig.sunniQuranReciterId } 
+      ?: com.example.ui.audio.availableReciters.first { it.tradition == "SUNNI" })
+  }
+  var shiaSelectedReciter by remember(prayerConfig.shiaQuranReciterId) {
+    mutableStateOf(com.example.ui.audio.availableReciters.find { it.id == prayerConfig.shiaQuranReciterId } 
+      ?: com.example.ui.audio.availableReciters.first { it.tradition == "SHIA" })
+  }
+
+  val activeReciter = if (selectedTradition == "SUNNI") sunniSelectedReciter else shiaSelectedReciter
+
+
+  val filteredReciters = remember(selectedTradition) {
+    com.example.ui.audio.availableReciters.filter { it.tradition == selectedTradition }
+  }
+
+  var sunniTranslationKey by remember(prayerConfig.sunniTranslationKey) { mutableStateOf(prayerConfig.sunniTranslationKey) }
+  var shiaTranslationKey by remember(prayerConfig.shiaTranslationKey) { mutableStateOf(prayerConfig.shiaTranslationKey) }
+  val activeTranslationKey = if (selectedTradition == "SUNNI") sunniTranslationKey else shiaTranslationKey
+
+  Column(modifier = modifier.fillMaxSize()) {
+    // 1. Dual Entry Points: Sunni | Shia
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp, vertical = 4.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      FilterChip(
+        selected = selectedTradition == "SUNNI",
+        onClick = { selectedTradition = "SUNNI" },
+        label = { Text("Sunni Translated Quran", fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = EmeraldPrimary,
+          selectedLabelColor = Color.White
+        ),
+        modifier = Modifier.weight(1f).height(36.dp).testTag("quran_sunni_entry")
+      )
+      FilterChip(
+        selected = selectedTradition == "SHIA",
+        onClick = { selectedTradition = "SHIA" },
+        label = { Text("Shia Translated Quran", fontWeight = FontWeight.Bold, fontSize = 11.sp) },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = GoldPrimary,
+          selectedLabelColor = Color.Black
+        ),
+        modifier = Modifier.weight(1f).height(36.dp).testTag("quran_shia_entry")
+      )
+    }
+
+    if (isReaderOpen && selectedSurah != null) {
+      SurahReaderView(
+        surah = selectedSurah,
+        ayahs = currentAyahs,
+        bookmarks = bookmarks,
+        showEnglish = showEnglish,
+        showUrdu = showUrdu,
+        showTransliteration = showTransliteration,
+        arabicFontSizeSp = arabicFontSizeSp,
+        translationFontSizeSp = translationFontSizeSp,
+        onBack = onCloseReader,
+        onPreviousSurah = { onNavigateAdjacentSurah(-1) },
+        onNextSurah = { onNavigateAdjacentSurah(1) },
+        onToggleEnglish = onToggleEnglish,
+        onToggleUrdu = onToggleUrdu,
+        onToggleTransliteration = onToggleTransliteration,
+        onSetArabicFontSize = onSetArabicFontSize,
+        onPlayAyahRecitation = onPlayAyahRecitation,
+        onBookmarkAyah = onBookmarkAyah,
+        onAddNote = onAddNote,
+        allHadithsForTafsir = allHadithsForTafsir,
+        isReadingMode = isReadingMode,
+        onToggleReadingMode = onToggleReadingMode,
+        isContinuousMushafFlow = isContinuousMushafFlow,
+        onToggleContinuousMushafFlow = onToggleContinuousMushafFlow,
+        currentReciter = activeReciter,
+        selectedTradition = selectedTradition,
+        activeTranslationKey = activeTranslationKey,
+        currentTranslations = currentTranslations,
+        onSelectTranslation = { key ->
+          if (selectedTradition == "SUNNI") sunniTranslationKey = key
+          else shiaTranslationKey = key
+          onSelectTranslation(key, selectedTradition)
+        },
+        onOpenRecitersSheet = { showRecitersSheet = true },
+        modifier = Modifier.weight(1f)
+      )
+    } else {
+      SurahCatalogView(
+        surahs = surahs,
+        onOpenSurah = onOpenSurah,
+        onOpenOfflineDownloads = onOpenOfflineDownloads,
+        currentReciter = activeReciter,
+        selectedTradition = selectedTradition,
+        onOpenRecitersSheet = { showRecitersSheet = true },
+        modifier = Modifier.weight(1f)
+      )
+    }
   }
 
   if (showRecitersSheet) {
     QuranRecitersBottomSheet(
-      currentReciter = currentReciter,
+      currentReciter = activeReciter,
+      recitersList = filteredReciters,
       onSelectReciter = { reciter ->
-        onSelectReciter(reciter)
+        if (selectedTradition == "SUNNI") sunniSelectedReciter = reciter
+        else shiaSelectedReciter = reciter
+        onSelectReciter(reciter, selectedTradition)
         showRecitersSheet = false
       },
       onDismiss = { showRecitersSheet = false }
@@ -208,6 +278,7 @@ fun SurahCatalogView(
   onOpenSurah: (SurahEntity) -> Unit,
   onOpenOfflineDownloads: () -> Unit = {},
   currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
+  selectedTradition: String = "SUNNI",
   onOpenRecitersSheet: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
@@ -388,57 +459,64 @@ fun SurahListItem(
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 14.dp, vertical = 12.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-          modifier = Modifier
-            .size(38.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(
-            text = "${surah.number}",
-            style = MaterialTheme.typography.labelLarge.copy(
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+      Box(
+        modifier = Modifier
+          .size(38.dp)
+          .clip(CircleShape)
+          .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          text = "${surah.number}",
+          style = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
           )
-        }
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-              text = surah.nameEnglish,
-              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            RevelationTypeBadge(type = surah.revelationType)
-          }
-
-          Spacer(modifier = Modifier.height(2.dp))
-
-          Text(
-            text = "${surah.nameEnglishTranslation} • ${surah.nameUrdu}",
-            style = MaterialTheme.typography.bodySmall.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              fontSize = 12.sp
-            )
-          )
-
-          Text(
-            text = "${surah.totalVerses} Verses • Offline Ready + 8 Tafsirs",
-            style = MaterialTheme.typography.labelSmall.copy(
-              color = MaterialTheme.colorScheme.secondary,
-              fontSize = 11.sp
-            )
-          )
-        }
+        )
       }
+
+      Spacer(modifier = Modifier.width(12.dp))
+
+      Column(
+        modifier = Modifier.weight(1f)
+      ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Text(
+            text = surah.nameEnglish,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+          RevelationTypeBadge(type = surah.revelationType)
+        }
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+          text = "${surah.nameEnglishTranslation} • ${surah.nameUrdu}",
+          style = MaterialTheme.typography.bodySmall.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp
+          ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+          text = "${surah.totalVerses} Verses • Offline Ready + 14 Tafsirs (Sunni & Shia)",
+          style = MaterialTheme.typography.labelSmall.copy(
+            color = MaterialTheme.colorScheme.secondary,
+            fontSize = 11.sp
+          ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
+
+      Spacer(modifier = Modifier.width(12.dp))
 
       Text(
         text = surah.nameArabic,
@@ -446,8 +524,12 @@ fun SurahListItem(
           fontFamily = ScheherazadeFontFamily,
           fontWeight = FontWeight.Bold,
           fontSize = 24.sp,
-          color = MaterialTheme.colorScheme.primary
-        )
+          color = MaterialTheme.colorScheme.primary,
+          textDirection = TextDirection.Rtl
+        ),
+        maxLines = 1,
+        softWrap = false,
+        textAlign = TextAlign.End
       )
     }
   }
@@ -480,6 +562,10 @@ fun SurahReaderView(
   isContinuousMushafFlow: Boolean = false,
   onToggleContinuousMushafFlow: () -> Unit = {},
   currentReciter: com.example.ui.audio.Reciter = com.example.ui.audio.availableReciters.first(),
+  selectedTradition: String = "SUNNI",
+  activeTranslationKey: String = "en.sahih",
+  currentTranslations: List<com.example.data.local.entities.TranslationEntity> = emptyList(),
+  onSelectTranslation: (String) -> Unit = {},
   onOpenRecitersSheet: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
@@ -535,6 +621,7 @@ fun SurahReaderView(
   }
 
   var showSettingsSheet by remember { mutableStateOf(false) }
+  var showTranslationSheet by remember { mutableStateOf(false) }
   var selectedAyahForTafsir by remember { mutableStateOf<AyahEntity?>(null) }
   var selectedAyahForTajweed by remember { mutableStateOf<AyahEntity?>(null) }
   var focusedVerseIndex by remember(surah.number) { mutableIntStateOf(0) }
@@ -624,55 +711,87 @@ fun SurahReaderView(
           modifier = Modifier.fillMaxWidth()
         ) {
           Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
-            Row(
+            LazyRow(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.spacedBy(6.dp),
               verticalAlignment = Alignment.CenterVertically
             ) {
-              FilterChip(
-                selected = showEnglish,
-                onClick = onToggleEnglish,
-                label = { Text("Saheeh Intl", fontSize = 11.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                  selectedContainerColor = EmeraldPrimary,
-                  selectedLabelColor = Color.White
+              item {
+                val currentEdition = (com.example.data.local.ShiaTranslationDataProvider.sunniEditions + 
+                  com.example.data.local.ShiaTranslationDataProvider.shiaEditions).find { it.key == activeTranslationKey }
+                val editionLabel = currentEdition?.title ?: if (selectedTradition == "SHIA") "Ali Quli Qara'i" else "Sahih International"
+                FilterChip(
+                  selected = true,
+                  onClick = { showTranslationSheet = true },
+                  label = {
+                    Text(
+                      text = "Translation: $editionLabel",
+                      fontSize = 11.sp,
+                      fontWeight = FontWeight.Bold
+                    )
+                  },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = if (selectedTradition == "SHIA") GoldPrimary.copy(alpha = 0.22f) else EmeraldPrimary.copy(alpha = 0.22f),
+                    selectedLabelColor = if (selectedTradition == "SHIA") GoldPrimary else EmeraldPrimary
+                  ),
+                  modifier = Modifier.testTag("open_translation_selector_button")
                 )
-              )
-              FilterChip(
-                selected = showUrdu,
-                onClick = onToggleUrdu,
-                label = { Text("Urdu", fontSize = 11.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                  selectedContainerColor = EmeraldPrimary,
-                  selectedLabelColor = Color.White
+              }
+              item {
+                FilterChip(
+                  selected = showEnglish,
+                  onClick = onToggleEnglish,
+                  label = { Text("English", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = EmeraldPrimary,
+                    selectedLabelColor = Color.White
+                  ),
+                  modifier = Modifier.testTag("toggle_english_chip")
                 )
-              )
-              FilterChip(
-                selected = showTransliteration,
-                onClick = onToggleTransliteration,
-                label = { Text("Transliteration", fontSize = 11.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                  selectedContainerColor = EmeraldPrimary,
-                  selectedLabelColor = Color.White
+              }
+              item {
+                FilterChip(
+                  selected = showUrdu,
+                  onClick = onToggleUrdu,
+                  label = { Text("Urdu", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = EmeraldPrimary,
+                    selectedLabelColor = Color.White
+                  ),
+                  modifier = Modifier.testTag("toggle_urdu_chip")
                 )
-              )
-              FilterChip(
-                selected = localReadingMode,
-                onClick = toggleReadingModeInternal,
-                label = { Text("Reading Mode", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                leadingIcon = {
-                  Icon(
-                    imageVector = Icons.Default.MenuBook,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp)
-                  )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                  selectedContainerColor = GoldPrimary,
-                  selectedLabelColor = Color.Black
-                ),
-                modifier = Modifier.testTag("reading_mode_chip")
-              )
+              }
+              item {
+                FilterChip(
+                  selected = showTransliteration,
+                  onClick = onToggleTransliteration,
+                  label = { Text("Transliteration", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = EmeraldPrimary,
+                    selectedLabelColor = Color.White
+                  ),
+                  modifier = Modifier.testTag("toggle_transliteration_chip")
+                )
+              }
+              item {
+                FilterChip(
+                  selected = localReadingMode,
+                  onClick = toggleReadingModeInternal,
+                  label = { Text("Reading Mode", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                  leadingIcon = {
+                    Icon(
+                      imageVector = Icons.Default.MenuBook,
+                      contentDescription = null,
+                      modifier = Modifier.size(14.dp)
+                    )
+                  },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = GoldPrimary,
+                    selectedLabelColor = Color.Black
+                  ),
+                  modifier = Modifier.testTag("reading_mode_chip")
+                )
+              }
             }
 
             if (ayahs.isNotEmpty()) {
@@ -836,8 +955,8 @@ fun SurahReaderView(
     } else {
       arabicFontSizeSp
     }
-    val verticalItemSpacing = if (localReadingMode) 24.dp else 16.dp
-    val horizontalListPadding = if (localReadingMode) 20.dp else 16.dp
+    val verticalItemSpacing = if (localReadingMode) 20.dp else 12.dp
+    val horizontalListPadding = if (localReadingMode) 16.dp else 12.dp
 
     LazyColumn(
       state = listState,
@@ -892,6 +1011,18 @@ fun SurahReaderView(
       } else {
         items(ayahs, key = { "${it.surahNumber}_${it.verseNumber}" }) { ayah ->
           val isBookmarked = bookmarks.any { it.itemKey == "ayah_${ayah.surahNumber}_${ayah.verseNumber}" }
+          val enOverride = currentTranslations.find { 
+            it.surahOrBookNumber == ayah.surahNumber && 
+            it.verseOrHadithNumber == ayah.verseNumber && 
+            it.editionKey == activeTranslationKey && 
+            it.languageCode == "en" 
+          }?.text
+          val urOverride = currentTranslations.find { 
+            it.surahOrBookNumber == ayah.surahNumber && 
+            it.verseOrHadithNumber == ayah.verseNumber && 
+            it.editionKey == activeTranslationKey && 
+            it.languageCode == "ur" 
+          }?.text
 
           AyahCardItem(
             ayah = ayah,
@@ -908,12 +1039,16 @@ fun SurahReaderView(
             onBookmark = { onBookmarkAyah(ayah, surah.nameEnglish) },
             onCopy = {
               val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-              val text = "${ayah.textArabic}\n\n${ayah.transliteration}\n\n${ayah.translationEnglish}\n\n${ayah.translationUrdu}\n\n[${surah.nameEnglish} ${ayah.surahNumber}:${ayah.verseNumber}]"
+              val enText = enOverride ?: ayah.translationEnglish
+              val urText = urOverride ?: ayah.translationUrdu
+              val text = "${ayah.textArabic}\n\n${ayah.transliteration}\n\n$enText\n\n$urText\n\n[${surah.nameEnglish} ${ayah.surahNumber}:${ayah.verseNumber}]"
               clipboard.setPrimaryClip(ClipData.newPlainText("Ayah", text))
               Toast.makeText(context, "Ayah copied to clipboard", Toast.LENGTH_SHORT).show()
             },
             onAddNote = { onAddNote("${surah.nameEnglish} ${ayah.surahNumber}:${ayah.verseNumber}") },
-            isReadingMode = localReadingMode
+            isReadingMode = localReadingMode,
+            englishTranslationOverride = enOverride,
+            urduTranslationOverride = urOverride
           )
         }
 
@@ -959,6 +1094,7 @@ fun SurahReaderView(
       allHadiths = allHadithsForTafsir,
       hasPrevAyah = activeAyah.verseNumber > 1,
       hasNextAyah = activeAyah.verseNumber < ayahs.size,
+      selectedTradition = selectedTradition,
       onPrevAyahTafsir = {
         ayahs.find { it.verseNumber == activeAyah.verseNumber - 1 }?.let {
           selectedAyahForTafsir = it
@@ -1042,6 +1178,143 @@ fun SurahReaderView(
       }
     }
   }
+
+  if (showTranslationSheet) {
+    QuranTranslationBottomSheet(
+      selectedTradition = selectedTradition,
+      activeTranslationKey = activeTranslationKey,
+      onSelectTranslation = { key ->
+        onSelectTranslation(key)
+        showTranslationSheet = false
+      },
+      onDismiss = { showTranslationSheet = false }
+    )
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuranTranslationBottomSheet(
+  selectedTradition: String,
+  activeTranslationKey: String,
+  onSelectTranslation: (String) -> Unit,
+  onDismiss: () -> Unit
+) {
+  val editions = if (selectedTradition == "SHIA") {
+    com.example.data.local.ShiaTranslationDataProvider.shiaEditions
+  } else {
+    com.example.data.local.ShiaTranslationDataProvider.sunniEditions
+  }
+
+  ModalBottomSheet(
+    onDismissRequest = onDismiss
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 20.dp, vertical = 12.dp)
+    ) {
+      Text(
+        text = if (selectedTradition == "SHIA") "Verified Shia Quran Translations (${editions.size})" else "Sunni Quran Translations (${editions.size})",
+        style = MaterialTheme.typography.titleMedium.copy(
+          fontWeight = FontWeight.Bold,
+          color = if (selectedTradition == "SHIA") GoldPrimary else EmeraldPrimary
+        )
+      )
+      Text(
+        text = if (selectedTradition == "SHIA")
+          "Authentic Shia-associated translations verified against scholarly publishers and original editions."
+        else
+          "Classical & contemporary Sunni translations across English and Urdu.",
+        style = MaterialTheme.typography.bodySmall.copy(
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      )
+      Spacer(modifier = Modifier.height(12.dp))
+
+      editions.forEach { edition ->
+        val isSelected = edition.key == activeTranslationKey
+        Surface(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable {
+              onSelectTranslation(edition.key)
+              onDismiss()
+            }
+            .testTag("translation_option_${edition.key}"),
+          shape = RoundedCornerShape(12.dp),
+          color = if (isSelected) {
+            (if (selectedTradition == "SHIA") GoldPrimary else EmeraldPrimary).copy(alpha = 0.16f)
+          } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+          },
+          border = if (isSelected) {
+            BorderStroke(1.5.dp, if (selectedTradition == "SHIA") GoldPrimary else EmeraldPrimary)
+          } else null
+        ) {
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                  text = edition.title,
+                  style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Surface(
+                  shape = RoundedCornerShape(4.dp),
+                  color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                  Text(
+                    text = edition.languageCode.uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                      fontSize = 10.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                  )
+                }
+              }
+              Spacer(modifier = Modifier.height(2.dp))
+              Text(
+                text = "Translator: ${edition.translator}",
+                style = MaterialTheme.typography.labelMedium.copy(
+                  color = MaterialTheme.colorScheme.secondary,
+                  fontWeight = FontWeight.Medium
+                )
+              )
+              Text(
+                text = edition.description,
+                style = MaterialTheme.typography.bodySmall.copy(
+                  fontSize = 11.sp,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              )
+            }
+            if (isSelected) {
+              Text(
+                text = "Active",
+                style = MaterialTheme.typography.labelSmall.copy(
+                  fontWeight = FontWeight.Bold,
+                  color = if (selectedTradition == "SHIA") GoldPrimary else EmeraldPrimary
+                ),
+                modifier = Modifier.padding(start = 8.dp)
+              )
+            }
+          }
+        }
+      }
+      Spacer(modifier = Modifier.height(24.dp))
+    }
+  }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1052,11 +1325,22 @@ fun TafsirModalSheet(
   allHadiths: List<HadithEntity>,
   hasPrevAyah: Boolean,
   hasNextAyah: Boolean,
+  selectedTradition: String = "SUNNI",
   onPrevAyahTafsir: () -> Unit,
   onNextAyahTafsir: () -> Unit,
   onDismiss: () -> Unit
 ) {
-  var selectedEditionKey by remember { mutableStateOf(TafsirRepository.editions.first().key) }
+  val filteredEditions = remember(selectedTradition) {
+    if (selectedTradition == "SHIA") {
+      TafsirRepository.editions.filter { it.eraBadge.contains("Shia", ignoreCase = true) }
+    } else {
+      TafsirRepository.editions.filter { !it.eraBadge.contains("Shia", ignoreCase = true) }
+    }
+  }
+
+  var selectedEditionKey by remember(selectedTradition) { 
+    mutableStateOf(filteredEditions.firstOrNull()?.key ?: TafsirRepository.editions.first().key) 
+  }
   val tafsirResult = remember(ayah.surahNumber, ayah.verseNumber, selectedEditionKey) {
     TafsirRepository.getTafsirForAyah(
       ayah = ayah,
@@ -1113,7 +1397,7 @@ fun TafsirModalSheet(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
       ) {
-        items(TafsirRepository.editions, key = { it.key }) { edition ->
+        items(filteredEditions, key = { it.key }) { edition ->
           val isSelected = edition.key == selectedEditionKey
           FilterChip(
             selected = isSelected,
@@ -1223,6 +1507,7 @@ fun TafsirModalSheet(
           Text(
             text = tafsirResult.commentaryUrdu,
             style = MaterialTheme.typography.bodyMedium.copy(
+              fontFamily = UrduNastaliqFontFamily,
               lineHeight = 24.sp,
               textAlign = TextAlign.Right,
               color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1347,6 +1632,7 @@ fun TafsirModalSheet(
             Text(
               text = hadith.urduText,
               style = MaterialTheme.typography.bodySmall.copy(
+                fontFamily = UrduNastaliqFontFamily,
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               ),
@@ -1378,11 +1664,13 @@ fun AyahCardItem(
   onCopy: () -> Unit,
   onAddNote: () -> Unit,
   isReadingMode: Boolean = false,
+  englishTranslationOverride: String? = null,
+  urduTranslationOverride: String? = null,
   modifier: Modifier = Modifier
 ) {
   val lineHeightMultiplier = if (isReadingMode) 2.45f else 2.0f
-  val cardHorizontalPadding = if (isReadingMode) 24.dp else 16.dp
-  val cardVerticalPadding = if (isReadingMode) 26.dp else 16.dp
+  val cardHorizontalPadding = if (isReadingMode) 16.dp else 10.dp
+  val cardVerticalPadding = if (isReadingMode) 20.dp else 8.dp
 
   ElevatedCard(
     modifier = modifier
@@ -1438,7 +1726,7 @@ fun AyahCardItem(
                 )
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(
-                  text = "8 Tafsirs & Hadith",
+                  text = "14 Tafsirs & Hadith",
                   style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     color = EmeraldPrimary
@@ -1524,31 +1812,37 @@ fun AyahCardItem(
         )
       }
 
-      if (!isReadingMode && showEnglish && ayah.translationEnglish.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-          text = ayah.translationEnglish,
-          style = MaterialTheme.typography.bodyMedium.copy(
-            fontSize = translationFontSizeSp.sp,
-            lineHeight = (translationFontSizeSp * 1.45f).sp,
-            color = MaterialTheme.colorScheme.onSurface
+      if (!isReadingMode && showEnglish) {
+        val enText = englishTranslationOverride ?: ayah.translationEnglish
+        if (enText.isNotBlank()) {
+          Spacer(modifier = Modifier.height(10.dp))
+          Text(
+            text = enText,
+            style = MaterialTheme.typography.bodyMedium.copy(
+              fontSize = translationFontSizeSp.sp,
+              lineHeight = (translationFontSizeSp * 1.45f).sp,
+              color = MaterialTheme.colorScheme.onSurface
+            )
           )
-        )
+        }
       }
 
-      if (!isReadingMode && showUrdu && ayah.translationUrdu.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-          text = ayah.translationUrdu,
-          style = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = UrduNastaliqFontFamily,
-            fontSize = translationFontSizeSp.sp,
-            lineHeight = (translationFontSizeSp * 1.55f).sp,
-            textAlign = TextAlign.Right,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          ),
-          modifier = Modifier.fillMaxWidth()
-        )
+      if (!isReadingMode && showUrdu) {
+        val urText = urduTranslationOverride ?: ayah.translationUrdu
+        if (urText.isNotBlank()) {
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+            text = urText,
+            style = MaterialTheme.typography.bodyMedium.copy(
+              fontFamily = UrduNastaliqFontFamily,
+              fontSize = translationFontSizeSp.sp,
+              lineHeight = (translationFontSizeSp * 1.55f).sp,
+              textAlign = TextAlign.Right,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.fillMaxWidth()
+          )
+        }
       }
     }
   }
@@ -1668,14 +1962,15 @@ private fun toArabicIndicDigits(number: Int): String {
 @Composable
 fun QuranRecitersBottomSheet(
   currentReciter: com.example.ui.audio.Reciter,
+  recitersList: List<com.example.ui.audio.Reciter> = com.example.ui.audio.availableReciters,
   onSelectReciter: (com.example.ui.audio.Reciter) -> Unit,
   onDismiss: () -> Unit
 ) {
-  val sunniReciters = remember {
-    com.example.ui.audio.availableReciters.filter { it.tradition == "SUNNI" }
+  val sunniReciters = remember(recitersList) {
+    recitersList.filter { it.tradition == "SUNNI" }
   }
-  val shiaReciters = remember {
-    com.example.ui.audio.availableReciters.filter { it.tradition == "SHIA" }
+  val shiaReciters = remember(recitersList) {
+    recitersList.filter { it.tradition == "SHIA" }
   }
 
   ModalBottomSheet(

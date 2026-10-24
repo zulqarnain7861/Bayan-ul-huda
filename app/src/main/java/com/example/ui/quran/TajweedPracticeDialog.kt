@@ -166,85 +166,79 @@ fun TajweedPracticeDialog(
           Column(modifier = Modifier.padding(16.dp)) {
             val eval = recordingState.evaluationResult
 
-            if (eval == null) {
-              // Standard Sacred Canonical Arabic Text (Zero modification)
-              Text(
-                text = cleanArabicText,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                  fontFamily = AmiriFontFamily,
-                  fontSize = 24.sp,
-                  lineHeight = 44.sp,
-                  textAlign = TextAlign.Right,
-                  color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .testTag("tajweed_canonical_arabic_text")
-              )
+            // Always render word-by-word using the canonical text as the base
+            // to ensure layout stability and zero jumping during recitation analysis.
+            val canonicalWords = remember(cleanArabicText) {
+              cleanArabicText.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+            }
+            
+            val displayWordStatuses = if (eval != null) {
+              eval.wordStatuses
             } else {
-              // Word-by-Word Acoustic Evaluation Display:
-              // - Green: Correct word (TajweedWordGrade.CORRECT)
-              // - Yellow: Small mistake (TajweedWordGrade.SMALL_MISTAKE)
-              // - Red: Wrong word of text or missed (TajweedWordGrade.WRONG_OR_MISSED)
-              FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-              ) {
-                eval.wordStatuses.forEach { wordStatus ->
-                  val bgColor = when (wordStatus.grade) {
-                    TajweedWordGrade.CORRECT -> Color(0xFFE8F5E9)
-                    TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFFFF9C4)
-                    TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFFFEBEE)
-                  }
-                  val borderColor = when (wordStatus.grade) {
-                    TajweedWordGrade.CORRECT -> Color(0xFF2E7D32)
-                    TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFFBC02D)
-                    TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFD32F2F)
-                  }
-                  val textColor = when (wordStatus.grade) {
-                    TajweedWordGrade.CORRECT -> Color(0xFF1B5E20)
-                    TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFE65100)
-                    TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFD32F2F)
-                  }
-                  val label = when (wordStatus.grade) {
-                    TajweedWordGrade.CORRECT -> "Correct"
-                    TajweedWordGrade.SMALL_MISTAKE -> "Small Mistake"
-                    TajweedWordGrade.WRONG_OR_MISSED -> "Wrong / Missed"
-                  }
-                  val tagSuffix = when (wordStatus.grade) {
-                    TajweedWordGrade.CORRECT -> "green"
-                    TajweedWordGrade.SMALL_MISTAKE -> "yellow"
-                    TajweedWordGrade.WRONG_OR_MISSED -> "red"
-                  }
+              canonicalWords.mapIndexed { index, word ->
+                TajweedWordStatus(index = index, canonicalWord = word, grade = TajweedWordGrade.PENDING)
+              }
+            }
 
-                  Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = bgColor,
-                    border = BorderStroke(1.5.dp, borderColor),
-                    modifier = Modifier
-                      .padding(horizontal = 3.dp, vertical = 2.dp)
-                      .testTag("tajweed_word_${wordStatus.index}_$tagSuffix")
+            FlowRow(
+              modifier = Modifier
+                .fillMaxWidth()
+                .testTag("tajweed_word_display_flow"),
+              horizontalArrangement = Arrangement.End,
+              verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              displayWordStatuses.forEach { wordStatus ->
+                val bgColor = when (wordStatus.grade) {
+                  TajweedWordGrade.CORRECT -> Color(0xFFE8F5E9)
+                  TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFFFF9C4)
+                  TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFFFEBEE)
+                  TajweedWordGrade.PENDING -> MaterialTheme.colorScheme.surface
+                }
+                val borderColor = when (wordStatus.grade) {
+                  TajweedWordGrade.CORRECT -> Color(0xFF2E7D32)
+                  TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFFBC02D)
+                  TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFD32F2F)
+                  TajweedWordGrade.PENDING -> MaterialTheme.colorScheme.outlineVariant
+                }
+                val textColor = when (wordStatus.grade) {
+                  TajweedWordGrade.CORRECT -> Color(0xFF1B5E20)
+                  TajweedWordGrade.SMALL_MISTAKE -> Color(0xFFE65100)
+                  TajweedWordGrade.WRONG_OR_MISSED -> Color(0xFFD32F2F)
+                  TajweedWordGrade.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
+                }
+                val label = when (wordStatus.grade) {
+                  TajweedWordGrade.CORRECT -> "Correct"
+                  TajweedWordGrade.SMALL_MISTAKE -> "Small Mistake"
+                  TajweedWordGrade.WRONG_OR_MISSED -> "Wrong / Missed"
+                  TajweedWordGrade.PENDING -> "Waiting..."
+                }
+
+                Surface(
+                  shape = RoundedCornerShape(8.dp),
+                  color = bgColor,
+                  border = BorderStroke(1.5.dp, borderColor),
+                  modifier = Modifier
+                    .padding(horizontal = 3.dp, vertical = 2.dp)
+                    .testTag("tajweed_word_${wordStatus.index}_${wordStatus.grade.name.lowercase()}")
+                ) {
+                  Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                   ) {
-                    Column(
-                      horizontalAlignment = Alignment.CenterHorizontally,
-                      modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                      Text(
-                        text = wordStatus.canonicalWord,
-                        fontFamily = AmiriFontFamily,
-                        fontSize = 22.sp,
-                        fontWeight = if (wordStatus.grade == TajweedWordGrade.CORRECT) FontWeight.Normal else FontWeight.Bold,
-                        color = textColor,
-                        textAlign = TextAlign.Center
-                      )
-                      Text(
-                        text = label,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor
-                      )
-                    }
+                    Text(
+                      text = wordStatus.canonicalWord,
+                      fontFamily = AmiriFontFamily,
+                      fontSize = 22.sp,
+                      fontWeight = if (wordStatus.grade == TajweedWordGrade.CORRECT) FontWeight.Normal else FontWeight.Bold,
+                      color = textColor,
+                      textAlign = TextAlign.Center
+                    )
+                    Text(
+                      text = label,
+                      fontSize = 9.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = textColor
+                    )
                   }
                 }
               }

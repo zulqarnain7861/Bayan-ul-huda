@@ -58,6 +58,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Intent
@@ -957,10 +959,12 @@ fun HomeScreen(
               modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 10.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.SpaceBetween
+              verticalAlignment = Alignment.CenterVertically
             ) {
-              Row(verticalAlignment = Alignment.CenterVertically) {
+              Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
                 Text(
                   text = "${surah.number}",
                   style = MaterialTheme.typography.labelLarge.copy(
@@ -969,20 +973,26 @@ fun HomeScreen(
                   ),
                   modifier = Modifier.width(32.dp)
                 )
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                   Text(
                     text = surah.nameEnglish,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                   )
                   Text(
-                    text = "${surah.totalVerses} Verses • ${surah.revelationType} • Offline + 8 Tafsirs",
+                    text = "${surah.totalVerses} Verses • ${surah.revelationType} • Offline + 14 Tafsirs",
                     style = MaterialTheme.typography.bodySmall.copy(
                       fontSize = 11.sp,
                       color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                   )
                 }
               }
+
+              Spacer(modifier = Modifier.width(10.dp))
 
               Text(
                 text = surah.nameArabic,
@@ -990,8 +1000,12 @@ fun HomeScreen(
                   fontFamily = ScheherazadeFontFamily,
                   fontSize = 20.sp,
                   fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary
-                )
+                  color = MaterialTheme.colorScheme.primary,
+                  textDirection = TextDirection.Rtl
+                ),
+                maxLines = 1,
+                softWrap = false,
+                textAlign = TextAlign.End
               )
             }
           }

@@ -16,9 +16,9 @@ interface TranslationDao {
   suspend fun getTranslation(sourceType: String, referenceKey: String, editionKey: String): TranslationEntity?
 
   @Query("""
-    SELECT * FROM translations
-    WHERE text LIKE '%' || :query || '%'
-       OR referenceKey = :query
+    SELECT t.* FROM translations t
+    JOIN translations_fts fts ON t.rowid = fts.rowid
+    WHERE translations_fts MATCH :query
     LIMIT 100
   """)
   fun searchTranslations(query: String): Flow<List<TranslationEntity>>
@@ -37,4 +37,7 @@ interface TranslationDao {
 
   @Query("SELECT COUNT(*) FROM translations WHERE sourceType = :sourceType AND languageCode = :languageCode")
   suspend fun getTranslationCountByLanguage(sourceType: String, languageCode: String): Int
+
+  @Query("SELECT * FROM translations WHERE sourceType = 'QURAN' AND surahOrBookNumber = :surahNumber")
+  fun getTranslationsBySurah(surahNumber: Int): Flow<List<TranslationEntity>>
 }

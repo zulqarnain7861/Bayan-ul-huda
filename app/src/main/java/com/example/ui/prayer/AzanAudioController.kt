@@ -103,18 +103,18 @@ object AzanAudioController {
   }
 
   /**
-   * Returns the local offline file in internal storage (`filesDir/adhan/<id>.wav`) for a Muezzin.
+   * Returns the local offline file in internal storage (`filesDir/adhan/<id>.mp3`) for a Muezzin.
    */
   fun getLocalDownloadedAdhanFile(context: Context, muezzin: MuezzinAudioOption): File {
     val dir = File(context.filesDir, "adhan")
     if (!dir.exists()) {
       dir.mkdirs()
     }
-    return File(dir, "${muezzin.id}.wav")
+    return File(dir, "${muezzin.id}.mp3")
   }
 
   /**
-   * Downloads/extracts and verifies the authentic offline Adhan recording into `filesDir/adhan/<id>.wav`
+   * Downloads/extracts and verifies the authentic offline Adhan recording into `filesDir/adhan/<id>.mp3`
    * so it is permanently cached in local device storage for offline alarming.
    */
   fun downloadAndCacheOfflineAdhan(context: Context, muezzin: MuezzinAudioOption): Boolean {
@@ -505,8 +505,8 @@ object AzanAudioController {
   }
 
   /**
-   * Plays the selected Muezzin's Adhan 100% OFFLINE from the verified local file (`filesDir/adhan/<id>.wav`)
-   * or bundled APK asset (`assets/adhan/<id>.wav`) on Android's `USAGE_ALARM` audio stream.
+   * Plays the selected Muezzin's Adhan 100% OFFLINE from the verified local file (`filesDir/adhan/<id>.mp3`)
+   * or bundled APK asset (`assets/adhan/<id>.mp3`) on Android's `USAGE_ALARM` audio stream.
    * Never uses AI-generated voices, synthetic TextToSpeech, or background music.
    */
   private fun startOfflineLocalPlaybackEngine(

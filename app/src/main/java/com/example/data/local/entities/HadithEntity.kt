@@ -31,5 +31,13 @@ data class HadithEntity(
   val grade: String = "Sahih",
   val gradingScholar: String = "",
   val reference: String,
-  val linkedQuranVerses: String = "" // Comma-separated verse references e.g. "2:255, 112:1"
+  val linkedQuranVerses: String = "", // Comma-separated verse references e.g. "2:255, 112:1"
+  // Authentic Numbering Systems
+  val uscMsaReference: String = "", // USC-MSA web (English) numbering
+  val fathAlBariReference: String = "", // Fath al-Bari scholarly cross-references (for Bukhari)
+  val abdulBaqiReference: String = "", // Muhammad Fu'ad Abdul Baqi edition references (for Bukhari/Muslim/Ibn Majah)
+  val abdulHamidReference: String = "", // Muhammad Muhyi al-Din Abdul Hamid edition references (for Abu Dawud)
+  val baitAlAfkarReference: String = "", // Bait al-Afkar al-Dawliyya edition references (for Abu Dawud)
+  val yahyaAlLaythiReference: String = "", // Yahya ibn Yahya al-Laythi recension references (for Muwatta Malik)
+  val otherPrintedReference: String = "" // Edition-specific printed references for Tirmidhi/Nasa'i/Ibn Majah/Malik
 )

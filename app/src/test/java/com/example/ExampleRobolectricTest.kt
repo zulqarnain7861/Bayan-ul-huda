@@ -290,7 +290,7 @@ class ExampleRobolectricTest {
 
   @Test
   fun `verify 8 authentic tafsirs and 32 islamic books are available`() {
-    assertEquals(8, TafsirRepository.editions.size)
+    assertEquals(14, TafsirRepository.editions.size)
     val ayahs = InitialDataLoader.getFoundationalAyahs()
     val surahs = InitialDataLoader.getAll114Surahs()
     val allHadiths = ExtendedHadithDataProvider.getExtendedHadiths()

@@ -11,7 +11,8 @@ data class TafsirEditionMeta(
   val titleUrdu: String,
   val scholarName: String,
   val eraBadge: String, // "Classical" or "Contemporary"
-  val methodology: String
+  val methodology: String,
+  val tradition: String = if (eraBadge.contains("Shia", ignoreCase = true)) "SHIA" else "SUNNI"
 )
 
 data class AyahTafsirResult(
@@ -92,17 +93,72 @@ object TafsirRepository {
       titleArabic = "تفهيم القرآن",
       titleUrdu = "تفہیم القرآن",
       scholarName = "Sayyid Abul A'la Maududi (d. 1399 AH / 1979 CE)",
-      eraBadge = "Contemporary",
+      eraBadge = "Contemporary (Sunni)",
       methodology = "Contextual historical background, coherence between verses, socio-moral guidance, and application to contemporary life."
     ),
     TafsirEditionMeta(
-      key = "bayan_ul_quran",
-      titleEnglish = "Bayan-ul-Quran",
-      titleArabic = "بيان القرآن",
-      titleUrdu = "بیان القرآن (مولانا اشرف علی تھانویؒ / ڈاکٹر اسرار احمدؒ)",
-      scholarName = "Hakim al-Ummah Ashraf Ali Thanwi & Dr. Israr Ahmad",
-      eraBadge = "Contemporary",
-      methodology = "Deep thematic coherence (Nazm al-Qur'an), spiritual purification (Tazkiyah), and intellectual clarity."
+      key = "usmani",
+      titleEnglish = "Tafsir-e-Usmani",
+      titleArabic = "تفسير عثماني",
+      titleUrdu = "تفسیرِ عثمانی (علامہ شبیر احمد عثمانیؒ)",
+      scholarName = "Allama Shabbir Ahmad Usmani (d. 1369 AH / 1949 CE)",
+      eraBadge = "Contemporary (Sunni)",
+      methodology = "Orthodox Sunni exegesis synthesizing classical Tafsir al-Kabir, Baydawi, and Kashshaf with concise ideological clarifications."
+    ),
+    // Verified Classical & Contemporary Shia Tafsirs
+    TafsirEditionMeta(
+      key = "al_mizan",
+      titleEnglish = "Tafsir al-Mizan",
+      titleArabic = "الميزان في تفسير القرآن",
+      titleUrdu = "تفسیر المیزان",
+      scholarName = "Allamah Sayyid Muhammad Husayn Tabataba'i (d. 1402 AH / 1981 CE)",
+      eraBadge = "Contemporary (Shia)",
+      methodology = "Tafsir al-Qur'an bil-Qur'an — Interpreting the Qur'an through its own verses, alongside philosophical, mystical, and traditional insights from the Ahl al-Bayt (AS)."
+    ),
+    TafsirEditionMeta(
+      key = "majma_ul_bayan",
+      titleEnglish = "Majma' al-Bayan",
+      titleArabic = "مجمع البيان في تفسير القرآن",
+      titleUrdu = "مجمع البیان (شیخ طبرسیؒ)",
+      scholarName = "Shaykh Abu Ali al-Fadl ibn al-Hasan al-Tabarsi (d. 548 AH)",
+      eraBadge = "Classical (Shia)",
+      methodology = "Encyclopedic classical exegesis covering Arabic linguistics, eloquence, qira'at, and authentic traditions from the Ahl al-Bayt (AS)."
+    ),
+    TafsirEditionMeta(
+      key = "al_tibyan",
+      titleEnglish = "Al-Tibyan fi Tafsir al-Quran",
+      titleArabic = "التبيان في تفسير القرآن",
+      titleUrdu = "التبیان فی تفسیر القرآن (شیخ طوسیؒ)",
+      scholarName = "Shaykh al-Ta'ifah Muhammad ibn al-Hasan al-Tusi (d. 460 AH)",
+      eraBadge = "Classical (Shia)",
+      methodology = "Foundational encyclopedic Shia exegesis covering theology (Kalam), jurisprudence (Ahkam), and linguistic derivations."
+    ),
+    TafsirEditionMeta(
+      key = "nur_al_thaqalayn",
+      titleEnglish = "Tafsir Nur al-Thaqalayn",
+      titleArabic = "تفسير نور الثقلين",
+      titleUrdu = "تفسیر نور الثقلین (علامہ حویزیؒ)",
+      scholarName = "Shaykh Abd al-Ali ibn Juma al-Huwayzi (d. 1112 AH)",
+      eraBadge = "Classical (Shia Narrative)",
+      methodology = "Tradition-based commentary focusing exclusively on narrations from the Prophet (ﷺ) and the Imams of the Ahl al-Bayt (AS)."
+    ),
+    TafsirEditionMeta(
+      key = "tafsir_al_qummi",
+      titleEnglish = "Tafsir al-Qummi",
+      titleArabic = "تفسير القمي",
+      titleUrdu = "تفسیر القمی (علی بن ابراہیم قمیؒ)",
+      scholarName = "Ali ibn Ibrahim al-Qummi (d. 329 AH)",
+      eraBadge = "Classical (Shia Early Hadith)",
+      methodology = "Early narrative exegesis transmitting traditions through authentic chains from Imam Ja'far al-Sadiq (AS) and Imam Muhammad al-Baqir (AS)."
+    ),
+    TafsirEditionMeta(
+      key = "tafsir_al_ayyashi",
+      titleEnglish = "Tafsir al-Ayyashi",
+      titleArabic = "تفسير العياشي",
+      titleUrdu = "تفسیر العیاشی (محمد بن مسعود عیاشیؒ)",
+      scholarName = "Muhammad ibn Mas'ud al-Ayyashi (d. 320 AH)",
+      eraBadge = "Classical (Shia Narrative)",
+      methodology = "Early classical hadith-based exegesis compiling transmissions elucidating Quranic legal rulings and virtues of the Ahl al-Bayt (AS)."
     )
   )
 
@@ -245,8 +301,22 @@ object TafsirRepository {
         "[Tafsir as-Sa'di — Taysir al-Karim ar-Rahman]\n$specificNoteEn\n\n• Heart-Focused Reflection & Divine Attributes: Shaykh 'Abdur-Rahman as-Sa'di emphasizes how verse $ref deepens love, hope, and reverent awe of Allah, guiding the believer toward sincerity (Ikhlas) and reliance (Tawakkul)."
       "tafheem" ->
         "[Tafheem-ul-Quran — Contextual & Thematic Exegesis]\n$specificNoteEn\n\n• Historical Context & Discourse Flow: Explains the socio-historical environment of this $revelationType revelation in Surah $surahName (Juz ${ayah.juzNumber}, Page ${ayah.pageNumber}) and how its message addresses human society in every era."
+      "usmani" ->
+        "[Tafsir-e-Usmani — Scholarly Orthodoxy & Balanced Synthesis]\n$specificNoteEn\n\n• Theological & Fiqhi Precision: Allama Shabbir Ahmad Usmani integrates classical insights from Baydawi and Fakhr al-Din al-Razi, clarifying the verse's doctrinal implications in light of ($hadithCitations)."
+      "al_mizan" ->
+        "[Tafsir al-Mizan — Analytical & Intellectual Reflection]\n$specificNoteEn\n\n• Quranic Coherence: Allamah Tabataba'i utilizes the Quran to interpret itself, emphasizing the internal logic and metaphysical depth of verse $ref, supported by philosophical analysis and authentic Shia traditions from the Ahl al-Bayt (AS)."
+      "majma_ul_bayan" ->
+        "[Majma' al-Bayan — Classical Linguistic & Eloquence]\n$specificNoteEn\n\n• Classical Scholarship: Shaykh al-Tabarsi provides a balanced analysis of Arabic syntax, rhetorical beauty, and varied interpretations, documenting the foundational insights from the Prophet (ﷺ) and the Imams of the Ahl al-Bayt (AS)."
+      "al_tibyan" ->
+        "[Al-Tibyan fi Tafsir al-Quran — Encyclopedic Classical Exegesis]\n$specificNoteEn\n\n• Foundational Kalam & Ahkam: Shaykh al-Ta'ifah al-Tusi synthesizes early Arabic lexicography, grammatical nuance, and legal rulings (Ahkam al-Qur'an) with established Shia traditions and jurisprudential reasoning."
+      "nur_al_thaqalayn" ->
+        "[Tafsir Nur al-Thaqalayn — Narrative Traditions of the Ahl al-Bayt]\n$specificNoteEn\n\n• Tradition-Based Insight: Shaykh al-Huwayzi records direct narrations from the Holy Prophet (ﷺ) and the Imams of the Ahl al-Bayt (AS) elucidating the inner spiritual realities and circumstances of verse $ref."
+      "tafsir_al_qummi" ->
+        "[Tafsir al-Qummi — Early Classical Transmissions]\n$specificNoteEn\n\n• Direct Narration Chain: Ali ibn Ibrahim al-Qummi transmits earliest accounts from Imam Ja'far al-Sadiq (AS) and Imam Muhammad al-Baqir (AS), providing historical background and direct elucidations of the verse's inner meaning."
+      "tafsir_al_ayyashi" ->
+        "[Tafsir al-Ayyashi — Early Hadith Exegesis]\n$specificNoteEn\n\n• Transmitted Commentary: Muhammad ibn Mas'ud al-Ayyashi compiles the early legal and theological transmissions from the Ahl al-Bayt (AS), focusing on religious practice, ethical duties, and devotion."
       else ->
-        "[Bayan-ul-Quran — Thematic Coherence (Nazm al-Qur'an)]\n$specificNoteEn\n\n• Structural Coherence & Tazkiyah: Illuminates the seamless logical bond (Rabt) between verse ${ayah.verseNumber} and the overarching theme of Surah $surahName ($surahArabic), uniting intellectual conviction with purification of the soul."
+        "[Narrative Exegesis — Traditions of the Ahl al-Bayt]\n$specificNoteEn\n\n• Tradition-Based Insight: Focuses on the revealed significance and spiritual weight of verse ${ayah.verseNumber} as explained through the narrated legacy of the Two Weighty Things (Thaqalayn)."
     }
 
     val methodNoteUr = when (edition.key) {
@@ -264,13 +334,64 @@ object TafsirRepository {
         "【تفسیر السعدی — تیسیر الکریم الرحمٰن】\n$specificNoteUr\n\n• ایمانی و تربیتی فوائد: شیخ عبد الرحمٰن السعدیؒ نے اس آیت سے حاصل ہونے والے اسمائے حسنیٰ کے آثار، توحید و اخلاص اور قلبی سکون کے پہلوؤں کو دل نشین انداز میں واضح کیا ہے۔"
       "tafheem" ->
         "【تفہیم القرآن — سیاق و سباق اور دعوتی مطالعہ】\n$specificNoteUr\n\n• پس منظر اور نظمِ کلام: اس $revelationType سورۃ کے نزولی ماحول، مضمون کے تسلسل اور عصرِ حاضر میں اس کی عملی تطبیق کو واضح کیا گیا ہے۔"
+      "usmani" ->
+        "【تفسیرِ عثمانی — تفسیری نوٹس و کلامی مباحث】\n$specificNoteUr\n\n• کلامی و فقہی وضاحت: علامہ شبیر احمد عثمانیؒ نے بیضاوی اور تفسیر کبیر کے اصولوں کے تحت آیت کے مفاہیم اور احکام کی مدلل وضاحت فرمائی ہے۔"
+      "al_mizan" ->
+        "【تفسیر المیزان — قرآن سے قرآن کی تفسیر】\n$specificNoteUr\n\n• علمی و فکری مطالعہ: علامہ طباطبائیؒ نے اس آیت کے مفہوم کو قرآن کی دیگر آیات اور اہل بیتؑ کی روایات کی روشنی میں واضح کیا ہے۔"
+      "majma_ul_bayan" ->
+        "【مجمع البیان — علمی و ادبی تفسیر】\n$specificNoteUr\n\n• فصاحت و بلاغت: شیخ طبرسیؒ نے لغت، نحو اور بلاغت کے پہلوؤں سے آیت کا تجزیہ پیش کیا ہے اور اہل بیتؑ کی روایات سے اس کے اسرار و رموز بیان فرمائے ہیں۔"
+      "al_tibyan" ->
+        "【التبیان فی تفسیر القرآن — شیخ طوسیؒ】\n$specificNoteUr\n\n• کلامی و فقہی احکام: شیخ الطائفہ طوسیؒ نے فقہی احکام، نحوی نزاکتوں اور کلامی مباحث کا جامع جائزہ اہل بیتؑ کی مستند روایات کے ساتھ پیش کیا ہے۔"
+      "nur_al_thaqalayn" ->
+        "【تفسیر نور الثقلین — علامہ حویزیؒ】\n$specificNoteUr\n\n• روایاتِ اہل بیتؑ: علامہ حویزیؒ نے اس آیت کے ذیل میں رسول اللہ ﷺ اور ائمہ طاہرینؑ سے منقول روایات جمع فرما کر آیت کے باطنی مفاہیم کو روشن کیا ہے۔"
+      "tafsir_al_qummi" ->
+        "【تفسیر القمی — علی بن ابراہیم قمیؒ】\n$specificNoteUr\n\n• متقدمین کی روایات: امام جعفر صادقؑ اور امام محمد باقرؑ سے براہ راست منقول روایات کے ذریعے آیت کا مفہوم اور شانِ نزول بیان کیا گیا ہے۔"
+      "tafsir_al_ayyashi" ->
+        "【تفسیر العیاشی — محمد بن مسعود عیاشیؒ】\n$specificNoteUr\n\n• احادیثِ اہلِ بیتؑ کا مجموعہ: ابتدائی دور کے شیعہ مفسرین کے اسلوب میں آیت کے احکام اور فضائل کو احادیث کی روشنی میں درج کیا گیا ہے۔"
       else ->
-        "【بیان القرآن — نظمِ قرآن اور تزکیۂ نفس】\n$specificNoteUr\n\n• ربطِ آیات اور اصلاحِ باطن: سورۃ ${surah?.nameUrdu ?: surahName} کے مرکزی مضمون کے ساتھ اس آیت کے گہرے ربط اور تزکیۂ قلب کے نکات کو اجاگر کیا گیا ہے۔"
+        "【تفسیرِ روائی — اہل بیتؑ کی تعلیمات کی روشنی میں】\n$specificNoteUr\n\n• روایاتی بصیرت: آیت نمبر ${ayah.verseNumber} کی تفسیر میں ان مستند روایات کو بنیاد بنایا گیا ہے جو حدیثِ ثقلین کے مصداق پاکیزہ نفوس سے مروی ہیں۔"
     }
 
     val revelationContext =
       "Surah $surahName ($surahArabic — \"$surahMeaning\") • $revelationType Revelation (Order #${surah?.revelationOrder ?: 1}) • Verse ${ayah.verseNumber} of ${surah?.totalVerses ?: 1} • Juz ${ayah.juzNumber}, Mushaf Page ${ayah.pageNumber}"
 
     return Triple(methodNoteEn, methodNoteUr, revelationContext)
+  }
+
+  /**
+   * Stage 2 Q&A Search: Searches across all Tafsir commentaries for matches
+   * in English, Urdu, or Arabic, filtered by tradition ("SUNNI", "SHIA", or "BOTH").
+   */
+  fun searchTafsirCommentary(
+    query: String,
+    traditionScope: String = "BOTH",
+    sampleAyahs: List<AyahEntity> = emptyList(),
+    allHadiths: List<HadithEntity> = emptyList()
+  ): List<AyahTafsirResult> {
+    val q = query.trim().lowercase()
+    if (q.isEmpty()) return emptyList()
+
+    val allowedEditions = when (traditionScope) {
+      "SUNNI" -> editions.filter { !it.eraBadge.contains("Shia", ignoreCase = true) }
+      "SHIA" -> editions.filter { it.eraBadge.contains("Shia", ignoreCase = true) }
+      else -> editions
+    }
+
+    val results = mutableListOf<AyahTafsirResult>()
+    for (ayah in sampleAyahs) {
+      for (edition in allowedEditions) {
+        val tafsir = getTafsirForAyah(ayah, null, edition.key, allHadiths)
+        val enMatch = tafsir.commentaryEnglish.lowercase().contains(q)
+        val urMatch = tafsir.commentaryUrdu.lowercase().contains(q)
+        val editionMatch = edition.titleEnglish.lowercase().contains(q) || edition.scholarName.lowercase().contains(q)
+        val refMatch = tafsir.verseRef == query.trim() || query.trim() == "${ayah.surahNumber}:${ayah.verseNumber}"
+        if (enMatch || urMatch || editionMatch || refMatch) {
+          results.add(tafsir)
+          if (results.size >= 30) break
+        }
+      }
+      if (results.size >= 30) break
+    }
+    return results
   }
 }
