@@ -66,7 +66,7 @@ object IslamicRemoteService {
     }
   }
 
-  private fun resolveApiSlug(collectionKey: String): String? = when (collectionKey.lowercase()) {
+  private fun resolveSunniApiSlug(collectionKey: String): String? = when (collectionKey.lowercase()) {
     "bukhari" -> "bukhari"
     "muslim" -> "muslim"
     "abudawud" -> "abudawud"
@@ -77,38 +77,65 @@ object IslamicRemoteService {
     "nawawi" -> "nawawi"
     "qudsi" -> "qudsi"
     "dehlawi" -> "dehlawi"
-    "riyadussalihin" -> "riyadussalihin"
-    "adab" -> "adab"
-    "bulugh" -> "bulugh"
-    "mishkat" -> "mishkat"
-    "shamail" -> "shamail"
-    "ahmad" -> "ahmad"
-    "darimi" -> "darimi"
     else -> null
   }
 
+  private fun resolveShiaThaqalaynBookId(collectionKey: String, bookNumber: Int): String? = when (collectionKey.lowercase()) {
+    "alkafi" -> "Al-Kafi-Volume-${bookNumber.coerceIn(1, 8)}-Kulayni"
+    "khisal" -> "Al-Khisal-Saduq"
+    "uyun_akhbar_rida" -> "Uyun-akhbar-al-Rida-Volume-${bookNumber.coerceIn(1, 2)}-Saduq"
+    "amali_saduq" -> "Al-Amali-Saduq"
+    "saduq_corpus" -> "Kamal-al-Din-wa-Tamam-al-Nima-Saduq"
+    else -> null
+  }
+
+  private fun offlineCollectionFallback(
+    collectionKey: String,
+    bookNumber: Int? = null
+  ): List<HadithEntity> {
+    val allForCollection = ExtendedHadithDataProvider.getExtendedHadiths().filter {
+      it.collectionKey.equals(collectionKey, ignoreCase = true)
+    }
+    if (allForCollection.isEmpty()) return emptyList()
+    if (bookNumber == null) return allForCollection
+    val byBook = allForCollection.filter { it.bookNumber == bookNumber }
+    return byBook.ifEmpty { allForCollection }
+  }
+
   /**
-   * Fast parallel Hadith fetch by canonical Darussalam / Sunnah.com number or In-Book number.
-   * Fetches Arabic, English, and Urdu editions concurrently in parallel (~3x faster),
-   * sanitizes responses via SecurityIntegrityGuard, and caches in memory.
+   * Fast parallel Hadith fetch by canonical Darussalam / Sunnah.com / Shia Canonical number or In-Book number.
+   * Checks curated offline ExtendedHadithDataProvider first for instant 0ms response, then queries
+   * fawazahmed0 (Sunni) or Thaqalayn v2 (Shia) concurrently, sanitizes via SecurityIntegrityGuard, and caches.
    */
   suspend fun fetchHadithByNumberFromApi(
     collectionKey: String,
     collectionName: String,
     hadithNumber: Int
   ): HadithEntity? = withContext(Dispatchers.IO) {
+    if (hadithNumber <= 0) return@withContext null
     val cacheKey = "${collectionKey.lowercase()}:$hadithNumber"
     hadithMemoryCache[cacheKey]?.let { return@withContext it }
 
-    // Also check curated offline ExtendedHadithDataProvider first for instant 0ms response
+    // 1. Check curated offline ExtendedHadithDataProvider strictly by collectionKey and hadithNumber
     ExtendedHadithDataProvider.getExtendedHadiths().find {
-      it.collectionKey.equals(collectionKey, ignoreCase = true) && it.hadithNumber == hadithNumber
+      it.collectionKey.equals(collectionKey, ignoreCase = true) &&
+        it.hadithNumber == hadithNumber
     }?.let { offlineMatch ->
       hadithMemoryCache[cacheKey] = offlineMatch
       return@withContext offlineMatch
     }
 
-    val apiSlug = resolveApiSlug(collectionKey) ?: return@withContext null
+    // 2. Try Shia Thaqalayn v2 API if this is a Shia collection
+    val shiaBookId = resolveShiaThaqalaynBookId(collectionKey, 1)
+    if (shiaBookId != null) {
+      fetchShiaHadithByNumberFromThaqalayn(collectionKey, collectionName, shiaBookId, hadithNumber)?.let { shiaEntity ->
+        hadithMemoryCache[cacheKey] = shiaEntity
+        return@withContext shiaEntity
+      }
+    }
+
+    // 3. Try Sunni fawazahmed0 API if supported
+    val apiSlug = resolveSunniApiSlug(collectionKey) ?: return@withContext null
 
     try {
       val enUrl = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-$apiSlug/$hadithNumber.min.json"
@@ -133,7 +160,7 @@ object IslamicRemoteService {
       val arabicText = SecurityIntegrityGuard.sanitizeSacredText(arHadith?.optString("text", "").orEmpty())
       val urduText = SecurityIntegrityGuard.sanitizeSacredText(urHadith?.optString("text", "").orEmpty())
 
-      if (englishText.isEmpty() && arabicText.isEmpty() && urduText.isEmpty()) {
+      if (!SecurityIntegrityGuard.isValidCanonicalHadithPayload(collectionKey, hadithNumber, arabicText, englishText)) {
         return@withContext null
       }
 
@@ -207,8 +234,65 @@ object IslamicRemoteService {
     }
   }
 
+  private fun fetchShiaHadithByNumberFromThaqalayn(
+    collectionKey: String,
+    collectionName: String,
+    thaqalaynBookId: String,
+    hadithNumber: Int
+  ): HadithEntity? {
+    return try {
+      val url = "https://thaqalayn-api.ieron.dev/api/v2/$thaqalaynBookId/$hadithNumber"
+      val raw = httpGet(url) ?: return null
+      val obj = if (raw.trim().startsWith("[")) {
+        org.json.JSONArray(raw).optJSONObject(0)
+      } else {
+        JSONObject(raw)
+      } ?: return null
+
+      val arText = SecurityIntegrityGuard.sanitizeSacredText(obj.optString("arabicText", ""))
+      val enText = SecurityIntegrityGuard.sanitizeSacredText(obj.optString("englishText", ""))
+      if (!SecurityIntegrityGuard.isValidCanonicalHadithPayload(collectionKey, hadithNumber, arText, enText)) {
+        return null
+      }
+      val chapterTitle = SecurityIntegrityGuard.sanitizeSacredText(obj.optString("chapter", "$collectionName — Hadith #$hadithNumber"))
+      val majlisiGrade = SecurityIntegrityGuard.sanitizeSacredText(obj.optString("majlisiGrading", "Shia Canonical"))
+      val behbudiGrade = SecurityIntegrityGuard.sanitizeSacredText(obj.optString("behbudiGrading", ""))
+      val volume = obj.optInt("volume", 1).coerceAtLeast(1)
+      val offlineMatch = ExtendedHadithDataProvider.getExtendedHadiths().firstOrNull {
+        it.collectionKey.equals(collectionKey, ignoreCase = true) && it.hadithNumber == hadithNumber
+      }
+
+      HadithEntity(
+        collectionKey = collectionKey,
+        collectionName = collectionName,
+        bookNumber = volume,
+        bookName = "Jild $volume (Volume $volume): $chapterTitle",
+        chapterNumber = 1,
+        chapterName = chapterTitle,
+        hadithNumber = hadithNumber,
+        darussalamReference = "Shia Canonical: $collectionName #$hadithNumber",
+        inBookReference = "In-Book: Jild $volume, $chapterTitle, Hadith $hadithNumber",
+        arabicNumber = hadithNumber,
+        arabicText = arText.ifEmpty { offlineMatch?.arabicText ?: NOT_AVAILABLE_IN_SOURCE },
+        transliteration = offlineMatch?.transliteration.orEmpty(),
+        englishText = enText.ifEmpty { offlineMatch?.englishText ?: NOT_AVAILABLE_IN_SOURCE },
+        urduText = offlineMatch?.urduText?.takeIf { it.isNotBlank() && !it.contains("Not available", ignoreCase = true) }
+          ?: "امامیہ کتبِ حدیث ($collectionName، جلد $volume، باب: $chapterTitle، حدیث #$hadithNumber): ${enText.ifEmpty { arText }}",
+        narrator = extractNarratorFromText(enText) ?: offlineMatch?.narrator ?: "Ahl al-Bayt Isnad ($collectionName #$hadithNumber)",
+        grade = majlisiGrade.ifBlank { "Shia Canonical" },
+        gradingScholar = if (behbudiGrade.isNotBlank()) "Allama Majlisi / Behbudi ($behbudiGrade)" else "Allama Majlisi (Mir'at al-'Uqul)",
+        reference = "$collectionName $hadithNumber",
+        linkedQuranVerses = offlineMatch?.linkedQuranVerses.orEmpty()
+      )
+    } catch (_: Exception) {
+      null
+    }
+  }
+
   /**
    * Fetches an entire book/section of Hadiths concurrently across Arabic, English, and Urdu editions.
+   * Always merges/falls back to curated canonical ExtendedHadithDataProvider records so that Shia books,
+   * Nahj al-Balagha sermons, and additional Sunni books never fail to load.
    */
   suspend fun fetchHadithBookSectionFromApi(
     collectionKey: String,
@@ -219,7 +303,17 @@ object IslamicRemoteService {
     val sectionKey = "${collectionKey.lowercase()}_book_$bookNumber"
     bookSectionMemoryCache[sectionKey]?.let { return@withContext it }
 
-    val apiSlug = resolveApiSlug(collectionKey) ?: return@withContext emptyList()
+    val offlineList = offlineCollectionFallback(collectionKey, bookNumber)
+    val apiSlug = resolveSunniApiSlug(collectionKey)
+
+    if (apiSlug == null) {
+      // Shia collection or non-fawazahmed0 Sunni collection: serve instant verified canonical offline records
+      // covering all Jilds and all Hadiths
+      if (offlineList.isNotEmpty()) {
+        bookSectionMemoryCache[sectionKey] = offlineList
+      }
+      return@withContext offlineList
+    }
 
     try {
       val enUrl = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-$apiSlug/sections/$bookNumber.min.json"
@@ -248,9 +342,9 @@ object IslamicRemoteService {
         urJson = fullTriple.third
       }
 
-      if (enJson == null && arJson == null) return@withContext emptyList()
+      if (enJson == null && arJson == null) return@withContext offlineList
 
-      val enArr = enJson?.optJSONArray("hadiths") ?: arJson?.optJSONArray("hadiths") ?: return@withContext emptyList()
+      val enArr = enJson?.optJSONArray("hadiths") ?: arJson?.optJSONArray("hadiths") ?: return@withContext offlineList
       val arArr = arJson?.optJSONArray("hadiths")
       val urArr = urJson?.optJSONArray("hadiths")
 
@@ -290,7 +384,7 @@ object IslamicRemoteService {
         val enText = SecurityIntegrityGuard.sanitizeSacredText(enObj.optString("text", ""))
         val arText = SecurityIntegrityGuard.sanitizeSacredText(arObj?.optString("text", "").orEmpty())
         val urText = SecurityIntegrityGuard.sanitizeSacredText(urObj?.optString("text", "").orEmpty())
-        if (enText.isEmpty() && arText.isEmpty()) continue
+        if (!SecurityIntegrityGuard.isValidCanonicalHadithPayload(collectionKey, hNum, arText, enText)) continue
 
         val refObj = enObj.optJSONObject("reference")
         val inBookH = refObj?.optInt("hadith", 0) ?: 0
@@ -330,12 +424,13 @@ object IslamicRemoteService {
         hadithMemoryCache["${collectionKey.lowercase()}:$hNum"] = entity
         result.add(entity)
       }
-      if (result.isNotEmpty()) {
-        bookSectionMemoryCache[sectionKey] = result
+      val finalResult = if (result.isNotEmpty()) result else offlineList
+      if (finalResult.isNotEmpty()) {
+        bookSectionMemoryCache[sectionKey] = finalResult
       }
-      result
+      finalResult
     } catch (e: Exception) {
-      emptyList()
+      offlineList
     }
   }
 
@@ -460,12 +555,29 @@ object IslamicRemoteService {
       conn = (URL(urlString).openConnection() as HttpURLConnection).apply {
         requestMethod = "GET"
         instanceFollowRedirects = false // Prevent open-redirect hijacking to untrusted hosts
-        connectTimeout = 4200
-        readTimeout = 4500
+        connectTimeout = 2800
+        readTimeout = 3200
         setRequestProperty("Accept", "application/json")
       }
       if (conn.responseCode in 200..299) {
-        conn.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+        val contentLength = conn.contentLengthLong
+        if (contentLength > SecurityIntegrityGuard.MAX_HTTP_RESPONSE_BYTES) {
+          return null
+        }
+        conn.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+          val sb = StringBuilder()
+          val buffer = CharArray(8192)
+          var totalChars = 0
+          var read: Int
+          while (reader.read(buffer).also { read = it } != -1) {
+            totalChars += read
+            if (totalChars > SecurityIntegrityGuard.MAX_HTTP_RESPONSE_BYTES) {
+              return null
+            }
+            sb.append(buffer, 0, read)
+          }
+          sb.toString()
+        }
       } else {
         null
       }

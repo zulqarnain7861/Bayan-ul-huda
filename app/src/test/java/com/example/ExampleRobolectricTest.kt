@@ -290,7 +290,9 @@ class ExampleRobolectricTest {
 
   @Test
   fun `verify 8 authentic tafsirs and 32 islamic books are available`() {
-    assertEquals(14, TafsirRepository.editions.size)
+    assertEquals(14, TafsirRepository.getEditionsForTradition("SUNNI").size)
+    assertEquals(8, TafsirRepository.getEditionsForTradition("SHIA").size)
+    assertEquals(22, TafsirRepository.editions.size)
     val ayahs = InitialDataLoader.getFoundationalAyahs()
     val surahs = InitialDataLoader.getAll114Surahs()
     val allHadiths = ExtendedHadithDataProvider.getExtendedHadiths()
@@ -889,10 +891,47 @@ class ExampleRobolectricTest {
       com.example.data.model.IslamicBooksCatalog.formatBookUrduContent("")
     )
 
-    // 5. Verify Sunni (32) and Shia (6) Classical Books catalog (38 total) & zero Darussalam in Shia books
+    // 5. Verify Sunni (37) and Shia (10) Classical & History Books catalog (47 total, 11 History books with all 12 Jilds) & zero Darussalam in Shia books
     assertEquals(32, com.example.data.model.IslamicBooksCatalog.all32Books.size)
-    assertEquals(6, com.example.data.model.IslamicBooksCatalog.shiaClassicalBooks.size)
-    assertEquals(38, com.example.data.model.IslamicBooksCatalog.allSunniAndShiaBooks.size)
+    assertEquals(37, com.example.data.model.IslamicBooksCatalog.allSunniBooks.size)
+    assertEquals(10, com.example.data.model.IslamicBooksCatalog.allShiaBooks.size)
+    assertEquals(47, com.example.data.model.IslamicBooksCatalog.allSunniAndShiaBooks.size)
+    assertEquals(11, com.example.data.model.IslamicBooksCatalog.historyBooks.size)
+    com.example.data.model.IslamicBooksCatalog.historyBooks.forEach { histBook ->
+      assertTrue("Expected History book ${histBook.titleEnglish} to have at least 12 Jilds/sections", histBook.chapters.size >= 12)
+      histBook.chapters.forEach { ch ->
+        assertTrue(ch.arabicExcerpt.isNotBlank())
+        assertTrue(ch.englishContent.isNotBlank() && !ch.englishContent.contains("Coming Soon"))
+        assertTrue(ch.urduContent.isNotBlank() && !ch.urduContent.contains("Coming Soon"))
+      }
+    }
+    ExtendedHadithDataProvider.shiaCollections.forEach { shiaMeta ->
+      val collHadiths = allHadiths.filter { it.collectionKey == shiaMeta.key }
+      val coveredJilds = collHadiths.map { it.bookNumber }.toSet()
+      for (jild in 1..shiaMeta.totalBooksCount) {
+        assertTrue("Expected Shia collection ${shiaMeta.key} to cover Jild $jild", jild in coveredJilds)
+      }
+      collHadiths.forEach { h ->
+        assertTrue(h.arabicText.isNotBlank())
+        assertTrue(h.englishText.isNotBlank())
+        assertTrue(h.urduText.isNotBlank() && !h.urduText.contains("Coming Soon"))
+      }
+    }
+    val qadisiyyahMatches = com.example.data.model.IslamicBooksCatalog.searchInsideBooks(
+      booksToSearch = com.example.data.model.IslamicBooksCatalog.historyBooks,
+      rawQuery = "Qadisiyyah"
+    )
+    assertTrue("Expected Qadisiyyah search inside History books to return matches", qadisiyyahMatches.isNotEmpty())
+    val hurrahMatches = com.example.data.model.IslamicBooksCatalog.searchInsideBooks(
+      booksToSearch = com.example.data.model.IslamicBooksCatalog.historyBooks,
+      rawQuery = "Waqia Hurrah"
+    )
+    assertTrue("Expected Waqia Hurrah search inside History books to return matches", hurrahMatches.isNotEmpty())
+    val yarmoukMatches = com.example.data.model.IslamicBooksCatalog.searchInsideBooks(
+      booksToSearch = com.example.data.model.IslamicBooksCatalog.historyBooks,
+      rawQuery = "Battle of Yarmouk"
+    )
+    assertTrue("Expected Battle of Yarmouk search inside History books to return matches", yarmoukMatches.isNotEmpty())
     com.example.data.model.IslamicBooksCatalog.shiaClassicalBooks.forEach { shiaBook ->
       assertEquals("SHIA", shiaBook.tradition)
       assertFalse(shiaBook.numberingSystem.contains("Darussalam", ignoreCase = true))
@@ -939,13 +978,137 @@ class ExampleRobolectricTest {
     )
     assertTrue("Urdu search 'عقل' should match Shia Hadiths", urduShiaMatches.isNotEmpty())
 
-    val ordinalNumberMatch = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+    val exactKafi201Match = ExtendedHadithDataProvider.searchHadithsSmartOffline(
       localCollectionHadiths = alkafiLocal,
-      rawQuery = "3",
+      rawQuery = "201",
       activeCollectionKey = "alkafi",
       traditionFilter = "SHIA",
       includeCrossCollectionMatches = false
     )
-    assertEquals("Searching #3 in Al-Kafi should resolve 3rd Hadith (Book 2 #201)", 1, ordinalNumberMatch.size)
+    assertEquals("Searching #201 in Al-Kafi should resolve Hadith #201 strictly by hadithNumber", 1, exactKafi201Match.size)
+    assertEquals(201, exactKafi201Match.first().hadithNumber)
+  }
+
+  @Test
+  fun `scenario 15 - strict Hadith number lookup per book and Audio URL plus green highlight for Fatiha Baqarah Maidah Yasin across all reciters`() = runBlocking {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+
+    // 1. Verify Hadith "Find #" strictly matches inside the active book on hadithNumber (never array index or another book)
+    val allCatalog = ExtendedHadithDataProvider.getExtendedHadiths()
+
+    // Tirmidhi + 500 -> Tirmidhi 500
+    val tirmidhi500 = ExtendedHadithDataProvider.findExactHadithInCollection(
+      localCollectionHadiths = allCatalog.filter { it.collectionKey == "tirmidhi" },
+      collectionKey = "tirmidhi",
+      hadithNumber = 500
+    )
+    assertNotNull("Tirmidhi #500 must be found in Tirmidhi", tirmidhi500)
+    assertEquals("tirmidhi", tirmidhi500!!.collectionKey)
+    assertEquals(500, tirmidhi500.hadithNumber)
+
+    // Bukhari + 10 -> Bukhari 10
+    val bukhari10 = ExtendedHadithDataProvider.findExactHadithInCollection(
+      localCollectionHadiths = allCatalog.filter { it.collectionKey == "bukhari" },
+      collectionKey = "bukhari",
+      hadithNumber = 10
+    )
+    assertNotNull("Bukhari #10 must be found in Bukhari", bukhari10)
+    assertEquals("bukhari", bukhari10!!.collectionKey)
+    assertEquals(10, bukhari10.hadithNumber)
+
+    // Check #1 across Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah, Muwatta, Al-Kafi, and Nahj al-Balagha
+    val booksToTestNumber1 = listOf("bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "malik", "alkafi", "nahjulbalagha")
+    for (bookKey in booksToTestNumber1) {
+      val match1 = ExtendedHadithDataProvider.findExactHadithInCollection(
+        localCollectionHadiths = allCatalog.filter { it.collectionKey == bookKey },
+        collectionKey = bookKey,
+        hadithNumber = 1
+      )
+      assertNotNull("Expected Hadith #1 in $bookKey", match1)
+      assertEquals("Hadith #1 lookup in $bookKey must belong to $bookKey", bookKey, match1!!.collectionKey)
+      assertEquals("Hadith #1 lookup in $bookKey must have hadithNumber == 1", 1, match1.hadithNumber)
+    }
+
+    // Verify Ibn Majah #33 (which is in-book number of #2340) does NOT match #2340 when searching by Hadith #
+    val ibnMajahOffline33 = ExtendedHadithDataProvider.findExactHadithInCollection(
+      localCollectionHadiths = allCatalog.filter { it.collectionKey == "ibnmajah" },
+      collectionKey = "ibnmajah",
+      hadithNumber = 33
+    )
+    assertEquals("In-Book #33 must not masquerade as Hadith #33 in Ibn Majah", null, ibnMajahOffline33)
+
+    // Verify searching a non-existent number in a book returns empty/null and never falls back to another book
+    val nonExistentInTirmidhi = ExtendedHadithDataProvider.searchHadithsSmartOffline(
+      localCollectionHadiths = allCatalog.filter { it.collectionKey == "tirmidhi" },
+      rawQuery = "99999",
+      activeCollectionKey = "tirmidhi",
+      traditionFilter = "SUNNI",
+      includeCrossCollectionMatches = false
+    )
+    assertTrue("Non-existent Hadith #99999 in Tirmidhi must return empty list", nonExistentInTirmidhi.isEmpty())
+
+    // 2. Verify Fatiha (1), Baqarah (2), Maidah (5), and Yasin (36) across ALL reciters
+    val audioManager = com.example.ui.audio.AudioPlayerManager(context)
+    val targetSurahs = listOf(1, 2, 5, 36)
+    for (reciter in com.example.ui.audio.availableReciters) {
+      for (surahNum in targetSurahs) {
+        val candidates = audioManager.getCandidateAudioUrls(reciter, surahNum, 1)
+        assertTrue("Reciter ${reciter.id} must have verified candidate URLs for Surah $surahNum", candidates.isNotEmpty())
+        val primaryUrl = audioManager.resolvePrimaryAudioUrlForTest(reciter, surahNum, 1)
+        assertTrue(
+          "Primary URL for ${reciter.id} Surah $surahNum ($primaryUrl) must match requested Surah $surahNum",
+          audioManager.confirmUrlMatchesRequestedSurah(reciter, surahNum, 1, primaryUrl)
+        )
+        assertEquals(primaryUrl, audioManager.lastConfirmedAudioUrl)
+      }
+    }
+
+    // Specifically verify Abdul Rehman Mossad Maidah (5) and Yasin (36) never resolve to playlist track 05 (An-Nisa) or track 36 (Al-Ghashiyah)
+    val mossad = com.example.ui.audio.availableReciters.first { it.id == "abdul_rehman_mossad" }
+    val mossadMaidahUrl = audioManager.resolvePrimaryAudioUrlForTest(mossad, 5, 1)
+    assertTrue("Mossad Surah 5 must resolve to Al-Ma'idah (Track 06), got $mossadMaidahUrl", mossadMaidahUrl.contains("Al-Ma%27idah") || mossadMaidahUrl.endsWith("/005.mp3"))
+    assertFalse("Mossad Surah 5 must never resolve to An-Nisa", mossadMaidahUrl.contains("An-Nisa"))
+
+    val mossadYasinUrl = audioManager.resolvePrimaryAudioUrlForTest(mossad, 36, 1)
+    assertTrue("Mossad Surah 36 (Yasin) must resolve to 036.mp3, got $mossadYasinUrl", mossadYasinUrl.endsWith("/036.mp3"))
+    assertFalse("Mossad Surah 36 (Yasin) must never resolve to Track 36 Al-Ghashiyah", mossadYasinUrl.contains("Al-Ghashiyah"))
+
+    // Verify canonical filename resolver accurately maps playlist tracks by Surah name
+    assertEquals(1, com.example.ui.audio.AudioPlayerManager.resolveCanonicalSurahNumberFromFileName("01 Al-Fatihah الفاتحة.mp3"))
+    assertEquals(2, com.example.ui.audio.AudioPlayerManager.resolveCanonicalSurahNumberFromFileName("02 Al-Baqarah البقرة.mp3"))
+    assertEquals(5, com.example.ui.audio.AudioPlayerManager.resolveCanonicalSurahNumberFromFileName("06 Al-Ma'idah المائدة.mp3"))
+    assertEquals(36, com.example.ui.audio.AudioPlayerManager.resolveCanonicalSurahNumberFromFileName("036.mp3"))
+    assertEquals(88, com.example.ui.audio.AudioPlayerManager.resolveCanonicalSurahNumberFromFileName("36 Al-Ghashiyah الغاشية.mp3"))
+
+    // 3. Verify Green Text Highlight timing progression and reset for Islam Sobhi & Abdul Rehman Mossad
+    val sobhi = com.example.ui.audio.availableReciters.first { it.id == "islam_sobhi" }
+    for (surahReciter in listOf(sobhi, mossad)) {
+      audioManager.setReciter(surahReciter)
+      for (surahNum in targetSurahs) {
+        val totalAyahs = com.example.ui.audio.AudioPlayerManager.getSurahTotalAyahs(surahNum)
+        val totalDurationMs = totalAyahs * 4000
+
+        // Start of surah -> highlights Ayah 1
+        audioManager.applySurahProgressSnapshot(surahNum, positionMs = 100, totalDurationMs = totalDurationMs)
+        assertEquals(surahNum, audioManager.audioState.value.surahNumber)
+        assertEquals(1, audioManager.audioState.value.ayahNumber)
+        assertTrue(audioManager.audioState.value.durationMs > 0)
+
+        // Middle of surah -> highlights middle Ayah
+        audioManager.applySurahProgressSnapshot(surahNum, positionMs = totalDurationMs / 2, totalDurationMs = totalDurationMs)
+        val midAyah = audioManager.audioState.value.ayahNumber ?: 0
+        assertTrue("Expected middle ayah highlighted in Surah $surahNum for ${surahReciter.id}, got $midAyah", midAyah in 2..totalAyahs)
+
+        // End of surah -> highlights final Ayah
+        audioManager.applySurahProgressSnapshot(surahNum, positionMs = totalDurationMs - 50, totalDurationMs = totalDurationMs)
+        assertEquals(totalAyahs, audioManager.audioState.value.ayahNumber)
+      }
+    }
+
+    // Verify highlight resets when reciter changes or resetHighlightState() is called
+    val husary = com.example.ui.audio.availableReciters.first { it.id == "husary" }
+    audioManager.setReciter(husary)
+    assertEquals(null, audioManager.audioState.value.ayahNumber)
+    assertEquals(0, audioManager.audioState.value.currentPositionMs)
   }
 }

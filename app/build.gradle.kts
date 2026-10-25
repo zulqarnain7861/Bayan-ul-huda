@@ -14,17 +14,17 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.bayanalhuda.quranhadith"
+    applicationId = "com.bayanulhuda.com"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 5
+    versionName = "1.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   // Do not remove or modify these signingConfigs. They are necessary for building, installing,
-  // and updating Android apps in AI Studio.
+  // and updating Bayan ul Huda Android releases.
   signingConfigs {
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
@@ -46,15 +46,11 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      // Do not remove or modify this signingConfig assignment. It is necessary for Android apps in
-      // AI Studio.
+      // Do not remove or modify this signingConfig assignment for Bayan ul Huda.
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
-      isMinifyEnabled = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      // Do not remove or modify this signingConfig assignment. It is necessary for Android apps in
-      // AI Studio.
+      // Do not remove or modify this signingConfig assignment for Bayan ul Huda.
       signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
@@ -65,6 +61,19 @@ android {
   buildFeatures {
     compose = true
     buildConfig = true
+  }
+  androidResources {
+    localeFilters += listOf("en", "ar", "ur")
+  }
+  packaging {
+    dex {
+      useLegacyPackaging = true
+    }
+    resources {
+      excludes += "/META-INF/{AL2.0,LGPL2.1}"
+      excludes += "**/*.proto"
+      excludes += "DebugProbesKt.bin"
+    }
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
   dependenciesInfo {
@@ -110,7 +119,7 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   // implementation(libs.converter.moshi)
-  implementation(libs.firebase.ai)
+  // implementation(libs.firebase.ai)
   // Uncomment to use Firestore:
   implementation(libs.firebase.firestore)
 

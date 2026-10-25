@@ -96,24 +96,24 @@ object AuthManager {
   suspend fun attemptAutoSignIn(activityContext: Context): FirebaseUser? {
     try {
       Firebase.auth.currentUser?.let { return it }
-    } catch (_: Exception) {
+    } catch (_: Throwable) {
       return null
     }
 
-    val credentialManager = CredentialManager.create(activityContext)
-    val webClientId = activityContext.getString(R.string.default_web_client_id)
-
-    val googleIdOption = GetGoogleIdOption.Builder()
-      .setServerClientId(webClientId)
-      .setFilterByAuthorizedAccounts(true)
-      .setAutoSelectEnabled(true)
-      .build()
-
-    val request = GetCredentialRequest.Builder()
-      .addCredentialOption(googleIdOption)
-      .build()
-
     return try {
+      val credentialManager = CredentialManager.create(activityContext)
+      val webClientId = activityContext.getString(R.string.default_web_client_id)
+
+      val googleIdOption = GetGoogleIdOption.Builder()
+        .setServerClientId(webClientId)
+        .setFilterByAuthorizedAccounts(true)
+        .setAutoSelectEnabled(true)
+        .build()
+
+      val request = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
       val result = credentialManager.getCredential(activityContext, request)
       val credential = result.credential
       if (credential is CustomCredential &&
@@ -127,22 +127,22 @@ object AuthManager {
       }
     } catch (e: NoCredentialException) {
       null
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       Log.w("AuthManager", "Silent auto sign-in unavailable", e)
       null
     }
   }
 
   suspend fun signInWithGoogle(activityContext: Context): Result<FirebaseUser> {
-    val credentialManager = CredentialManager.create(activityContext)
-    val webClientId = activityContext.getString(R.string.default_web_client_id)
-
-    val signInOption = GetSignInWithGoogleOption.Builder(webClientId).build()
-    val request = GetCredentialRequest.Builder()
-      .addCredentialOption(signInOption)
-      .build()
-
     return try {
+      val credentialManager = CredentialManager.create(activityContext)
+      val webClientId = activityContext.getString(R.string.default_web_client_id)
+
+      val signInOption = GetSignInWithGoogleOption.Builder(webClientId).build()
+      val request = GetCredentialRequest.Builder()
+        .addCredentialOption(signInOption)
+        .build()
+
       val result = credentialManager.getCredential(
         request = request,
         context = activityContext
@@ -165,7 +165,7 @@ object AuthManager {
       }
     } catch (e: GetCredentialCancellationException) {
       Result.failure(e)
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       Log.e("AuthManager", "Google Sign-In failed", e)
       Result.failure(e)
     }

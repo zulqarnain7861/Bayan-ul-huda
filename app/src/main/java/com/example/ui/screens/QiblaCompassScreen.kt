@@ -175,11 +175,50 @@ fun QiblaCompassScreen(
   val animatedDialRotation by animateFloatAsState(
     targetValue = continuousDialRotation,
     animationSpec = spring(
-      dampingRatio = Spring.DampingRatioLowBouncy,
-      stiffness = Spring.StiffnessMediumLow
+      dampingRatio = Spring.DampingRatioNoBouncy,
+      stiffness = Spring.StiffnessMedium
     ),
     label = "qibla_dial_rotation"
   )
+
+  // Automatically refresh GPS coordinates when Qibla screen opens if location permission is already granted
+  LaunchedEffect(Unit) {
+    val hasFine = androidx.core.content.ContextCompat.checkSelfPermission(
+      context,
+      Manifest.permission.ACCESS_FINE_LOCATION
+    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    val hasCoarse = androidx.core.content.ContextCompat.checkSelfPermission(
+      context,
+      Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    if (hasFine || hasCoarse) {
+      detectBestDeviceLocation(context)?.let { (lat, lon) ->
+        if (kotlin.math.abs(lat - prayerConfig.latitude) > 0.005 || kotlin.math.abs(lon - prayerConfig.longitude) > 0.005) {
+          onUpdatePrayerConfig(
+            prayerConfig.copy(
+              city = "Live GPS Location",
+              districtOrRegion = String.format(Locale.US, "%.4f° N, %.4f° E", lat, lon),
+              latitude = lat,
+              longitude = lon,
+              useAutoLocation = true
+            )
+          )
+        }
+      }
+      requestFreshDeviceLocation(context) { lat, lon ->
+        onUpdatePrayerConfig(
+          prayerConfig.copy(
+            city = "Live GPS Location",
+            districtOrRegion = String.format(Locale.US, "%.4f° N, %.4f° E", lat, lon),
+            latitude = lat,
+            longitude = lon,
+            useAutoLocation = true
+          )
+        )
+      }
+    }
+  }
 
   val locationPermissionLauncher = rememberLauncherForActivityResult(
     ActivityResultContracts.RequestMultiplePermissions()
@@ -187,7 +226,9 @@ fun QiblaCompassScreen(
     val granted = perms[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
       perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     if (granted) {
-      detectBestDeviceLocation(context)?.let { (lat, lon) ->
+      val cachedLoc = detectBestDeviceLocation(context)
+      if (cachedLoc != null) {
+        val (lat, lon) = cachedLoc
         onUpdatePrayerConfig(
           prayerConfig.copy(
             city = "Live GPS Location",
@@ -199,13 +240,26 @@ fun QiblaCompassScreen(
             useAutoLocation = true
           )
         )
-        Toast.makeText(context, "Qibla bearing updated from GPS coordinates", Toast.LENGTH_SHORT).show()
-      } ?: run {
+        Toast.makeText(context, "Qibla bearing updated from GPS (${String.format(Locale.US, "%.4f, %.4f", lat, lon)})", Toast.LENGTH_SHORT).show()
+      } else {
         Toast.makeText(
           context,
-          "GPS signal unavailable indoors. Using ${prayerConfig.city} coordinates.",
+          "Acquiring live GPS fix... Using ${prayerConfig.city} until fix arrives.",
           Toast.LENGTH_SHORT
         ).show()
+      }
+      requestFreshDeviceLocation(context) { lat, lon ->
+        onUpdatePrayerConfig(
+          prayerConfig.copy(
+            city = "Live GPS Location",
+            districtOrRegion = String.format(Locale.US, "%.4f° N, %.4f° E", lat, lon),
+            country = TimeZone.getDefault().id,
+            latitude = lat,
+            longitude = lon,
+            timeZoneId = TimeZone.getDefault().id,
+            useAutoLocation = true
+          )
+        )
       }
     } else {
       Toast.makeText(context, "Location permission declined. Using configured city.", Toast.LENGTH_SHORT).show()
@@ -1047,16 +1101,48 @@ private fun detectBestDeviceLocation(context: Context): Pair<Double, Double>? {
       LocationManager.NETWORK_PROVIDER,
       LocationManager.PASSIVE_PROVIDER
     )
+    var bestLocation: android.location.Location? = null
     for (provider in providers) {
-      if ( runCatching { lm.isProviderEnabled(provider) }.getOrDefault(false)) {
+      if (runCatching { lm.isProviderEnabled(provider) }.getOrDefault(false)) {
         val loc = runCatching { lm.getLastKnownLocation(provider) }.getOrNull()
         if (loc != null) {
-          return loc.latitude to loc.longitude
+          if (bestLocation == null || loc.time > bestLocation.time || loc.accuracy < bestLocation.accuracy) {
+            bestLocation = loc
+          }
         }
       }
     }
-    null
+    bestLocation?.let { it.latitude to it.longitude }
   } catch (_: Exception) {
     null
+  }
+}
+
+@SuppressLint("MissingPermission")
+private fun requestFreshDeviceLocation(
+  context: Context,
+  onLocationUpdated: (Double, Double) -> Unit
+) {
+  try {
+    val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return
+    val provider = when {
+      runCatching { lm.isProviderEnabled(LocationManager.GPS_PROVIDER) }.getOrDefault(false) ->
+        LocationManager.GPS_PROVIDER
+      runCatching { lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) }.getOrDefault(false) ->
+        LocationManager.NETWORK_PROVIDER
+      else -> return
+    }
+    val listener = object : android.location.LocationListener {
+      override fun onLocationChanged(location: android.location.Location) {
+        onLocationUpdated(location.latitude, location.longitude)
+        runCatching { lm.removeUpdates(this) }
+      }
+      @Deprecated("Deprecated in Java")
+      override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) {}
+      override fun onProviderEnabled(provider: String) {}
+      override fun onProviderDisabled(provider: String) {}
+    }
+    lm.requestLocationUpdates(provider, 0L, 0f, listener, android.os.Looper.getMainLooper())
+  } catch (_: Exception) {
   }
 }

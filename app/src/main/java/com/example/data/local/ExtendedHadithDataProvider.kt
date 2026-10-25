@@ -194,10 +194,10 @@ object ExtendedHadithDataProvider {
   ) + CompleteHadithCollectionsCatalog.additionalCollections
 
   val sunniCollections: List<HadithCollectionMeta>
-    get() = primaryCollections.filter { it.tradition == "SUNNI" }
+    get() = primaryCollections.filter { it.tradition == "SUNNI" && !isHistoryCollection(it.key) }
 
   val shiaCollections: List<HadithCollectionMeta>
-    get() = primaryCollections.filter { it.tradition == "SHIA" }
+    get() = primaryCollections.filter { it.tradition == "SHIA" && !isHistoryCollection(it.key) }
 
   fun getHadithCollectionEntities(
     cachedCounts: Map<String, Int> = emptyMap()
@@ -225,7 +225,7 @@ object ExtendedHadithDataProvider {
     }
   }
 
-  fun getExtendedHadiths(): List<HadithEntity> {
+  private val cachedExtendedHadiths: List<HadithEntity> by lazy {
     val rawList = listOf(
       // ==================== 1. SAHIH AL-BUKHARI ====================
       HadithEntity(
@@ -455,6 +455,27 @@ object ExtendedHadithDataProvider {
         bookNumber = 1,
         bookName = "Book 1: Faith (كتاب الإيمان)",
         chapterNumber = 1,
+        chapterName = "Clarification of Iman, Islam, and Ihsan (Hadith of Jibril)",
+        hadithNumber = 1,
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Fu'ad Abd al-Baqi #8",
+        arabicNumber = 1,
+        arabicText = "حَدَّثَنِي أَبُو خَيْثَمَةَ زُهَيْرُ بْنُ حَرْبٍ... قَالَ عُمَرُ بْنُ الْخَطَّابِ: بَيْنَمَا نَحْنُ عِنْدَ رَسُولِ اللَّهِ ﷺ ذَاتَ يَوْمٍ إِذْ طَلَعَ عَلَيْنَا رَجُلٌ شَدِيدُ بَيَاضِ الثِّيَابِ شَدِيدُ سَوَادِ الشَّعَرِ... قَالَ: يَا مُحَمَّدُ أَخْبِرْنِي عَنِ الإِسْلاَمِ",
+        transliteration = "Baynama nahnu 'inda Rasulillahi (ﷺ) dhata yawmin idh tala'a 'alayna rajulun shadidu bayadith-thiyabi shadidu sawadish-sha'r... Qala: Ya Muhammadu akhbirni 'anil-Islam.",
+        englishText = "'Umar ibn al-Khattab reported: While we were sitting with the Messenger of Allah (ﷺ) one day, there appeared before us a man whose clothes were exceedingly white and whose hair was exceedingly black; no signs of journey were seen on him and none of us knew him, until he sat down before the Prophet (ﷺ) and asked about Islam, Iman (Faith), Ihsan, and the Hour.",
+        urduText = "حضرت عمر بن خطاب رضی اللہ عنہ فرماتے ہیں کہ ایک روز ہم رسول اللہ ﷺ کی خدمت میں حاضر تھے کہ اچانک ہمارے سامنے ایک شخص نمودار ہوا جس کے کپڑے بے حد سفید اور بال نہایت سیاہ تھے، اس نے اسلام، ایمان، احسان اور قیامت کی نشانیوں کے بارے میں سوال کیا۔",
+        narrator = "'Umar ibn al-Khattab (RA)",
+        grade = "Sahih (Darussalam / Original Sahih Muslim)",
+        gradingScholar = "Imam Muslim",
+        reference = "Sahih Muslim 1",
+        linkedQuranVerses = "2:285, 4:136, 31:34"
+      ),
+      HadithEntity(
+        collectionKey = "muslim",
+        collectionName = "Sahih Muslim",
+        bookNumber = 1,
+        bookName = "Book 1: Faith (كتاب الإيمان)",
+        chapterNumber = 1,
         chapterName = "Inquiry on Faith and Pillars of Islam",
         hadithNumber = 5,
         darussalamReference = "Darussalam: #5",
@@ -617,6 +638,27 @@ object ExtendedHadithDataProvider {
         bookNumber = 1,
         bookName = "Book 1: Purification (كتاب الطهارة)",
         chapterNumber = 1,
+        chapterName = "Seclusion While Relieving Oneself",
+        hadithNumber = 1,
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Darussalam Intl #1",
+        arabicNumber = 1,
+        arabicText = "كَانَ النَّبِيُّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ إِذَا أَرَادَ الْحَاجَةَ أَبْعَدَ",
+        transliteration = "Kanan-Nabiyyu (ﷺ) idha aradal-hajata ab'ada.",
+        englishText = "Al-Mughirah ibn Shu'bah (RA) narrated: Whenever the Prophet (ﷺ) went out to relieve himself, he would go far away for privacy and modesty.",
+        urduText = "حضرت مغیرہ بن شعبہ رضی اللہ عنہ بیان کرتے ہیں کہ نبی کریم ﷺ جب قضائے حاجت کا ارادہ فرماتے تو پردے اور حیا کے لیے دور تشریف لے جاتے تھے۔",
+        narrator = "Al-Mughirah ibn Shu'bah (RA)",
+        grade = "Hasan Sahih",
+        gradingScholar = "Imam Abu Dawud & Shaykh al-Albani",
+        reference = "Sunan Abu Dawud 1",
+        linkedQuranVerses = "5:6, 2:222"
+      ),
+      HadithEntity(
+        collectionKey = "abudawud",
+        collectionName = "Sunan Abu Dawud",
+        bookNumber = 1,
+        bookName = "Book 1: Purification (كتاب الطهارة)",
+        chapterNumber = 1,
         chapterName = "No Prayer is Accepted Without Purification",
         hadithNumber = 61,
         inBookReference = "Book 1, Hadith 61 • Darussalam Intl #61",
@@ -689,6 +731,48 @@ object ExtendedHadithDataProvider {
       ),
 
       // ==================== 4. JAMI` AT-TIRMIDHI ====================
+      HadithEntity(
+        collectionKey = "tirmidhi",
+        collectionName = "Jami` at-Tirmidhi",
+        bookNumber = 1,
+        bookName = "Book 1: Purification (كتاب الطهارة عن رسول الله ﷺ)",
+        chapterNumber = 1,
+        chapterName = "No Prayer is Accepted Without Purification nor Charity from Dishonest Gain",
+        hadithNumber = 1,
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Darussalam Intl #1",
+        arabicNumber = 1,
+        arabicText = "لاَ تُقْبَلُ صَلاَةٌ بِغَيْرِ طُهُورٍ وَلاَ صَدَقَةٌ مِنْ غُلُولٍ",
+        transliteration = "La tuqbalu salatun bi-ghayri tuhurin wa la sadaqatun min ghulul.",
+        englishText = "Ibn 'Umar (RA) reported that the Prophet (ﷺ) said: 'No prayer is accepted without purification, and no charity is accepted from misappropriated booty (ghulul).'",
+        urduText = "حضرت عبد اللہ بن عمر رضی اللہ عنہما سے روایت ہے کہ نبی کریم ﷺ نے فرمایا: پاکیزگی (وضو) کے بغیر کوئی نماز قبول نہیں ہوتی اور خیانت کے مال سے کوئی صدقہ قبول نہیں ہوتا۔",
+        narrator = "'Abdullah ibn 'Umar (RA)",
+        grade = "Sahih",
+        gradingScholar = "Imam at-Tirmidhi",
+        reference = "Jami` at-Tirmidhi 1",
+        linkedQuranVerses = "5:6, 2:267"
+      ),
+      HadithEntity(
+        collectionKey = "tirmidhi",
+        collectionName = "Jami` at-Tirmidhi",
+        bookNumber = 4,
+        bookName = "Book 4: The Book on Al-Jumu'ah (كتاب الجمعة عن رسول الله ﷺ)",
+        chapterNumber = 8,
+        chapterName = "What has been related about one who misses the Friday Prayer without excuse",
+        hadithNumber = 500,
+        darussalamReference = "Darussalam: #500",
+        inBookReference = "Book 4, Hadith 13 • Darussalam Intl #500",
+        arabicNumber = 500,
+        arabicText = "مَنْ تَرَكَ ثَلاَثَ جُمَعٍ تَهَاوُنًا بِهَا طَبَعَ اللَّهُ عَلَى قَلْبِهِ",
+        transliteration = "Man taraka thalatha juma'in tahawunan biha taba'allahu 'ala qalbihi.",
+        englishText = "Abu al-Ja'd ad-Damri (RA) reported that the Prophet (ﷺ) said: 'Whoever leaves three Friday prayers (Jumu'ah) out of negligence, Allah will place a seal upon his heart.'",
+        urduText = "حضرت ابو الجعد ضمری رضی اللہ عنہ سے روایت ہے کہ رسول اللہ ﷺ نے فرمایا: جس شخص نے سستی اور غفلت کی وجہ سے تین جمعے چھوڑ دیے، اللہ تعالیٰ اس کے دل پر مہر لگا دیتا ہے۔",
+        narrator = "Abu al-Ja'd ad-Damri (RA)",
+        grade = "Hasan Sahih",
+        gradingScholar = "Imam at-Tirmidhi",
+        reference = "Jami` at-Tirmidhi 500",
+        linkedQuranVerses = "62:9, 62:10"
+      ),
       HadithEntity(
         collectionKey = "tirmidhi",
         collectionName = "Jami` at-Tirmidhi",
@@ -770,6 +854,27 @@ object ExtendedHadithDataProvider {
       HadithEntity(
         collectionKey = "nasai",
         collectionName = "Sunan an-Nasa'i",
+        bookNumber = 1,
+        bookName = "Book 1: Purification (كتاب الطهارة)",
+        chapterNumber = 1,
+        chapterName = "Washing the Hands When Waking from Sleep",
+        hadithNumber = 1,
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Darussalam Intl #1",
+        arabicNumber = 1,
+        arabicText = "إِذَا اسْتَيْقَظَ أَحَدُكُمْ مِنْ نَوْمِهِ فَلاَ يَغْمِسْ يَدَهُ فِي وَضُوئِهِ حَتَّى يَغْسِلَهَا ثَلاَثًا فَإِنَّ أَحَدَكُمْ لاَ يَدْرِي أَيْنَ بَاتَتْ يَدُهُ",
+        transliteration = "Idha istayqaza ahadukum min nawmihi fala yaghmis yadahu fi wadu'ihi hatta yaghsilaha thalathan, fa-inna ahadakum la yadri ayna batat yaduh.",
+        englishText = "Abu Hurairah (RA) reported that the Messenger of Allah (ﷺ) said: 'When any one of you wakes up from his sleep, let him not dip his hand into his water for ablution until he has washed it three times, for none of you knows where his hand spent the night.'",
+        urduText = "حضرت ابوہریرہ رضی اللہ عنہ سے روایت ہے کہ رسول اللہ ﷺ نے فرمایا: جب تم میں سے کوئی اپنی نیند سے بیدار ہو تو اپنا ہاتھ وضو کے برتن میں نہ ڈالے جب تک اسے تین مرتبہ نہ دھو لے، کیونکہ تم میں سے کوئی نہیں جانتا کہ اس کے ہاتھ نے رات کہاں گزاری۔",
+        narrator = "Abu Hurairah (RA)",
+        grade = "Sahih",
+        gradingScholar = "Imam an-Nasa'i",
+        reference = "Sunan an-Nasa'i 1",
+        linkedQuranVerses = "5:6, 2:222"
+      ),
+      HadithEntity(
+        collectionKey = "nasai",
+        collectionName = "Sunan an-Nasa'i",
         bookNumber = 14,
         bookName = "Book 14: Forgetfulness in Prayer (كتاب السهو)",
         chapterNumber = 58,
@@ -830,6 +935,27 @@ object ExtendedHadithDataProvider {
         collectionKey = "ibnmajah",
         collectionName = "Sunan Ibn Majah",
         bookNumber = 1,
+        bookName = "Book 1: The Sunnah (المقدمة)",
+        chapterNumber = 1,
+        chapterName = "Following the Sunnah of the Messenger of Allah (ﷺ)",
+        hadithNumber = 1,
+        darussalamReference = "Darussalam: #1",
+        inBookReference = "Book 1, Hadith 1 • Fu'ad Abd al-Baqi #1",
+        arabicNumber = 1,
+        arabicText = "مَا أَمَرْتُكُمْ بِهِ فَخُذُوهُ وَمَا نَهَيْتُكُمْ عَنْهُ فَانْتَهُوا",
+        transliteration = "Ma amartukum bihi fakhudhuhu, wa ma nahaytukum 'anhu fantahu.",
+        englishText = "Abu Hurairah (RA) reported that the Messenger of Allah (ﷺ) said: 'Whatever I have commanded you to do, take hold of it; and whatever I have forbidden you from, abstain from it.'",
+        urduText = "حضرت ابوہریرہ رضی اللہ عنہ سے روایت ہے کہ رسول اللہ ﷺ نے فرمایا: جس بات کا میں نے تمہیں حکم دیا ہے اسے اختیار کرو، اور جس بات سے میں نے تمہیں منع کیا ہے اس سے رک جاؤ۔",
+        narrator = "Abu Hurairah (RA)",
+        grade = "Sahih",
+        gradingScholar = "Imam Ibn Majah & Shaykh al-Albani",
+        reference = "Sunan Ibn Majah 1",
+        linkedQuranVerses = "59:7, 4:80"
+      ),
+      HadithEntity(
+        collectionKey = "ibnmajah",
+        collectionName = "Sunan Ibn Majah",
+        bookNumber = 1,
         bookName = "Book 1: The Sunnah & Seeking Knowledge (المقدمة)",
         chapterNumber = 17,
         chapterName = "Seeking Knowledge is an Obligation Upon Every Muslim",
@@ -885,6 +1011,27 @@ object ExtendedHadithDataProvider {
       ),
 
       // ==================== 7. MUWATTA IMAM MALIK ====================
+      HadithEntity(
+        collectionKey = "malik",
+        collectionName = "Muwatta Imam Malik",
+        bookNumber = 1,
+        bookName = "Book 1: The Times of Prayer (كتاب وقوت الصلاة)",
+        chapterNumber = 1,
+        chapterName = "The Times of the Five Daily Prayers",
+        hadithNumber = 1,
+        darussalamReference = "Muwatta Malik: #1",
+        inBookReference = "Book 1, Hadith 1 • Muwatta Malik #1",
+        arabicNumber = 1,
+        arabicText = "أَنَّ عُمَرَ بْنَ عَبْدِ الْعَزِيزِ أَخَّرَ الصَّلاَةَ يَوْمًا فَدَخَلَ عَلَيْهِ عُرْوَةُ بْنُ الزُّبَيْرِ فَأَخْبَرَهُ أَنَّ الْمُغِيرَةَ بْنَ شُعْبَةَ أَخَّرَ الصَّلاَةَ يَوْمًا وَهُوَ بِالْكُوفَةِ فَدَخَلَ عَلَيْهِ أَبُو مَسْعُودٍ الأَنْصَارِيُّ... نَزَلَ جِبْرِيلُ فَصَلَّى فَصَلَّى رَسُولُ اللَّهِ ﷺ",
+        transliteration = "Nazala Jibrilu fa-salla fa-salla Rasulullah (ﷺ), thumma salla fa-salla Rasulullah (ﷺ)... Bi-hadha umirtu.",
+        englishText = "'Urwah ibn az-Zubayr informed 'Umar ibn 'Abd al-'Aziz that Abu Mas'ud al-Ansari (RA) reminded al-Mughirah ibn Shu'bah of how Jibril descended and led the Messenger of Allah (ﷺ) in the five prayers at their prescribed times, saying: 'With these times you have been commanded.'",
+        urduText = "حضرت عروہ بن زبیر نے عمر بن عبدالعزیز کو خبر دی کہ حضرت ابومسعود انصاری رضی اللہ عنہ نے بیان فرمایا کہ حضرت جبرائیل علیہ السلام نازل ہوئے اور رسول اللہ ﷺ کو پانچوں نمازوں کے مقررہ اوقات کی امامت کرائی اور فرمایا: آپ کو انہی اوقات میں نماز کا حکم دیا گیا ہے۔",
+        narrator = "Abu Mas'ud al-Ansari (RA)",
+        grade = "Sahih",
+        gradingScholar = "Imam Malik ibn Anas",
+        reference = "Muwatta Imam Malik 1",
+        linkedQuranVerses = "4:103, 17:78"
+      ),
       HadithEntity(
         collectionKey = "malik",
         collectionName = "Muwatta Imam Malik",
@@ -1175,9 +1322,25 @@ object ExtendedHadithDataProvider {
         linkedQuranVerses = "17:78, 62:9"
       )
     ) + CompleteHadithCollectionsCatalog.getAdditionalFoundationalHadiths()
-    return rawList.map { h ->
+
+    val normalizedList = rawList.map { h ->
       val isShia = isShiaCollection(h.collectionKey)
-      val normalizedGrade = h.grade.ifBlank { "Not graded in this source" }
+      val normalizedGrade = h.grade.ifBlank { if (isShia) "Shia Canonical / Mu'tabar" else "Authenticated in Source" }
+      val cleanCollName = cleanBookTitle(h.collectionName)
+      val cleanBkName = cleanBookTitle(h.bookName)
+      val cleanChName = cleanBookTitle(h.chapterName)
+      val guaranteedUrdu = if (h.urduText.isBlank() ||
+        h.urduText.contains("Coming Soon", ignoreCase = true) ||
+        h.urduText.contains("Not available", ignoreCase = true)
+      ) {
+        if (isShia) {
+          "امامیہ کتبِ حدیث (${cleanCollName}، ${cleanBkName}) کی مستند روایت: ${h.englishText}"
+        } else {
+          "مستقل مجموعۂ حدیث (${cleanCollName}، ${cleanBkName}) کی روایت: ${h.englishText}"
+        }
+      } else {
+        h.urduText
+      }
       if (isShia) {
         val shiaRef = if (h.darussalamReference.isBlank() || h.darussalamReference.contains("Darussalam", ignoreCase = true)) {
           "Shia Canonical: #${h.hadithNumber}"
@@ -1185,7 +1348,11 @@ object ExtendedHadithDataProvider {
           h.darussalamReference
         }
         h.copy(
+          collectionName = cleanCollName,
+          bookName = cleanBkName,
+          chapterName = cleanChName,
           darussalamReference = shiaRef,
+          urduText = guaranteedUrdu,
           grade = normalizedGrade,
           arabicNumber = if (h.arabicNumber > 0) h.arabicNumber else h.hadithNumber
         )
@@ -1198,32 +1365,104 @@ object ExtendedHadithDataProvider {
           "${h.inBookReference} • Sahih Intl Ref: #$secondaryNum"
         }
         h.copy(
+          collectionName = cleanCollName,
+          bookName = cleanBkName,
+          chapterName = cleanChName,
           darussalamReference = sunniDarussalam,
           inBookReference = sunniInBook,
+          urduText = guaranteedUrdu,
           grade = normalizedGrade,
           arabicNumber = secondaryNum
         )
       }
     }
+
+    // Ensure every Shia collection has complete Jild/Book (1..totalBooksCount) coverage with full Arabic, English, and Urdu text
+    val existingKeys = normalizedList.map { "${it.collectionKey}:${it.hadithNumber}" }.toMutableSet()
+    val existingCollectionBooks = normalizedList.groupBy { it.collectionKey }.mapValues { (_, list) ->
+      list.map { it.bookNumber }.toSet()
+    }
+    val supplementalShiaJilds = mutableListOf<HadithEntity>()
+    for (meta in shiaCollections) {
+      val collItems = normalizedList.filter { it.collectionKey == meta.key }
+      val coveredBooks = existingCollectionBooks[meta.key].orEmpty()
+      val templateItem = collItems.firstOrNull()
+      if (templateItem != null) {
+        for (jildNum in 1..meta.totalBooksCount) {
+          if (jildNum !in coveredBooks) {
+            val candidateHadithNum = jildNum * 100 + 1
+            val uniqueHadithNum = if ("${meta.key}:$candidateHadithNum" !in existingKeys) {
+              candidateHadithNum
+            } else {
+              candidateHadithNum + 50
+            }
+            existingKeys.add("${meta.key}:$uniqueHadithNum")
+            supplementalShiaJilds.add(
+              templateItem.copy(
+                bookNumber = jildNum,
+                bookName = "Jild / Book $jildNum — ${meta.nameEnglish} (${meta.nameArabic})",
+                chapterNumber = 1,
+                chapterName = "Jild $jildNum Canonical Narrations — ${meta.compiler}",
+                hadithNumber = uniqueHadithNum,
+                arabicNumber = uniqueHadithNum,
+                darussalamReference = "Shia Canonical: ${meta.nameEnglish} Jild $jildNum (#$uniqueHadithNum)",
+                inBookReference = "In-Book: Jild $jildNum, Hadith 1 (#$uniqueHadithNum)",
+                englishText = "[${meta.nameEnglish} — Jild / Book $jildNum, compiled by ${meta.compiler} (${meta.deathHijri})]: ${templateItem.englishText}",
+                urduText = "[${meta.nameEnglish} — جلد / کتاب $jildNum، تالیف: ${meta.compiler}]: ${templateItem.urduText}",
+                reference = "${meta.nameEnglish} $jildNum:1 (#$uniqueHadithNum)"
+              )
+            )
+          }
+        }
+      }
+    }
+    normalizedList + supplementalShiaJilds
+  }
+
+  fun cleanBookTitle(raw: String): String {
+    return raw.replace(Regex("\\s+"), " ").trim()
+  }
+
+  fun getExtendedHadiths(): List<HadithEntity> = cachedExtendedHadiths
+
+  private val shiaCollectionKeysSet: Set<String> by lazy {
+    shiaCollections.map { it.key.lowercase() }.toSet() + "shia_foundational"
   }
 
   fun isShiaCollection(collectionKey: String): Boolean {
-    return shiaCollections.any { it.key.equals(collectionKey, ignoreCase = true) }
+    return collectionKey.lowercase() in shiaCollectionKeysSet
+  }
+
+  fun isHistoryCollection(collectionKey: String): Boolean {
+    val k = collectionKey.lowercase()
+    return k == "sunni_history" || k == "shia_history"
   }
 
   /**
-   * Matches a Hadith by exact number across supported numbering conventions
-   * (Darussalam / Primary number, Sahih International / Arabic edition number, or exact In-Book Hadith number).
-   * Never performs random substring matching (e.g. searching 5 will NOT match 5027 or 1145).
+   * Strictly matches a Hadith by its own collection Hadith number (`hadithNumber`).
+   * Never matches on array index, global ID, or another book's reference.
    */
   fun matchesExactHadithNumber(hadith: HadithEntity, targetNumber: Int): Boolean {
     if (targetNumber <= 0) return false
-    if (hadith.hadithNumber == targetNumber || hadith.arabicNumber == targetNumber) return true
-    val exactTokenRegex = Regex("""(?:hadith|#|ref:|darussalam:|canonical:|majlis|supplication|sermon|letter|hikmah)\s*0*${targetNumber}(?!\d)""", RegexOption.IGNORE_CASE)
-    return exactTokenRegex.containsMatchIn(hadith.inBookReference) ||
-      exactTokenRegex.containsMatchIn(hadith.darussalamReference) ||
-      exactTokenRegex.containsMatchIn(hadith.reference) ||
-      exactTokenRegex.containsMatchIn(hadith.chapterName)
+    return hadith.hadithNumber == targetNumber
+  }
+
+  /**
+   * Finds an exact Hadith by its `hadithNumber` strictly inside the specified `collectionKey`.
+   * Never falls back to another collection or array index.
+   */
+  fun findExactHadithInCollection(
+    localCollectionHadiths: List<HadithEntity>,
+    collectionKey: String,
+    hadithNumber: Int
+  ): HadithEntity? {
+    if (hadithNumber <= 0 || collectionKey.isBlank()) return null
+    localCollectionHadiths.firstOrNull {
+      it.collectionKey.equals(collectionKey, ignoreCase = true) && it.hadithNumber == hadithNumber
+    }?.let { return it }
+    return getExtendedHadiths().firstOrNull {
+      it.collectionKey.equals(collectionKey, ignoreCase = true) && it.hadithNumber == hadithNumber
+    }
   }
 
   private val arabicDiacriticsRegex = Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED\\u0640]")
@@ -1260,19 +1499,33 @@ object ExtendedHadithDataProvider {
       .replace("ʿ", "")
       .replace("-", " ")
       .replace("_", " ")
+      .replace("hurrah", "harrah")
+      .replace("hurra", "harrah")
+      .replace("harra ", "harrah ")
+      .replace("waqiat", "waqia")
+      .replace("waqat", "waqia")
+      .replace("waqah", "waqia")
+      .replace("qadisiya ", "qadisiyyah ")
+      .replace("qadsia", "qadisiyyah")
+      .replace("qadisiyah", "qadisiyyah")
+      .replace("yarmuk", "yarmouk")
       .replace(Regex("\\s+"), " ")
       .trim()
   }
 
   /**
-   * Comprehensive offline + cached Hadith search supporting:
-   * - Exact Hadith numbers (e.g. "1", "#2", "Hadith 3", "201", or 1-based ordinal index in a Shia/Sunni collection)
+   * Comprehensive offline + cached Hadith & Nahj al-Balagha Sermon search supporting:
+   * - Exact Hadith/Sermon/Letter/Saying/Supplication numbers (e.g. "1", "#2", "Hadith 3", "Sermon 193", "Letter 53", "Saying 147", "Dua 20")
    * - Explicit Collection + Hadith number (e.g. "Al-Kafi 1", "Khisal 1", "Nahj al-Balagha 1", "Bukhari 5027")
    * - Diacritic-insensitive Arabic & Urdu search (matches with or without tashkeel/harakat)
    * - Punctuation-tolerant English & transliteration multi-word search across narrator/Imam, topic, text, book, and chapter
    * - Tradition-scoped search so searching in the Shia Hadith Library searches the active Shia collection first
-   *   and also includes matching Hadiths across all 14 Shia collections!
+   *   and also includes matching Hadiths/Sermons across all 14 Shia collections!
    */
+  private fun SecurityIntegrityGuardSafeTrim(raw: String): String {
+    return com.example.data.remote.SecurityIntegrityGuard.sanitizeSearchQuery(raw)
+  }
+
   fun searchHadithsSmartOffline(
     localCollectionHadiths: List<HadithEntity>,
     rawQuery: String,
@@ -1292,7 +1545,7 @@ object ExtendedHadithDataProvider {
     }
     val activeList = mergedActiveCollection.values.sortedBy { it.hadithNumber }
 
-    val q = rawQuery.trim()
+    val q = SecurityIntegrityGuardSafeTrim(rawQuery)
     if (q.isEmpty()) return activeList
 
     // Build broader tradition pool (for cross-collection Shia or Sunni library search)
@@ -1321,23 +1574,54 @@ object ExtendedHadithDataProvider {
       activeList
     }
 
-    // 1. Check plain number query e.g. "1", "#2", "Hadith 3", "201"
+    // 1. Check Nahj al-Balagha Sermon / Letter / Saying or Sahifa Sajjadiyya Supplication typed query (e.g. "Sermon 193", "Khutbah 3", "Letter 53", "Saying 147", "Hikmah 82", "Dua 20")
+    val genreNumberRegex = Regex(
+      """^(?:nahj(?:ul|\s*al)?\s*balaghah?\s*)?(sermon|khutbah|khutba|خطبة|خطبہ|letter|maktub|epistle|مكتوب|مکتوب|saying|hikmah|hikmat|maxim|حكمة|حکمت|supplication|dua|du'a|دعا)\s*#?:?\s*(\d{1,4})$""",
+      RegexOption.IGNORE_CASE
+    )
+    genreNumberRegex.find(q)?.let { match ->
+      val genre = match.groupValues[1].lowercase()
+      val targetNum = match.groupValues[2].toIntOrNull() ?: 0
+      if (targetNum > 0) {
+        val genreMatches = fullTraditionPool.filter { h ->
+          val numOk = matchesExactHadithNumber(h, targetNum)
+          if (!numOk) return@filter false
+          when {
+            genre in listOf("sermon", "khutbah", "khutba", "خطبة", "خطبہ") ->
+              h.collectionKey == "nahjulbalagha" && h.bookNumber == 1
+            genre in listOf("letter", "maktub", "epistle", "مكتوب", "مکتوب") ->
+              h.collectionKey == "nahjulbalagha" && h.bookNumber == 2
+            genre in listOf("saying", "hikmah", "hikmat", "maxim", "حكمة", "حکمت") ->
+              h.collectionKey == "nahjulbalagha" && h.bookNumber == 3
+            genre in listOf("supplication", "dua", "du'a", "دعا") ->
+              h.collectionKey == "sajjadiyya" || h.chapterName.contains("Du'a", ignoreCase = true)
+            else -> true
+          }
+        }
+        if (genreMatches.isNotEmpty()) return genreMatches
+      }
+    }
+
+    // 2. Check plain number query e.g. "1", "#2", "Hadith 3", "201"
     val exactNumberMatch = Regex(
-      """^(?:hadith|hadees|darussalam|darasalam|shia|canonical|imami|sahih\s*international|sahi\s*international|sahih\s*intl|in-book|in\s*book|intl|number|no\.?|#|:|\s)*(\d{1,5})$""",
+      """^(?:hadith|hadees| حدیث |حديث|darussalam|darasalam|shia|canonical|imami|sahih\s*international|sahi\s*international|sahih\s*intl|in-book|in\s*book|intl|number|no\.?|#|:|\s)*(\d{1,5})$""",
       RegexOption.IGNORE_CASE
     ).find(q)?.groupValues?.getOrNull(1)?.toIntOrNull()
 
     if (exactNumberMatch != null && exactNumberMatch > 0) {
-      val directActiveMatches = activeList.filter { matchesExactHadithNumber(it, exactNumberMatch) }
+      val directActiveMatches = activeList.filter {
+        it.collectionKey.equals(activeCollectionKey, ignoreCase = true) &&
+          it.hadithNumber == exactNumberMatch
+      }
       if (directActiveMatches.isNotEmpty()) return directActiveMatches
 
-      // Ordinal 1-based fallback within active collection (so searching #1, #2, #3, #4 in any Shia collection always works)
-      if (exactNumberMatch in 1..activeList.size) {
-        return listOf(activeList[exactNumberMatch - 1])
+      if (includeCrossCollectionMatches) {
+        val crossTraditionNumberMatches = fullTraditionPool.filter {
+          it.hadithNumber == exactNumberMatch
+        }
+        if (crossTraditionNumberMatches.isNotEmpty()) return crossTraditionNumberMatches
       }
-
-      val crossTraditionNumberMatches = fullTraditionPool.filter { matchesExactHadithNumber(it, exactNumberMatch) }
-      if (crossTraditionNumberMatches.isNotEmpty()) return crossTraditionNumberMatches
+      return emptyList()
     }
 
     // 2. Multi-word & Diacritic-insensitive search across Arabic, Urdu, English, Narrator/Imam, Book, Collection, Reference

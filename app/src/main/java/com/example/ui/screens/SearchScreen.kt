@@ -19,11 +19,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,16 +29,13 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +45,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.ai.GeminiIslamicService
-import com.example.data.ai.GeminiUiState
 import com.example.data.local.ExtendedHadithDataProvider
 import com.example.data.local.entities.AyahEntity
 import com.example.data.local.entities.HadithEntity
@@ -62,7 +54,6 @@ import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.viewmodels.SearchCategory
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -81,9 +72,6 @@ fun SearchScreen(
   modifier: Modifier = Modifier
 ) {
   var hadithTraditionScope by remember { mutableStateOf("BOTH") }
-  val coroutineScope = rememberCoroutineScope()
-  val geminiService = remember { GeminiIslamicService() }
-  val geminiState by geminiService.uiState.collectAsState()
 
   val scopedHadithResults = remember(hadithResults, hadithTraditionScope) {
     if (hadithTraditionScope == "BOTH") {
@@ -110,6 +98,9 @@ fun SearchScreen(
     "36:1",
     "Al-Kafi 1",
     "Nahj al-Balagha 1",
+    "Sermon 193",
+    "Sermon 3",
+    "Letter 53",
     "Khisal 1",
     "Imam Sadiq",
     "Bukhari 5027",
@@ -278,13 +269,13 @@ fun SearchScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-          text = "Unified Quran (6,236 Verses), Sunni/Shia Hadith & Gemini Q&A",
+          text = "Unified Quran (6,236 Verses), Sunni/Shia Hadith, Sermons & Tafsir",
           style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
           textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-          text = "Search any verse by Surah:Ayah (e.g. 2:255, 36:1), any Hadith by collection & number (e.g. Al-Kafi 1, Bukhari 5027, Muslim 223), or keywords in Arabic, English, and Urdu.",
+          text = "Search any verse by Surah:Ayah (e.g. 2:255, 36:1), any Hadith or Sermon by collection & number (e.g. Al-Kafi 1, Sermon 193, Letter 53, Bukhari 5027), or keywords in Arabic, English, and Urdu.",
           style = MaterialTheme.typography.bodyMedium.copy(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -348,98 +339,6 @@ fun SearchScreen(
               ),
               modifier = Modifier.weight(1f)
             )
-            Button(
-              onClick = {
-                coroutineScope.launch {
-                  geminiService.askScholarlyQuestionStream(
-                    userQuestion = searchQuery,
-                    traditionScope = hadithTraditionScope,
-                    matchedAyahs = ayahResults,
-                    matchedHadiths = scopedHadithResults
-                  )
-                }
-              },
-              colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
-              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-              modifier = Modifier.height(32.dp).testTag("ask_gemini_search_button")
-            ) {
-              Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
-              Spacer(modifier = Modifier.width(4.dp))
-              Text("Ask Gemini", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            }
-          }
-        }
-
-        if (geminiState !is GeminiUiState.Idle) {
-          item(key = "gemini_ai_synthesis_card") {
-            Card(
-              modifier = Modifier.fillMaxWidth().testTag("gemini_ai_response_card"),
-              shape = RoundedCornerShape(14.dp),
-              colors = CardDefaults.cardColors(
-                containerColor = EmeraldPrimary.copy(alpha = 0.08f)
-              )
-            ) {
-              Column(modifier = Modifier.padding(14.dp)) {
-                Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  verticalAlignment = Alignment.CenterVertically
-                ) {
-                  Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                      imageVector = Icons.Default.AutoAwesome,
-                      contentDescription = null,
-                      tint = EmeraldPrimary,
-                      modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                      text = "Gemini Scholarly Synthesis ($hadithTraditionScope Scope)",
-                      style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = EmeraldPrimary
-                      )
-                    )
-                  }
-                  OutlinedButton(
-                    onClick = { geminiService.resetState() },
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                    modifier = Modifier.height(26.dp)
-                  ) {
-                    Text("Dismiss", fontSize = 10.sp)
-                  }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                when (val state = geminiState) {
-                  is GeminiUiState.Loading -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                      Spacer(modifier = Modifier.width(8.dp))
-                      Text("Synthesizing verified Quran & Hadith references...", style = MaterialTheme.typography.bodySmall)
-                    }
-                  }
-                  is GeminiUiState.Streaming -> {
-                    Text(
-                      text = state.text,
-                      style = MaterialTheme.typography.bodyMedium
-                    )
-                  }
-                  is GeminiUiState.Success -> {
-                    Text(
-                      text = state.text,
-                      style = MaterialTheme.typography.bodyMedium
-                    )
-                  }
-                  is GeminiUiState.Error -> {
-                    Text(
-                      text = state.message,
-                      style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.error)
-                    )
-                  }
-                  GeminiUiState.Idle -> {}
-                }
-              }
-            }
           }
         }
 

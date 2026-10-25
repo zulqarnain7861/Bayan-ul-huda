@@ -74,9 +74,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DailyDuaItem
@@ -140,40 +143,35 @@ fun DailyDuasScreen(
     showFavoritesOnly,
     remindersState.favoriteDuaIds
   ) {
-    DailyDuasDataProvider.allDuas.filter { dua ->
-      val categoryMatch = when {
+    val query = searchQuery.trim()
+    val categoryCandidates = DailyDuasDataProvider.allDuas.filter { dua ->
+      when {
         showFavoritesOnly -> remindersState.favoriteDuaIds.contains(dua.id)
+        query.isNotEmpty() && selectedMasnoonCategory == null -> true // Search across all Duas (including Safar, Iftar, etc.) when searching from Masnoon tab
         selectedMasnoonCategory == null -> dua.category != DuaCategory.SPECIAL_OCCASIONS
         else -> dua.category == selectedMasnoonCategory
       }
-      val query = searchQuery.trim()
-      val queryMatch = query.isEmpty() ||
-        dua.title.contains(query, ignoreCase = true) ||
-        dua.occasionBadge.contains(query, ignoreCase = true) ||
-        dua.arabicText.contains(query) ||
-        dua.transliteration.contains(query, ignoreCase = true) ||
-        dua.englishTranslation.contains(query, ignoreCase = true) ||
-        dua.urduTranslation.contains(query, ignoreCase = true) ||
-        dua.authenticReference.contains(query, ignoreCase = true)
-      categoryMatch && queryMatch
+    }
+    if (query.isEmpty()) {
+      categoryCandidates
+    } else {
+      DailyDuasDataProvider.searchDuasFuzzy(query, categoryCandidates)
     }
   }
 
   val filteredOccasionDuas = remember(searchQuery, selectedOccasionType) {
-    DailyDuasDataProvider.allDuas.filter { dua ->
+    val query = searchQuery.trim()
+    val occasionCandidates = DailyDuasDataProvider.allDuas.filter { dua ->
       val isOccasion = dua.category == DuaCategory.SPECIAL_OCCASIONS ||
         (selectedOccasionType != SpecialOccasionType.ALL && dua.occasionType == selectedOccasionType)
       val typeMatch = selectedOccasionType == SpecialOccasionType.ALL ||
         dua.occasionType == selectedOccasionType
-      val query = searchQuery.trim()
-      val queryMatch = query.isEmpty() ||
-        dua.title.contains(query, ignoreCase = true) ||
-        dua.occasionBadge.contains(query, ignoreCase = true) ||
-        dua.arabicText.contains(query) ||
-        dua.englishTranslation.contains(query, ignoreCase = true) ||
-        dua.urduTranslation.contains(query, ignoreCase = true) ||
-        dua.authenticReference.contains(query, ignoreCase = true)
-      isOccasion && typeMatch && queryMatch
+      isOccasion && typeMatch
+    }
+    if (query.isEmpty()) {
+      occasionCandidates
+    } else {
+      DailyDuasDataProvider.searchDuasFuzzy(query, occasionCandidates)
     }
   }
 
@@ -531,10 +529,12 @@ fun DailyDuasScreen(
             isFavorite = isFav,
             tasbihCount = tasbihCount,
             isPlayingThisDua = isPlayingThisDua,
+            activeWordIndex = if (isPlayingThisDua) duaAudioState.activeWordIndex else -1,
+            activeLetterIndexInWord = if (isPlayingThisDua) duaAudioState.activeLetterIndexInWord else -1,
             showEnglish = showEnglish,
             showUrdu = showUrdu,
             showTransliteration = showTransliteration,
-            onPlayVocal = { onPlayDuaVocal(dua, false) },
+            onPlayVocal = { onPlayDuaVocal(dua, true) },
             onPlayQuranReciter = { onPlayDuaVocal(dua, true) },
             onStopAudio = onStopDuaAudio,
             onToggleFavorite = { onToggleFavoriteDua(dua.id) },
@@ -1027,6 +1027,8 @@ private fun MasnoonDuaCard(
   isFavorite: Boolean,
   tasbihCount: Int,
   isPlayingThisDua: Boolean,
+  activeWordIndex: Int = -1,
+  activeLetterIndexInWord: Int = -1,
   showEnglish: Boolean,
   showUrdu: Boolean,
   showTransliteration: Boolean,
@@ -1109,24 +1111,81 @@ private fun MasnoonDuaCard(
 
       Spacer(modifier = Modifier.height(10.dp))
 
-      // Sacred Arabic Text Box
+      // Sacred Arabic Text Box with Synchronized Green Word-by-Word & Letter-by-Letter Highlighting
       Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = EmeraldPrimary.copy(alpha = 0.06f)
+        color = if (isPlayingThisDua) Color(0xFF00C853).copy(alpha = 0.08f) else EmeraldPrimary.copy(alpha = 0.06f)
       ) {
+        val baseTextColor = MaterialTheme.colorScheme.onSurface
+        val spokenGreen = Color(0xFF1B5E20)
+        val activeLetterGreen = Color(0xFF00C853)
+        val activeWordBg = Color(0xFF00E676).copy(alpha = 0.22f)
+
+        val annotatedArabic = remember(dua.arabicText, isPlayingThisDua, activeWordIndex, activeLetterIndexInWord, baseTextColor) {
+          val words = dua.arabicText.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+          buildAnnotatedString {
+            words.forEachIndexed { idx, word ->
+              if (idx > 0) append(" ")
+              when {
+                !isPlayingThisDua || activeWordIndex < 0 -> {
+                  withStyle(SpanStyle(color = baseTextColor)) {
+                    append(word)
+                  }
+                }
+                idx < activeWordIndex -> {
+                  // Already recited words highlighted in rich green
+                  withStyle(SpanStyle(color = spokenGreen, fontWeight = FontWeight.Bold)) {
+                    append(word)
+                  }
+                }
+                idx == activeWordIndex -> {
+                  // Active word: letter-by-letter green highlighting
+                  val splitPos = (activeLetterIndexInWord + 1).coerceIn(1, word.length)
+                  val activePart = word.substring(0, splitPos)
+                  val remainingPart = word.substring(splitPos)
+                  withStyle(
+                    SpanStyle(
+                      color = activeLetterGreen,
+                      background = activeWordBg,
+                      fontWeight = FontWeight.ExtraBold
+                    )
+                  ) {
+                    append(activePart)
+                  }
+                  if (remainingPart.isNotEmpty()) {
+                    withStyle(
+                      SpanStyle(
+                        color = spokenGreen.copy(alpha = 0.85f),
+                        background = activeWordBg
+                      )
+                    ) {
+                      append(remainingPart)
+                    }
+                  }
+                }
+                else -> {
+                  withStyle(SpanStyle(color = baseTextColor)) {
+                    append(word)
+                  }
+                }
+              }
+            }
+          }
+        }
+
         Text(
-          text = dua.arabicText,
+          text = annotatedArabic,
           style = MaterialTheme.typography.headlineSmall.copy(
             fontFamily = AmiriFontFamily,
             fontSize = 24.sp,
-            lineHeight = 42.sp,
-            color = MaterialTheme.colorScheme.onSurface
+            lineHeight = 42.sp
           ),
           textAlign = TextAlign.End,
           modifier = Modifier
             .fillMaxWidth()
             .padding(14.dp)
+            .testTag("dua_arabic_text_${dua.id}")
         )
       }
 

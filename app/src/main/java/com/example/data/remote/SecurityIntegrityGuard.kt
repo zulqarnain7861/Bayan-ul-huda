@@ -18,23 +18,73 @@ object SecurityIntegrityGuard {
   const val AUTHORIZED_DEVELOPER_EMAIL = "sheikhzulqar@gmail.com"
   const val AUTHORIZED_DEVELOPER_NAME = "Zulqarnain Ahmad Sheikh"
 
+  const val MAX_HTTP_RESPONSE_BYTES = 2 * 1024 * 1024 // 2 MB cap against memory exhaustion / DoS
+  const val MAX_SEARCH_QUERY_LENGTH = 250
+
   private val ALLOWED_HTTPS_HOSTS = setOf(
     "api.alquran.cloud",
     "cdn.jsdelivr.net",
     "api.aladhan.com",
     "everyayah.com",
     "api.quran.com",
+    "quran.com",
+    "verses.quran.com",
+    "audio.qurancdn.com",
+    "qurancdn.com",
     "quranenc.com",
+    "tanzil.net",
+    "sunnah.com",
+    "thaqalayn-api.ieron.dev",
+    "thaqalayn.net",
+    "al-islam.org",
+    "quran.al-islam.org",
+    "quran3.al-islam.org",
+    "almizan.org",
+    "shiaquran.in",
+    "academyofislam.com",
+    "shiaonlinelibrary.com",
+    "duas.org",
+    "easyquran.ai",
+    "raw.githubusercontent.com",
+    "github.com",
     "download.quranicaudio.com",
+    "quranicaudio.com",
     "islamcan.com",
     "archive.org",
     "ia800304.us.archive.org",
     "ia802606.us.archive.org",
+    "apiquran.mp3quran.net",
+    "server6.mp3quran.net",
+    "server7.mp3quran.net",
+    "server8.mp3quran.net",
+    "server9.mp3quran.net",
+    "server10.mp3quran.net",
+    "server11.mp3quran.net",
+    "server12.mp3quran.net",
+    "server13.mp3quran.net",
     "server14.mp3quran.net",
+    "server15.mp3quran.net",
     "server16.mp3quran.net",
+    "cdn.mp3quran.net",
     "mp3quran.net",
+    "media.way2quran.com",
+    "way2quran.com",
+    "surahquran.com",
+    "tvquran.com",
     "wa.me",
     "api.whatsapp.com"
+  )
+
+  private val ALLOWED_HTTPS_DOMAIN_SUFFIXES = listOf(
+    ".mp3quran.net",
+    ".way2quran.com",
+    ".archive.org",
+    ".quran.com",
+    ".qurancdn.com",
+    ".quranicaudio.com",
+    ".al-islam.org",
+    ".easyquran.ai",
+    ".duas.org"
   )
 
   private val BLOCKED_AD_AND_TRACKER_KEYWORDS = listOf(
@@ -67,6 +117,10 @@ object SecurityIntegrityGuard {
     setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
   )
 
+  private val SQL_INJECTION_META_REGEX = Regex(
+    """(?i)(\b(?:DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|EXEC|UNION\s+SELECT)\b|--|/\*|\*/|;)"""
+  )
+
   /**
    * Validates that a target URL is strictly HTTPS, belongs to the official Islamic content host allowlist,
    * and contains no ad-network or malicious redirect patterns.
@@ -83,7 +137,8 @@ object SecurityIntegrityGuard {
       if (BLOCKED_AD_AND_TRACKER_KEYWORDS.any { host.contains(it) || trimmed.lowercase(Locale.ROOT).contains(it) }) {
         return false
       }
-      ALLOWED_HTTPS_HOSTS.contains(host)
+      ALLOWED_HTTPS_HOSTS.contains(host) ||
+        ALLOWED_HTTPS_DOMAIN_SUFFIXES.any { suffix -> host.endsWith(suffix) }
     } catch (_: Exception) {
       false
     }
@@ -102,6 +157,26 @@ object SecurityIntegrityGuard {
   }
 
   /**
+   * Sanitizes user search queries against SQL/FTS5 injection, BiDi spoofing, and ReDoS length attacks
+   * while preserving Arabic, Urdu, and English characters, colons (for Surah:Ayah), and numbers.
+   */
+  fun sanitizeSearchQuery(rawQuery: String): String {
+    if (rawQuery.isBlank()) return ""
+    val stripped = stripUnicodeCloakingAndBidiTrojan(rawQuery)
+      .replace(DANGEROUS_BLOCK_REGEX, "")
+      .replace(DANGEROUS_INJECTION_REGEX, "")
+      .replace(SQL_INJECTION_META_REGEX, " ")
+      .replace(Regex("""["'\\^*]"""), " ")
+      .replace(Regex("""\s+"""), " ")
+      .trim()
+    return if (stripped.length > MAX_SEARCH_QUERY_LENGTH) {
+      stripped.take(MAX_SEARCH_QUERY_LENGTH).trim()
+    } else {
+      stripped
+    }
+  }
+
+  /**
    * Defense-in-depth verification against arbitrary intent injection or malicious redirects.
    * Only trusted, HTTPS-encrypted endpoints matching the strictly defined allowlist can be launched.
    */
@@ -113,6 +188,9 @@ object SecurityIntegrityGuard {
       val scheme = uri.scheme?.lowercase(Locale.ROOT)
       if (scheme != "https") return false
       val host = uri.host?.lowercase(Locale.ROOT)?.removePrefix("www.") ?: return false
+      if (BLOCKED_AD_AND_TRACKER_KEYWORDS.any { host.contains(it) || trimmed.lowercase(Locale.ROOT).contains(it) }) {
+        return false
+      }
       ALLOWED_HTTPS_HOSTS.contains(host)
     } catch (_: Exception) {
       false
@@ -165,6 +243,25 @@ object SecurityIntegrityGuard {
   }
 
   /**
+   * Verifies that a Hadith or Sermon record has a valid positive canonical number, non-blank collection key,
+   * and non-empty sanitized text free of script/injection payloads.
+   */
+  fun isValidCanonicalHadithPayload(
+    collectionKey: String,
+    hadithNumber: Int,
+    arabicText: String,
+    englishText: String
+  ): Boolean {
+    if (collectionKey.isBlank() || hadithNumber <= 0) return false
+    if (containsInappropriateOrAlteredPayload(arabicText) || containsInappropriateOrAlteredPayload(englishText)) {
+      return false
+    }
+    val cleanAr = sanitizeSacredText(arabicText)
+    val cleanEn = sanitizeSacredText(englishText)
+    return cleanAr.isNotBlank() || cleanEn.isNotBlank()
+  }
+
+  /**
    * Checks whether the current user email matches the authorized developer maintainer.
    */
   fun isAuthorizedDeveloper(email: String?): Boolean {
@@ -173,7 +270,7 @@ object SecurityIntegrityGuard {
 
   fun getSecurityAuditSummary(): String {
     return "HTTPS-Only Host Pinning Active (${ALLOWED_HTTPS_HOSTS.size} Allowlisted Islamic APIs) • " +
-      "Anti-Penetration BiDi Shield Active • Ad-Injection & Script Sanitizer Active • " +
-      "Cleartext Disabled • Room Canonical Scripture Protection Enabled"
+      "Anti-Penetration BiDi & FTS5 Injection Shield Active • Ad-Injection & Script Sanitizer Active • " +
+      "Cleartext Disabled • Room Canonical Scripture & Hadith Protection Enabled"
   }
 }

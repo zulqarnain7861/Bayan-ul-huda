@@ -653,40 +653,42 @@ object SunnahReminderManager {
     body: String,
     authenticReference: String
   ) {
-    ensureReminderNotificationChannel(context)
-    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-    val openIntent = PendingIntent.getActivity(
-      context,
-      reminderId.hashCode(),
-      Intent(context, MainActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-      },
-      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    )
-
-    val notification = NotificationCompat.Builder(context, SUNNAH_REMINDER_CHANNEL_ID)
-      .setSmallIcon(R.mipmap.ic_launcher)
-      .setContentTitle(title)
-      .setContentText(body)
-      .setStyle(
-        NotificationCompat.BigTextStyle()
-          .bigText("$body\nSource: $authenticReference • Silent / Non-Musical Sunnah Reminder")
+    runCatching {
+      ensureReminderNotificationChannel(context)
+      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+      val openIntent = PendingIntent.getActivity(
+        context,
+        reminderId.hashCode(),
+        Intent(context, MainActivity::class.java).apply {
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        },
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
       )
-      .setPriority(NotificationCompat.PRIORITY_HIGH)
-      .setCategory(NotificationCompat.CATEGORY_REMINDER)
-      .setSound(null)
-      .setSilent(true)
-      .setAutoCancel(true)
-      .setContentIntent(openIntent)
-      .build()
 
-    val notifId = BASE_REMINDER_NOTIF_ID + (reminderId.hashCode() and 0x7FF)
-    nm.notify(notifId, notification)
+      val notification = NotificationCompat.Builder(context, SUNNAH_REMINDER_CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_stat_bayan)
+        .setContentTitle(title)
+        .setContentText(body)
+        .setStyle(
+          NotificationCompat.BigTextStyle()
+            .bigText("$body\nSource: $authenticReference • Silent / Non-Musical Sunnah Reminder")
+        )
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setCategory(NotificationCompat.CATEGORY_REMINDER)
+        .setSound(null)
+        .setSilent(true)
+        .setAutoCancel(true)
+        .setContentIntent(openIntent)
+        .build()
 
-    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    prefs.edit()
-      .putString("last_notif_banner_msg", "$title — Sent to Notification Bar")
-      .apply()
+      val notifId = BASE_REMINDER_NOTIF_ID + (reminderId.hashCode() and 0x7FF)
+      nm.notify(notifId, notification)
+
+      val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+      prefs.edit()
+        .putString("last_notif_banner_msg", "$title — Sent to Notification Bar")
+        .apply()
+    }
   }
 
   /**

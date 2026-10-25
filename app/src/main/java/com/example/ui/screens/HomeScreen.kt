@@ -93,6 +93,7 @@ import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.ScheherazadeFontFamily
+import com.example.ui.theme.UrduNastaliqFontFamily
 import java.util.Calendar
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -397,8 +398,9 @@ fun HomeScreen(
             Text(
               text = ayah.translationUrdu,
               style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 14.sp,
-                lineHeight = 22.sp,
+                fontFamily = UrduNastaliqFontFamily,
+                fontSize = 15.sp,
+                lineHeight = 28.sp,
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               ),
@@ -547,8 +549,9 @@ fun HomeScreen(
             Text(
               text = hadith.urduText,
               style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 14.sp,
-                lineHeight = 22.sp,
+                fontFamily = UrduNastaliqFontFamily,
+                fontSize = 15.sp,
+                lineHeight = 28.sp,
                 textAlign = TextAlign.Right,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
               ),
@@ -1432,8 +1435,9 @@ fun CalculatedFridayAndDailySunnahHomeCard(
           Text(
             text = selectedSpec.urduGuidance,
             style = MaterialTheme.typography.bodySmall.copy(
-              fontSize = 12.sp,
-              lineHeight = 19.sp,
+              fontFamily = UrduNastaliqFontFamily,
+              fontSize = 13.sp,
+              lineHeight = 24.sp,
               textAlign = TextAlign.Right,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             ),

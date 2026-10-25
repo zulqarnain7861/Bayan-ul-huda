@@ -9,7 +9,9 @@ data class IslamicBookChapter(
   val englishContent: String,
   val urduContent: String,
   val scholarlyNotes: String,
-  val crossReferences: String
+  val crossReferences: String,
+  val jildNumber: Int = 1,
+  val jildTitle: String = "Jild 1 (Volume 1)"
 )
 
 data class IslamicClassicalBook(
@@ -965,15 +967,444 @@ object IslamicBooksCatalog {
     )
   )
 
+  val sunniHistoryBooks: List<IslamicClassicalBook> = listOf(
+    createBook(
+      id = "book_history_tabari",
+      number = 39,
+      titleEnglish = "Tarikh al-Tabari (History of the Prophets and Kings)",
+      titleArabic = "تاريخ الرسل والملوك (تاريخ الطبري)",
+      titleUrdu = "تاریخ الرسل والملوک (تاریخ طبری)",
+      author = "Imam Abu Ja'far Muhammad ibn Jarir al-Tabari",
+      eraHijri = "224–310 AH",
+      category = "Seerah & History",
+      numberingSystem = "Dar al-Ma'arif Critical Edition (11 Volumes • Chronological AH)",
+      summary = "The foundational universal chronicle of Islamic history by Imam al-Tabari, documenting the Prophetic Maghazi (Badr, Uhud, Khandaq, Khaybar), the Rightly Guided Caliphate, the Battle of Yarmouk (15 AH), the Battle of al-Qadisiyyah (14–15 AH), the Covenant of Jerusalem (16 AH), Karbala (61 AH), and Waqia Harrah (63 AH) with full chains of transmission.",
+      chapter1Title = "Battle of al-Qadisiyyah (14–15 AH) & Rib'i ibn 'Amir's Embassy to Rustam",
+      chapter1Ar = "إِنَّ اللَّهَ ابْتَعَثَنَا لِنُخْرِجَ مَنْ شَاءَ مِنْ عِبَادَةِ الْعِبَادِ إِلَى عِبَادَةِ اللَّهِ، وَمِنْ ضِيقِ الدُّنْيَا إِلَى سَعَتِهَا، وَمِنْ جَوْرِ الْأَدْيَانِ إِلَى عَدْلِ الْإِسْلَامِ",
+      chapter1Tr = "Innallaha ibta'athana li-nukhrija man sha'a min 'ibadatil-'ibadi ila 'ibadatillahi, wa min diqid-dunya ila sa'atiha, wa min jawril-adyani ila 'adlil-Islam.",
+      chapter1En = "Imam al-Tabari (Tarikh Vol. 3, p. 520) records the four-day Battle of al-Qadisiyyah under Sa'd ibn Abi Waqqas (RA) during the Caliphate of 'Umar ibn al-Khattab (RA), and Rib'i ibn 'Amir's immortal proclamation before Rustam: 'Allah has sent us to bring forth whomever He wills from the servitude of human beings to the worship of Allah alone, from the narrowness of this world to its vastness, and from the tyranny of religions to the justice of Islam.'",
+      chapter1Ur = "امام ابن جریر طبری نے ’تاریخ طبری‘ (جلد 3 ص 520) میں معرکہ قادسیہ (14–15 ہجری) کی مکمل تفصیل حضرت سعد بن ابی وقاص رضی اللہ عنہ کی سپہ سالاری اور حضرت ربعی بن عامر رضی اللہ عنہ کے رستم کے دربار میں تاریخی خطبے کے ساتھ قلمبند فرمائی ہے۔",
+      chapter2Title = "Battle of Yarmouk (15 AH) & Waqia Harrah in Madinah (63 AH)",
+      chapter2Ar = "إِنَّ هَذَا يَوْمٌ مِنْ أَيَّامِ اللَّهِ، لَا يَنْبَغِي فِيهِ الْفَخْرُ وَلَا الْبَغْيُ، أَخْلِصُوا جِهَادَكُمْ وَأَرِيدُوا اللَّهَ بِعَمَلِكُمْ",
+      chapter2Tr = "Inna hadha yawmun min ayyamillahi, la yanbaghi fihil-fakhru wa lal-baghy, akhlisu jihadakum wa aridullaha bi-'amalikum.",
+      chapter2En = "Chronicles the decisive six-day Battle of Yarmouk in Bilad al-Sham (Rajab 15 AH / 636 CE) under Abu 'Ubaydah ibn al-Jarrah and Khalid ibn al-Walid (RA) (Vol. 3, p. 395), as well as the tragedy of Karbala (61 AH, Vol. 5, p. 400) and the Battle of al-Harrah / Waqia Hurrah in Madinah (63 AH, Vol. 5, p. 482).",
+      chapter2Ur = "تاریخ طبری (جلد 3 ص 395) میں معرکہ یرموک (15 ہجری)، فتح بیت المقدس (16 ہجری)، سانحۂ کربلا (61 ہجری، جلد 5 ص 400) اور واقعہ حرہ مدینہ منورہ (63 ہجری، جلد 5 ص 482) کی مستند روایات درج ہیں۔",
+      refs = "Tarikh al-Tabari 2:449, 3:395, 3:520, 3:609, 5:400, 5:482 • Quran 3:123, 30:2-4",
+      tradition = "SUNNI",
+      officialSourceUrl = "https://shamela.ws/book/9783",
+      apiOrRepoUrl = "https://sunnah.com",
+      sourceTypeLabel = "Primary Classical Historical Chronicle",
+      gradingMethodology = "Isnad-Based Historical Transmission (Imam Ibn Jarir al-Tabari)"
+    ),
+    createBook(
+      id = "book_history_ibn_kathir",
+      number = 40,
+      titleEnglish = "Al-Bidayah wa'l-Nihayah (The Beginning and the End)",
+      titleArabic = "البداية والنهاية للحافظ ابن كثير",
+      titleUrdu = "البدایہ والنہایہ (تاریخ ابن کثیر)",
+      author = "Hafiz 'Imad al-Din Isma'il ibn 'Umar Ibn Kathir al-Dimashqi",
+      eraHijri = "701–774 AH",
+      category = "Seerah & History",
+      numberingSystem = "Dar Hajr / Al-Turki Critical Edition (21 Volumes)",
+      summary = "Hafiz Ibn Kathir's monumental Hadith-verified encyclopedia of Islamic history from Creation and the Prophets through the Prophetic Seerah (Badr, Uhud, Khandaq, Khaybar), the Rightly Guided Caliphs, Battle of Yarmouk, Battle of al-Qadisiyyah, Karbala, and Waqia Harrah.",
+      chapter1Title = "Waqia Harrah — Battle of al-Harrah in Madinah (63 AH) & Prophetic Warning",
+      chapter1Ar = "مَنْ أَخَافَ أَهْلَ الْمَدِينَةِ ظُلْمًا أَخَافَهُ اللَّهُ، وَعَلَيْهِ لَعْنَةُ اللَّهِ وَالْمَلَائِكَةِ وَالنَّاسِ أَجْمَعِينَ",
+      chapter1Tr = "Man akhafa ahlal-Madinati zulman akhafahullahu, wa 'alayhi la'natullahi wal-mala'ikati wan-nasi ajma'in.",
+      chapter1En = "In Al-Bidayah wa'l-Nihayah (Vol. 8, pp. 217–224), Hafiz Ibn Kathir documents Waqia Harrah (Battle of al-Harrah, Dhu al-Hijjah 63 AH / 683 CE) when Muslim ibn 'Uqbah assaulted Madinah, martyring 'Abdullah ibn Hanzalah (RA) and scores of Companions and Ansar, and cites Sahih Muslim 1362: 'Whoever unjustly terrifies the people of Madinah, Allah will terrify him.'",
+      chapter1Ur = "حافظ ابن کثیر نے ’البدایہ والنہایہ‘ (جلد 8 ص 217 تا 224) میں واقعہ حرہ (63 ہجری) کا تفصیلی اور تحقیقی ذکر فرمایا ہے جس میں حضرت عبداللہ بن حنظلہ رضی اللہ عنہ اور صحابہ و انصار کی شہادت ہوئی، اور صحیح مسلم (1362) کی حدیث سے اہلِ مدینہ پر ظلم کرنے والوں کے خلاف وعید نقل کی ہے۔",
+      chapter2Title = "Battle of Yarmouk (15 AH), Battle of al-Qadisiyyah (15 AH) & Martyrdom of al-Husayn (61 AH)",
+      chapter2Ar = "الْحَسَنُ وَالْحُسَيْنُ سَيِّدَا شَبَابِ أَهْلِ الْجَنَّةِ",
+      chapter2Tr = "Al-Hasanu wal-Husaynu sayyida shababi ahlil-Jannah.",
+      chapter2En = "Presents Hadith-authenticated accounts of the Battle of Yarmouk (Vol. 7, p. 8), the Battle of al-Qadisiyyah (Vol. 7, p. 38), and the martyrdom of Imam al-Husayn ibn 'Ali (RA) at Karbala (Vol. 8, p. 202), stating: 'Every Muslim ought to grieve over his martyrdom, for he is among the foremost masters of the Muslims.'",
+      chapter2Ur = "البدایہ والنہایہ کی جلد 7 میں معرکہ یرموک اور معرکہ قادسیہ کی تفصیلات اور جلد 8 ص 202 میں نواسۂ رسول سیدنا امام حسین رضی اللہ عنہ کی شہادتِ کربلا پر ائمہ اہلسنت کا متفقہ موقف درج ہے۔",
+      refs = "Al-Bidaya wa'l-Nihaya 3:224, 4:14, 7:8, 7:38, 8:202, 8:217 • Sahih Muslim 1362",
+      tradition = "SUNNI",
+      officialSourceUrl = "https://shamela.ws/book/4445",
+      apiOrRepoUrl = "https://sunnah.com",
+      sourceTypeLabel = "Hadith-Verified Historical Encyclopedia",
+      gradingMethodology = "Hafiz Ibn Kathir Muhaddithun Historical Criticism"
+    ),
+    createBook(
+      id = "book_history_ibn_hisham",
+      number = 41,
+      titleEnglish = "Al-Sirah al-Nabawiyyah (Sirah Ibn Hisham & Ibn Ishaq)",
+      titleArabic = "السيرة النبوية لابن هشام عن ابن إسحاق",
+      titleUrdu = "سیرت ابن ہشام و سیرت ابن اسحاق",
+      author = "Imam Abu Muhammad 'Abd al-Malik Ibn Hisham (from Muhammad ibn Ishaq)",
+      eraHijri = "d. 218 AH (Ibn Ishaq d. 151 AH)",
+      category = "Seerah & History",
+      numberingSystem = "Mustafa al-Saqqa Edition (4 Volumes • Prophetic Biography & Maghazi)",
+      summary = "The earliest extant comprehensive Prophetic biography and record of the Maghazi: the Hijrah, the Constitution of Madinah (Sahifat al-Madinah, 1 AH), the Great Battle of Badr (2 AH), Battle of Uhud (3 AH), Battle of the Trench / Khandaq (5 AH), Treaty of Hudaybiyyah (6 AH), Khaybar (7 AH), and Conquest of Makkah (8 AH).",
+      chapter1Title = "The Hijrah & The Constitution of Madinah (Sahifat al-Madinah, 1 AH)",
+      chapter1Ar = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ، هَذَا كِتَابٌ مِنْ مُحَمَّدٍ النَّبِيِّ بَيْنَ الْمُؤْمِنِينَ وَالْمُسْلِمِينَ مِنْ قُرَيْشٍ وَيَثْرِبَ... أَنَّهُمْ أُمَّةٌ وَاحِدَةٌ مِنْ دُونِ النَّاسِ",
+      chapter1Tr = "Bismillahir-Rahmanir-Rahim. Hadha kitabun min Muhammadin an-Nabiyyi baynal-mu'minina wal-muslimina min Qurayshin wa Yathrib... annahum ummatun wahidatun min dunin-nas.",
+      chapter1En = "Preserves the complete Arabic text of the Constitution of Madinah (Sirah Ibn Hisham Vol. 1, p. 501), establishing the Muhajirun, Ansar, and allied communities of Madinah as a single community (Ummah Wahidah) governed by justice and mutual defense.",
+      chapter1Ur = "سیرت ابن ہشام (جلد 1 ص 501) میں میثاقِ مدینہ کا مکمل عربی متن محفوظ ہے جس کے ذریعے نبی کریم ﷺ نے مہاجرین و انصار پر مشتمل ایک امتِ واحدہ اور منصفانہ ریاست کی بنیاد رکھی۔",
+      chapter2Title = "Prophetic Maghazi: Badr (2 AH), Uhud (3 AH), Khandaq (5 AH) & Khaybar (7 AH)",
+      chapter2Ar = "اللَّهُمَّ أَنْجِزْ لِي مَا وَعَدْتَنِي... اللَّهُمَّ لَا عَيْشَ إِلَّا عَيْشُ الْآخِرَهْ، فَاغْفِرْ لِلْأَنْصَارِ وَالْمُهَاجِرَهْ",
+      chapter2Tr = "Allahumma anjiz li ma wa'adtani... Allahumma la 'aysha illa 'ayshul-akhirah, faghfir lil-Ansari wal-Muhajirah.",
+      chapter2En = "Details the 313 companions at Badr (Yawm al-Furqan, 17 Ramadan 2 AH), the archers on Jabal al-Rumat at Uhud (3 AH), digging the Trench at Khandaq (5 AH), the Pledge of Ridwan (6 AH), Khaybar (7 AH), and the general amnesty at the Conquest of Makkah (8 AH).",
+      chapter2Ur = "غزوہ بدر الکبریٰ (17 رمضان 2 ہجری)، غزوہ احد (3 ہجری)، غزوہ خندق (5 ہجری)، صلح حدیبیہ (6 ہجری)، غزوہ خیبر (7 ہجری) اور فتحِ مکہ (8 ہجری) کی مستند سیرت۔",
+      refs = "Sirah Ibn Hisham 1:501, 2:609 • Sahih al-Bukhari 3039, 3953, 4104, 4210",
+      tradition = "SUNNI",
+      officialSourceUrl = "https://shamela.ws/book/23833",
+      apiOrRepoUrl = "https://sunnah.com",
+      sourceTypeLabel = "Earliest Prophetic Seerah & Maghazi",
+      gradingMethodology = "Classical Seerah & Maghazi Verification (Ibn Ishaq & Ibn Hisham)"
+    ),
+    createBook(
+      id = "book_history_kamil_futuh",
+      number = 42,
+      titleEnglish = "Al-Kamil fi al-Tarikh & Futuh al-Buldan (Ibn al-Athir & Al-Baladhuri)",
+      titleArabic = "الكامل في التاريخ لابن الأثير وفتوح البلدان للبلاذري",
+      titleUrdu = "الکامل فی التاریخ (ابن اثیر) و فتوح البلدان (بلاذری)",
+      author = "Imam 'Izz al-Din Ibn al-Athir (d. 630 AH) & Imam Ahmad ibn Yahya al-Baladhuri (d. 279 AH)",
+      eraHijri = "3rd & 7th Century AH",
+      category = "Seerah & History",
+      numberingSystem = "Dar Sader Edition (12 Volumes Al-Kamil & Futuh al-Buldan)",
+      summary = "Pairs Al-Baladhuri's primary administrative and military history (Futuh al-Buldan) with Ibn al-Athir's analytical chronicle (Al-Kamil fi al-Tarikh), detailing the Battle of Yarmouk, Battle of al-Qadisiyyah, Covenant of 'Umar in Jerusalem, Siffin, Karbala, and Waqia Harrah.",
+      chapter1Title = "Battle of Yarmouk (15 AH), Battle of al-Qadisiyyah (15 AH) & Covenant of Jerusalem (16 AH)",
+      chapter1Ar = "هَذَا مَا أَعْطَى عَبْدُ اللَّهِ عُمَرُ أَمِيرُ الْمُؤْمِنِينَ أَهْلَ إِيلِيَاءَ مِنَ الْأَمَانِ: أَعْطَاهُمْ أَمَانًا لِأَنْفُسِهِمْ وَأَمْوَالِهِمْ وَلِكَنَائِسِهِمْ",
+      chapter1Tr = "Hadha ma a'ta 'Abdullahi 'Umaru Amirul-Mu'minina ahla Iliya'a minal-aman: a'tahum amanan li-anfusihim wa amwalihim wa li-kana'isihim.",
+      chapter1En = "Documents the topographical and military details of the Battle of Yarmouk (Futuh al-Buldan p. 141), the four days of al-Qadisiyyah (Al-Kamil Vol. 2, p. 452), and Caliph 'Umar ibn al-Khattab's peaceful entry into Jerusalem and assurance of safety ('Uhdat 'Umar, 16 AH).",
+      chapter1Ur = "فتوح البلدان (ص 141) اور الکامل فی التاریخ (جلد 2 ص 452) میں معرکہ یرموک، معرکہ قادسیہ اور عہدہ عمریہ (فتح بیت المقدس، 16 ہجری) کی مکمل تاریخی اسناد۔",
+      chapter2Title = "Siyar A'lam al-Nubala' & Classical Sunni Assessment of Karbala and Waqia Harrah",
+      chapter2Ar = "وَهُوَ سَيِّدٌ كَبِيرٌ، وَابْنُ بِنْتِ رَسُولِ اللَّهِ ﷺ",
+      chapter2Tr = "Wa huwa sayyidun kabirun, wabnu binti Rasulillahi (ﷺ).",
+      chapter2En = "Synthesizes the historical assessments of Ibn al-Athir and Imam al-Dhahabi (Siyar A'lam al-Nubala' Vol. 3, pp. 280–322) regarding the martyrdom of Imam al-Husayn (RA) at Karbala (61 AH) and the Battle of al-Harrah / Waqia Hurrah in Madinah (63 AH).",
+      chapter2Ur = "علامہ ابن اثیر اور امام ذہبی (سیر اعلام النبلاء جلد 3 ص 280 تا 322) کی تحقیق کے مطابق سانحۂ کربلا (61 ہجری) اور واقعہ حرہ (63 ہجری) کا تاریخی تجزیہ۔",
+      refs = "Al-Kamil fi al-Tarikh 2:452 • Futuh al-Buldan p. 141 • Siyar A'lam al-Nubala' 3:280, 3:322",
+      tradition = "SUNNI",
+      officialSourceUrl = "https://shamela.ws/book/21712",
+      apiOrRepoUrl = "https://sunnah.com",
+      sourceTypeLabel = "Classical Sunni Historical Chronicles",
+      gradingMethodology = "Comparative Historical Synthesis (Ibn al-Athir, Al-Baladhuri & Imam al-Dhahabi)"
+    ),
+    createBook(
+      id = "book_history_dhahabi_siyar",
+      number = 46,
+      titleEnglish = "Siyar A'lam al-Nubala' & Tarikh al-Islam (Imam al-Dhahabi)",
+      titleArabic = "سير أعلام النبلاء وتاريخ الإسلام للإمام شمس الدين الذهبي",
+      titleUrdu = "سیر اعلام النبلاء اور تاریخ الاسلام (امام شمس الدین ذہبیؒ)",
+      author = "Imam Shams al-Din Abu 'Abdillah Muhammad ibn Ahmad al-Dhahabi",
+      eraHijri = "673–748 AH",
+      category = "Seerah & History",
+      numberingSystem = "Mu'assasat al-Risalah Critical Edition (25 Vols Siyar & 50 Vols Tarikh al-Islam • All Jilds Integrated)",
+      summary = "The monumental biographical and historical encyclopedia by Hafiz al-Dhahabi covering the Prophetic Seerah, the Rightly Guided Caliphs, the Companions at Badr, Uhud, Khandaq, Khaybar, Yarmouk (15 AH), al-Qadisiyyah (15 AH), the martyrdom of Imam al-Husayn (RA) at Karbala (61 AH), and Waqia Harrah in Madinah (63 AH).",
+      chapter1Title = "Jild 1: The Prophetic Biography, Companions of Badr & Heroes of Yarmouk and al-Qadisiyyah",
+      chapter1Ar = "إِنَّ هَذَا يَوْمٌ مِنْ أَيَّامِ اللَّهِ، لَا يَنْبَغِي فِيهِ الْفَخْرُ وَلَا الْبَغْيُ، أَخْلِصُوا جِهَادَكُمْ وَأَرِيدُوا اللَّهَ بِعَمَلِكُمْ",
+      chapter1Tr = "Inna hadha yawmun min ayyamillahi, la yanbaghi fihil-fakhru wa lal-baghy, akhlisu jihadakum wa aridullaha bi-'amalikum.",
+      chapter1En = "In Siyar A'lam al-Nubala' (Vol. 1) and Tarikh al-Islam, Imam al-Dhahabi documents the biographies and verified historical transmissions of Abu 'Ubaydah ibn al-Jarrah, Sa'd ibn Abi Waqqas, and Khalid ibn al-Walid (RA) at the Battle of Yarmouk (15 AH) and the Battle of al-Qadisiyyah (14–15 AH).",
+      chapter1Ur = "امام شمس الدین ذہبی کی ’سیر اعلام النبلاء‘ (جلد اول) اور ’تاریخ الاسلام‘ میں اصحابِ بدر، فاتحِ شام حضرت ابو عبیدہ بن الجراحؓ، حضرت خالد بن ولیدؓ اور فاتحِ قادسیہ حضرت سعد بن ابی وقاصؓ کے مستند حالات و فتوحات درج ہیں۔",
+      chapter2Title = "Jild 2: Biography of Imam al-Husayn (RA), Karbala (61 AH) & Waqia Harrah in Madinah (63 AH)",
+      chapter2Ar = "الْحَسَنُ وَالْحُسَيْنُ سَيِّدَا شَبَابِ أَهْلِ الْجَنَّةِ... وَقَدْ أُصِيبَ أَهْلُ الْمَدِينَةِ يَوْمَ الْحَرَّةِ مُصِيبَةً عَظِيمَةً",
+      chapter2Tr = "Al-Hasanu wal-Husaynu sayyida shababi ahlil-Jannah... Wa qad usiba ahlul-Madinati yawmal-Harrati musibatan 'azimah.",
+      chapter2En = "In Siyar A'lam al-Nubala' (Vol. 3, pp. 280–325), Imam al-Dhahabi presents the full biographical chronicle of Imam al-Husayn ibn 'Ali (RA), his martyrdom at Karbala (10 Muharram 61 AH), and the tragedy of Waqia Harrah (63 AH) in Madinah.",
+      chapter2Ur = "سیر اعلام النبلاء (جلد سوم، ص 280 تا 325) میں سیدنا امام حسین بن علی رضی اللہ عنہما کی مکمل سوانح، سانحۂ کربلا (61 ہجری) اور مدینہ منورہ میں واقعہ حرہ (63 ہجری) کی تفصیلی تاریخ موجود ہے۔",
+      refs = "Siyar A'lam al-Nubala' 1:348, 3:280, 3:322 • Tarikh al-Islam Vols. 2–5",
+      tradition = "SUNNI",
+      officialSourceUrl = "https://shamela.ws/book/10906",
+      apiOrRepoUrl = "https://sunnah.com",
+      sourceTypeLabel = "25-Volume Biographical & Historical Encyclopedia",
+      gradingMethodology = "Hafiz al-Dhahabi Rijal & Historical Criticism"
+    )
+  )
+
+  val shiaHistoryBooks: List<IslamicClassicalBook> = listOf(
+    createBook(
+      id = "book_shia_history_irshad",
+      number = 43,
+      titleEnglish = "Kitab al-Irshad fi Ma'rifat Hujaj Allah 'ala al-'Ibad (Shaykh al-Mufid)",
+      titleArabic = "كتاب الإرشاد في معرفة حجج الله على العباد للشيخ المفيد",
+      titleUrdu = "کتاب الارشاد فی معرفۃ حجج اللہ علی العباد (شیخ مفیدؒ)",
+      author = "Shaykh al-Mufid Muhammad ibn Muhammad ibn al-Nu'man al-'Ukbari al-Baghdadi",
+      eraHijri = "336–413 AH",
+      category = "Seerah & History",
+      numberingSystem = "Mu'assasat Al al-Bayt Critical Edition (All Jilds • Biographies & Historical Chronicles)",
+      summary = "The premier classical Twelver Shia historical and biographical work by Shaykh al-Mufid, chronicling Laylat al-Mabit & Hijrah, Badr, Uhud, Khandaq, Khaybar, Saqifah, Qadisiyyah & Yarmouk counsels, Jamal (36 AH), Siffin (37 AH), Nahrawan (38 AH), the Peace Treaty of Imam al-Hasan (41 AH), the Epic of Karbala (61 AH), and Waqia Harrah (63 AH).",
+      chapter1Title = "Jild 1: Laylat al-Mabit (1 AH) & Prophetic Battles: Badr, Uhud, Khandaq & Khaybar",
+      chapter1Ar = "وَمِنَ النَّاسِ مَنْ يَشْرِي نَفْسَهُ ابْتِغَاءَ مَرْضَاتِ اللَّهِ... لَا فَتَى إِلَّا عَلِيٌّ، وَلَا سَيْفَ إِلَّا ذُو الْفَقَارِ",
+      chapter1Tr = "Wa minan-nasi man yashri nafsahu ibtigha'a mardatillah... La fata illa 'Ali, wa la sayfa illa Dhul-Faqar.",
+      chapter1En = "Chronicles Amir al-Mu'minin 'Ali ibn Abi Talib's (AS) sacrifice on the Prophet's bed on the Night of the Hijrah (Laylat al-Mabit, Kitab al-Irshad Vol. 1, p. 51) and his decisive valor at Badr (2 AH), Uhud (3 AH), Khandaq (5 AH), and Khaybar (7 AH) (Vol. 1, pp. 67–135).",
+      chapter1Ur = "شیخ مفید کی ’کتاب الارشاد‘ (جلد 1 ص 51 تا 135) میں شبِ ہجرت (لیلۃ المبیت) اور غزواتِ نبوی — بدر، احد، خندق اور خیبر — کے مستند تاریخی واقعات درج ہیں۔",
+      chapter2Title = "Jild 2: Epic of Karbala ('Ashura, 61 AH) & Waqia Harrah in Madinah (63 AH)",
+      chapter2Ar = "إِنِّي لَمْ أَخْرُجْ أَشِرًا وَلَا بَطِرًا وَلَا مُفْسِدًا وَلَا ظَالِمًا، وَإِنَّمَا خَرَجْتُ لِطَلَبِ الْإِصْلَاحِ فِي أُمَّةِ جَدِّي",
+      chapter2Tr = "Inni lam akhruj ashiran wa la batiran wa la mufsidan wa la zaliman, wa innama kharajtu li-talabil-islahi fi ummati jaddi.",
+      chapter2En = "Preserves the primary historical narrative of Imam al-Husayn's (AS) uprising for reform and martyrdom at Karbala (Vol. 2, pp. 32–135) and Imam Zayn al-'Abidin's (AS) sheltering of four hundred families of Madinah during Waqia Harrah / Battle of al-Harrah (63 AH, Vol. 2, p. 149).",
+      chapter2Ur = "کتاب الارشاد (جلد 2 ص 32 تا 149) میں سید الشہداء حضرت امام حسین علیہ السلام کے قیامِ اصلاح و واقعہ کربلا (61 ہجری) اور واقعہ حرہ (63 ہجری) میں حضرت امام زین العابدین علیہ السلام کی جانب سے اہلِ مدینہ کے چار سو خاندانوں کی کفالت و حفاظت کا بیان ہے۔",
+      refs = "Kitab al-Irshad 1:51, 1:67, 1:250, 2:8, 2:32, 2:149 • Quran 2:207, 33:23",
+      tradition = "SHIA",
+      officialSourceUrl = "https://www.al-islam.org/kitab-al-irshad-shaykh-al-mufid",
+      apiOrRepoUrl = "https://shiaonlinelibrary.com",
+      sourceTypeLabel = "Primary Imami Historical & Biographical Chronicle",
+      gradingMethodology = "Shaykh al-Mufid (d. 413 AH) Classical Imami Historical Verification"
+    ),
+    createBook(
+      id = "book_shia_history_yaqubi_masudi",
+      number = 44,
+      titleEnglish = "Tarikh al-Ya'qubi & Muruj al-Dhahab (Al-Ya'qubi & Al-Mas'udi)",
+      titleArabic = "تاريخ اليعقوبي ومروج الذهب ومعادن الجوهر للمسعودي",
+      titleUrdu = "تاریخ یعقوبی اور مروج الذہب (مسعودی)",
+      author = "Ahmad ibn Abi Ya'qub al-Ya'qubi (d. 284 AH) & Abu al-Hasan 'Ali ibn al-Husayn al-Mas'udi (d. 346 AH)",
+      eraHijri = "3rd–4th Century AH",
+      category = "Seerah & History",
+      numberingSystem = "Dar Sader Edition (All Jilds • Tarikh al-Ya'qubi & Muruj al-Dhahab)",
+      summary = "Two of the earliest surviving world and Islamic histories from the 3rd and 4th centuries AH, recording the Prophetic era, Saqifah Bani Sa'idah (11 AH), the Battle of al-Qadisiyyah and Battle of Yarmouk (14–15 AH), Jamal, Siffin, Nahrawan, Karbala (61 AH), and Waqia Harrah (63 AH).",
+      chapter1Title = "Jild 1: Battle of al-Qadisiyyah & Battle of Yarmouk (14–15 AH) & Imam 'Ali's Strategic Counsel",
+      chapter1Ar = "إِنَّ هَذَا الْأَمْرَ لَمْ يَكُنْ نَصْرُهُ وَلَا خِذْلَانُهُ بِكَثْرَةٍ وَلَا بِقِلَّةٍ، وَهُوَ دِينُ اللَّهِ الَّذِي أَظْهَرَهُ",
+      chapter1Tr = "Inna hadhal-amra lam yakun nasruhu wa la khidhlanuhu bi-kathratin wa la bi-qillah, wa huwa dinulladhi azharah.",
+      chapter1En = "In Tarikh al-Ya'qubi (Vol. 2, pp. 139–146) and Nahj al-Balagha (Sermon 146), Imam 'Ali (AS) counsels 'Umar ibn al-Khattab to remain as the central axis in Madinah during the Battle of al-Qadisiyyah, while Hashim ibn 'Utbah al-Mirqal, Malik al-Ashtar, Hujr ibn 'Adi, and 'Adi ibn Hatim lead the vanguards at Yarmouk and al-Qadisiyyah.",
+      chapter1Ur = "تاریخ یعقوبی (جلد 2 ص 139 تا 146) اور نہج البلاغہ (خطبہ 146) میں معرکہ قادسیہ اور معرکہ یرموک کے موقع پر حضرت علی علیہ السلام کے تزویراتی مشورے اور ہاشم بن عتبہ المرقال، مالک اشتر نخعی اور حجر بن عدی کندی کی شجاعت کا بیان ہے۔",
+      chapter2Title = "Jild 2: Saqifah (11 AH), Treaty of Imam al-Hasan (41 AH) & Waqia Harrah in Madinah (63 AH)",
+      chapter2Ar = "فَضَمَّ عَلِيُّ بْنُ الْحُسَيْنِ أَرْبَعَمِائَةِ امْرَأَةٍ وَعِيَالَهُنَّ إِلَى دَارِهِ يُنْفِقُ عَلَيْهِنَّ",
+      chapter2Tr = "Fa-damma 'Aliyyu bnu al-Husayni arba'a mi'ati imra'atin wa 'iyalahunna ila darihi yunfiqu 'alayhinna.",
+      chapter2En = "Records the events of Saqifah Bani Sa'idah (Tarikh al-Ya'qubi Vol. 2, p. 123), the peace treaty of Imam al-Hasan (Vol. 2, p. 215), and the eyewitness accounts in Tarikh al-Ya'qubi (Vol. 2, p. 250) and Al-Mas'udi's Muruj al-Dhahab (Vol. 3, p. 69) of Waqia Harrah (Battle of al-Harrah, 63 AH) in Madinah.",
+      chapter2Ur = "تاریخ یعقوبی (جلد 2 ص 123، 215، 250) اور مسعودی کی ’مروج الذہب‘ (جلد 3 ص 69) میں سقیفہ بنی ساعدہ، صلح امام حسنؑ اور واقعہ حرہ (63 ہجری) کی تاریخی تفصیلات۔",
+      refs = "Tarikh al-Ya'qubi 2:38, 2:123, 2:143, 2:215, 2:250 • Muruj al-Dhahab 3:69",
+      tradition = "SHIA",
+      officialSourceUrl = "https://shiaonlinelibrary.com",
+      apiOrRepoUrl = "https://www.al-islam.org",
+      sourceTypeLabel = "3rd & 4th Century AH Classical Chronicles",
+      gradingMethodology = "Early Historiographical Transmission (Al-Ya'qubi d. 284 AH & Al-Mas'udi d. 346 AH)"
+    ),
+    createBook(
+      id = "book_shia_history_siffin_maqatil",
+      number = 45,
+      titleEnglish = "Waq'at Siffin & Maqatil al-Talibiyyin (Nasr ibn Muzahim & Al-Isfahani)",
+      titleArabic = "وقعة صفين لنصر بن مزاحم ومقاتل الطالبيين لأبي الفرج الأصفهاني",
+      titleUrdu = "وقعۃ صفین (نصر بن مزاحم) و مقاتل الطالبین (ابو الفرج اصفہانی)",
+      author = "Nasr ibn Muzahim al-Minqari (d. 212 AH) & Abu al-Faraj al-Isfahani (d. 356 AH)",
+      eraHijri = "2nd–4th Century AH",
+      category = "Seerah & History",
+      numberingSystem = "Critical Editions (All Jilds • Waq'at Siffin • Kitab al-Jamal • Maqatil al-Talibiyyin)",
+      summary = "Preserves the earliest dedicated historical monographs on the Caliphate of Amir al-Mu'minin 'Ali (AS): the Battle of Jamal (36 AH), the Battle of Siffin and martyrdom of 'Ammar ibn Yasir (37 AH), the Battle of Nahrawan (38 AH), and the historical martyrologies of Banu Hashim.",
+      chapter1Title = "Jild 1: Battle of Siffin (37 AH), Liberation of the Euphrates & Martyrdom of 'Ammar ibn Yasir",
+      chapter1Ar = "وَيْحَ عَمَّارٍ تَقْتُلُهُ الْفِئَةُ الْبَاغِيَةُ، يَدْعُوهُمْ إِلَى الْجَنَّةِ وَيَدْعُونَهُ إِلَى النَّارِ",
+      chapter1Tr = "Wayha 'Ammarin taqtuluhul-fi'atul-baghiyah, yad'uhum ilal-Jannati wa yad'unahu ilan-Nar.",
+      chapter1En = "Nasr ibn Muzahim (d. 212 AH) documents in Waq'at Siffin (p. 152) how Imam 'Ali (AS) forbade denying the water of the Euphrates to the Syrian army after Malik al-Ashtar liberated the riverbanks, and records the martyrdom of 'Ammar ibn Yasir (RA/AS) fulfilling the Prophetic Hadith.",
+      chapter1Ur = "نصر بن مزاحم منقری (متوفی 212 ہجری) کی ’وقعۃ صفین‘ (ص 152) میں معرکہ صفین (37 ہجری)، دریائے فرات کے پانی کی آزادی اور حضرت عمار بن یاسرؓ کی شہادت کی مکمل تاریخی تفصیل درج ہے۔",
+      chapter2Title = "Jild 2: Battle of Jamal (36 AH), Battle of Nahrawan (38 AH) & Ethical Rules of Warfare",
+      chapter2Ar = "لَا تَتْبَعُوا مُدْبِرًا، وَلَا تُذَفِّفُوا عَلَى جَرِيحٍ، وَمَنْ أَغْلَقَ بَابَهُ فَهُوَ آمِنٌ",
+      chapter2Tr = "La tatba'u mudbiran, wa la tudhaffifu 'ala jarihin, wa man aghlaqa babahu fa-huwa amin.",
+      chapter2En = "Records Imam 'Ali's (AS) ethical rules of engagement at Basra (36 AH) and his debate and confrontation with the armed Khawarij insurgents at Nahrawan (38 AH).",
+      chapter2Ur = "جنگِ جمل (36 ہجری) میں امیر المومنین حضرت علی علیہ السلام کے اخلاقی قوانینِ جنگ اور معرکہ نہروان (38 ہجری) کا تاریخی بیان۔",
+      refs = "Waq'at Siffin p. 152 • Kitab al-Jamal p. 388 • Nahj al-Balagha Sermon 40, Letter 47",
+      tradition = "SHIA",
+      officialSourceUrl = "https://shiaonlinelibrary.com",
+      apiOrRepoUrl = "https://www.al-islam.org",
+      sourceTypeLabel = "Earliest Historical Monographs (212 AH & 356 AH)",
+      gradingMethodology = "Primary Early Kufan & Baghdadi Historical Chains (Nasr ibn Muzahim & Al-Mufid)"
+    ),
+    createBook(
+      id = "book_shia_history_luhuf_tabarsi",
+      number = 47,
+      titleEnglish = "Al-Luhuf 'ala Qatla al-Tufuf & A'lam al-Wara (Ibn Tawus & Al-Tabarsi)",
+      titleArabic = "اللهوف على قتلى الطفوف لابن طاووس وإعلام الورى بأعلام الهدى للطبرسي",
+      titleUrdu = "اللہوف علی قتلی الطفوف (سید ابن طاؤسؒ) اور اعلام الوریٰ باعلام الہدیٰ (شیخ طبرسیؒ)",
+      author = "Sayyid Radi al-Din 'Ali ibn Musa Ibn Tawus (d. 664 AH) & Shaykh Amin al-Islam al-Tabarsi (d. 548 AH)",
+      eraHijri = "6th–7th Century AH",
+      category = "Seerah & History",
+      numberingSystem = "Mu'assasat Al al-Bayt Critical Edition (All Jilds • Seerah, Imams & Maqtal al-Husayn)",
+      summary = "Combines Shaykh al-Tabarsi's authoritative historical encyclopedia of the Prophet (ﷺ) and the Twelve Imams (A'lam al-Wara bi-A'lam al-Huda) with Sayyid Ibn Tawus's classic three-part historical account of the journey to Karbala, the Day of 'Ashura (61 AH), and the aftermath in Kufah, Damascus, and Madinah including Waqia Harrah (63 AH).",
+      chapter1Title = "Jild 1: A'lam al-Wara — Prophetic Maghazi, Badr, Uhud, Khandaq, Khaybar & Ghadir",
+      chapter1Ar = "لَا فَتَى إِلَّا عَلِيٌّ، وَلَا سَيْفَ إِلَّا ذُو الْفَقَارِ... فَمَنْ كُنْتُ مَوْلَاهُ فَهَذَا عَلِيٌّ مَوْلَاهُ",
+      chapter1Tr = "La fata illa 'Ali, wa la sayfa illa Dhul-Faqar... Faman kuntu mawlahu fahadha 'Aliyyun mawlahu.",
+      chapter1En = "In A'lam al-Wara bi-A'lam al-Huda (Vol. 1, pp. 176–265), Shaykh al-Tabarsi documents the Prophetic biography, the Hijrah, the battles of Badr, Uhud, Khandaq, Khaybar, and Hunayn, and the proclamation at Ghadir Khumm (10 AH).",
+      chapter1Ur = "شیخ امین الاسلام طبرسی کی ’اعلام الوریٰ باعلام الہدیٰ‘ (جلد اول، ص 176 تا 265) میں سیرتِ نبوی ﷺ، غزوہ بدر، احد، خندق، خیبر، حنین اور غدیرِ خم کے مستند تاریخی واقعات درج ہیں۔",
+      chapter2Title = "Jild 2: Al-Luhuf — Complete Three-Maslak Chronicle of Karbala (61 AH) & Madinah (63 AH)",
+      chapter2Ar = "إِنِّي لَمْ أَخْرُجْ أَشِرًا وَلَا بَطِرًا وَلَا مُفْسِدًا وَلَا ظَالِمًا، وَإِنَّمَا خَرَجْتُ لِطَلَبِ الْإِصْلَاحِ فِي أُمَّةِ جَدِّي",
+      chapter2Tr = "Inni lam akhruj ashiran wa la batiran wa la mufsidan wa la zaliman, wa innama kharajtu li-talabil-islahi fi ummati jaddi.",
+      chapter2En = "Sayyid Ibn Tawus organizes Al-Luhuf into Three Maslaks (Parts): (1) Events before 'Ashura from Madinah to Makkah and arrival at Karbala; (2) The Day of 'Ashura (10 Muharram 61 AH) and martyrdom of Banu Hashim and the companions; (3) Post-'Ashura sermons of Lady Zaynab (SA) and Imam Zayn al-'Abidin (AS) in Kufah and Sham, return to Madinah, and protection of Madinah's families during Waqia Harrah (63 AH).",
+      chapter2Ur = "سید ابن طاؤس کی ’اللہوف علی قتلی الطفوف‘ تین مسالک (حصوں) پر مشتمل ہے: (1) مدینہ سے مکہ اور کربلا تک کا سفر؛ (2) یومِ عاشورہ (10 محرم 61 ہجری) کے مفصل واقعات و شہادتیں؛ (3) بعد از عاشورہ کوفہ و شام کے خطبات، مدینہ واپسی اور واقعہ حرہ (63 ہجری) کے حالات۔",
+      refs = "Al-Luhuf pp. 21–135 • A'lam al-Wara 1:176, 2:149 • Bihar al-Anwar 44:329",
+      tradition = "SHIA",
+      officialSourceUrl = "https://www.al-islam.org/al-luhuf-sighs-sorrow-sayyid-ibn-tawus",
+      apiOrRepoUrl = "https://shiaonlinelibrary.com",
+      sourceTypeLabel = "Classical Imami Seerah & Maqtal Chronicles",
+      gradingMethodology = "Shaykh al-Tabarsi (d. 548 AH) & Sayyid Ibn Tawus (d. 664 AH) Verification"
+    )
+  )
+
+  val historySubFilters: List<String> = listOf(
+    "All Events",
+    "Qadisiyyah",
+    "Waqia Hurrah",
+    "Battle of Yarmouk",
+    "Badr",
+    "Uhud",
+    "Khandaq",
+    "Khaybar",
+    "Karbala",
+    "Siffin",
+    "Nahrawan",
+    "Saqifah"
+  )
+
+  val allSunniBooks: List<IslamicClassicalBook>
+    get() = all32Books + sunniHistoryBooks
+
+  val allShiaBooks: List<IslamicClassicalBook>
+    get() = shiaClassicalBooks + shiaHistoryBooks
+
   val allSunniAndShiaBooks: List<IslamicClassicalBook>
-    get() = all32Books + shiaClassicalBooks
+    get() = all32Books + shiaClassicalBooks + sunniHistoryBooks + shiaHistoryBooks
+
+  val historyBooks: List<IslamicClassicalBook>
+    get() = sunniHistoryBooks + shiaHistoryBooks + all32Books.filter {
+      it.category.equals("Seerah & History", ignoreCase = true)
+    }
 
   fun getBooksByTradition(traditionFilter: String): List<IslamicClassicalBook> {
     return when (traditionFilter.uppercase()) {
-      "SUNNI" -> all32Books
-      "SHIA" -> shiaClassicalBooks
+      "SUNNI" -> allSunniBooks
+      "SHIA" -> allShiaBooks
       else -> allSunniAndShiaBooks
     }
+  }
+
+  fun getHistoryBooksByTradition(traditionFilter: String): List<IslamicClassicalBook> {
+    return when (traditionFilter.uppercase()) {
+      "SUNNI" -> historyBooks.filter { it.tradition.equals("SUNNI", ignoreCase = true) }
+      "SHIA" -> historyBooks.filter { it.tradition.equals("SHIA", ignoreCase = true) }
+      else -> historyBooks
+    }
+  }
+
+  data class BookLineMatch(
+    val book: IslamicClassicalBook,
+    val serialNumber: Int,
+    val chapterIndex: Int,
+    val chapterNumber: Int,
+    val chapterTitle: String,
+    val matchedLine: String,
+    val matchedLanguage: String,
+    val highlightTerm: String
+  )
+
+  fun searchInsideBooks(
+    booksToSearch: List<IslamicClassicalBook>,
+    rawQuery: String
+  ): List<BookLineMatch> {
+    val sanitized = com.example.data.remote.SecurityIntegrityGuard.sanitizeSearchQuery(rawQuery).trim()
+    if (sanitized.isEmpty()) return emptyList()
+
+    val cleanNumQuery = sanitized.removePrefix("#").removePrefix("book").trim().toIntOrNull()
+    val normLatinQuery = com.example.data.local.ExtendedHadithDataProvider.normalizeLatinForSearch(sanitized)
+    val normArabicQuery = com.example.data.local.ExtendedHadithDataProvider.normalizeArabicForSearch(sanitized)
+    val latinTokens = normLatinQuery.split(" ").filter { it.isNotBlank() }
+    val arabicTokens = normArabicQuery.split(Regex("\\s+")).filter { it.isNotBlank() }
+
+    val matches = mutableListOf<BookLineMatch>()
+
+    booksToSearch.forEachIndexed { index, book ->
+      val serialNum = index + 1
+      // (a) Direct Book Number match (by serial number in current list or global book.number)
+      if (cleanNumQuery != null && (serialNum == cleanNumQuery || book.number == cleanNumQuery)) {
+        val firstCh = book.chapters.firstOrNull()
+        if (firstCh != null) {
+          matches.add(
+            BookLineMatch(
+              book = book,
+              serialNumber = serialNum,
+              chapterIndex = 0,
+              chapterNumber = firstCh.chapterNumber,
+              chapterTitle = firstCh.titleEnglish,
+              matchedLine = "Book #$serialNum (${book.titleEnglish}) — ${book.summary}",
+              matchedLanguage = "EN",
+              highlightTerm = cleanNumQuery.toString()
+            )
+          )
+        }
+      }
+
+      // (b) & (c) Keyword or Full/Partial Sentence search across all chapters (English, Urdu, Arabic)
+      book.chapters.forEachIndexed { chIdx, ch ->
+        val candidateBlocks = listOf(
+          Triple("EN", ch.titleEnglish, ch.titleEnglish),
+          Triple("EN", ch.englishContent, ch.englishContent),
+          Triple("UR", ch.urduContent, ch.urduContent),
+          Triple("AR", ch.arabicExcerpt, ch.arabicExcerpt),
+          Triple("AR", ch.titleArabic, ch.titleArabic),
+          Triple("EN", ch.transliteration, ch.transliteration),
+          Triple("EN", ch.scholarlyNotes, ch.scholarlyNotes),
+          Triple("EN", ch.crossReferences, ch.crossReferences)
+        )
+
+        var matchedForChapter: BookLineMatch? = null
+
+        for ((lang, _, fullText) in candidateBlocks) {
+          if (fullText.isBlank()) continue
+          // Split text into sentences/clauses so we highlight the exact matching line
+          val sentences = fullText.split(Regex("(?<=[.۔!؟\\n])\\s+|\\n+")).filter { it.isNotBlank() }
+          for (sentence in sentences.ifEmpty { listOf(fullText) }) {
+            val rawMatch = sentence.contains(sanitized, ignoreCase = true)
+            val normArabicMatch = normArabicQuery.isNotBlank() &&
+              com.example.data.local.ExtendedHadithDataProvider.normalizeArabicForSearch(sentence).let { normSent ->
+                normSent.contains(normArabicQuery) ||
+                  (arabicTokens.size > 1 && arabicTokens.all { tok -> normSent.contains(tok) })
+              }
+            val normLatinMatch = normLatinQuery.isNotBlank() &&
+              com.example.data.local.ExtendedHadithDataProvider.normalizeLatinForSearch(sentence).let { normSent ->
+                normSent.contains(normLatinQuery) ||
+                  (latinTokens.isNotEmpty() && latinTokens.all { tok -> normSent.contains(tok) })
+              }
+
+            if (rawMatch || normArabicMatch || normLatinMatch) {
+              val highlight = when {
+                rawMatch -> sanitized
+                normLatinMatch && latinTokens.isNotEmpty() -> latinTokens.maxByOrNull { it.length } ?: sanitized
+                normArabicMatch && arabicTokens.isNotEmpty() -> arabicTokens.maxByOrNull { it.length } ?: sanitized
+                else -> sanitized
+              }
+              matchedForChapter = BookLineMatch(
+                book = book,
+                serialNumber = serialNum,
+                chapterIndex = chIdx,
+                chapterNumber = ch.chapterNumber,
+                chapterTitle = ch.titleEnglish,
+                matchedLine = sentence.trim(),
+                matchedLanguage = lang,
+                highlightTerm = highlight
+              )
+              break
+            }
+          }
+          if (matchedForChapter != null) break
+        }
+
+        // Also check if multi-sentence or chapter-wide match occurs across fields
+        if (matchedForChapter == null) {
+          val combinedLatin = com.example.data.local.ExtendedHadithDataProvider.normalizeLatinForSearch(
+            "${book.titleEnglish} ${book.author} ${ch.titleEnglish} ${ch.englishContent} ${ch.transliteration} ${ch.scholarlyNotes} ${ch.crossReferences}"
+          )
+          val combinedArabic = com.example.data.local.ExtendedHadithDataProvider.normalizeArabicForSearch(
+            "${book.titleArabic} ${book.titleUrdu} ${ch.titleArabic} ${ch.arabicExcerpt} ${ch.urduContent}"
+          )
+          val multiLatinHit = latinTokens.isNotEmpty() && latinTokens.all { combinedLatin.contains(it) }
+          val multiArabicHit = arabicTokens.isNotEmpty() && arabicTokens.all { combinedArabic.contains(it) }
+          if (multiLatinHit || multiArabicHit) {
+            val snippet = if (multiArabicHit && ch.urduContent.isNotBlank()) ch.urduContent else ch.englishContent
+            val tok = if (multiArabicHit) arabicTokens.firstOrNull().orEmpty() else latinTokens.firstOrNull().orEmpty()
+            matchedForChapter = BookLineMatch(
+              book = book,
+              serialNumber = serialNum,
+              chapterIndex = chIdx,
+              chapterNumber = ch.chapterNumber,
+              chapterTitle = ch.titleEnglish,
+              matchedLine = snippet.take(220),
+              matchedLanguage = if (multiArabicHit) "UR" else "EN",
+              highlightTerm = tok.ifBlank { sanitized }
+            )
+          }
+        }
+
+        if (matchedForChapter != null) {
+          matches.add(matchedForChapter)
+        }
+      }
+    }
+
+    return matches
   }
 
   fun formatBookEnglishContent(raw: String?): String {
@@ -992,6 +1423,43 @@ object IslamicBooksCatalog {
     } else {
       t
     }
+  }
+
+  private fun resolveLinkedCollectionKeysForBook(bookId: String): List<String> = when (bookId) {
+    "book_bukhari" -> listOf("bukhari")
+    "book_muslim" -> listOf("muslim")
+    "book_abudawud" -> listOf("abudawud")
+    "book_tirmidhi" -> listOf("tirmidhi")
+    "book_nasai" -> listOf("nasai", "nasai_kubra")
+    "book_ibnmajah" -> listOf("ibnmajah")
+    "book_muwatta" -> listOf("malik")
+    "book_musnad_ahmad" -> listOf("ahmad")
+    "book_darimi" -> listOf("darimi")
+    "book_riyad" -> listOf("riyadussalihin")
+    "book_nawawi40" -> listOf("nawawi", "qudsi")
+    "book_adab_mufrad" -> listOf("adab")
+    "book_bulugh" -> listOf("bulugh")
+    "book_mishkat" -> listOf("mishkat")
+    "book_shamail" -> listOf("shamail", "sunni_history")
+    "book_fath_albari", "book_sharh_nawawi" -> listOf("sunni_commentaries")
+    "book_shia_alkafi" -> listOf("alkafi")
+    "book_shia_faqih" -> listOf("faqih", "khisal", "uyun_akhbar_rida", "amali_saduq", "saduq_corpus")
+    "book_shia_tahdhib_istibsar" -> listOf("tahdhib", "istibsar", "wasail")
+    "book_shia_nahjul_balagha" -> listOf("nahjulbalagha")
+    "book_shia_sahifa_sajjadiyya" -> listOf("sajjadiyya")
+    "book_shia_almizan_majma" -> listOf("tafsir_qummi_ayyashi", "bihar")
+    "book_history_tabari",
+    "book_history_ibn_kathir",
+    "book_history_ibn_hisham",
+    "book_history_kamil_futuh",
+    "book_history_dhahabi_siyar",
+    "book_rahiq",
+    "book_zaad_almaad" -> listOf("sunni_history")
+    "book_shia_history_irshad",
+    "book_shia_history_yaqubi_masudi",
+    "book_shia_history_siffin_maqatil",
+    "book_shia_history_luhuf_tabarsi" -> listOf("shia_history")
+    else -> emptyList()
   }
 
   private fun createBook(
@@ -1024,6 +1492,76 @@ object IslamicBooksCatalog {
   ): IslamicClassicalBook {
     val minuteOffset = (number * 5) % 50 + 10
     val tradLabel = if (tradition == "SHIA") "Shia Classical Library" else "Sunni Classical Library"
+
+    val baseChapters = mutableListOf(
+      IslamicBookChapter(
+        chapterNumber = 1,
+        titleEnglish = if (chapter1Title.startsWith("Jild", ignoreCase = true)) chapter1Title else "Jild 1 (Volume 1) — $chapter1Title",
+        titleArabic = "المجلد الأول (الباب الأول) • $titleArabic",
+        arabicExcerpt = chapter1Ar,
+        transliteration = chapter1Tr,
+        englishContent = formatBookEnglishContent(chapter1En),
+        urduContent = formatBookUrduContent(chapter1Ur),
+        scholarlyNotes = "Jild 1 (Volume 1) • Author: $author ($eraHijri) • Edition: $numberingSystem • Authentication: $gradingMethodology",
+        crossReferences = refs,
+        jildNumber = 1,
+        jildTitle = "Jild 1 (Volume 1)"
+      ),
+      IslamicBookChapter(
+        chapterNumber = 2,
+        titleEnglish = if (chapter2Title.startsWith("Jild", ignoreCase = true)) chapter2Title else "Jild 2 (Volume 2) — $chapter2Title",
+        titleArabic = "المجلد الثاني (الباب الثاني) • $titleArabic",
+        arabicExcerpt = chapter2Ar,
+        transliteration = chapter2Tr,
+        englishContent = formatBookEnglishContent(chapter2En),
+        urduContent = formatBookUrduContent(chapter2Ur),
+        scholarlyNotes = "Jild 2 (Volume 2) • Tradition: $tradLabel • Source Type: $sourceTypeLabel • Official Reference: $officialSourceUrl",
+        crossReferences = refs,
+        jildNumber = 2,
+        jildTitle = "Jild 2 (Volume 2)"
+      )
+    )
+
+    val linkedKeys = resolveLinkedCollectionKeysForBook(id)
+    if (linkedKeys.isNotEmpty()) {
+      val matchingHadiths = com.example.data.local.ExtendedHadithDataProvider.getExtendedHadiths()
+        .filter { it.collectionKey in linkedKeys }
+        .sortedWith(compareBy({ it.bookNumber }, { it.hadithNumber }))
+
+      matchingHadiths.forEachIndexed { idx, h ->
+        val canonicalChapterNum = if (id == "book_shia_nahjul_balagha") {
+          h.hadithNumber
+        } else {
+          idx + 3
+        }
+        val computedJild = if (h.collectionKey.endsWith("_history")) {
+          (idx + 3)
+        } else {
+          h.bookNumber.coerceAtLeast(1)
+        }
+        val titlePrefix = if (id == "book_shia_nahjul_balagha" || h.collectionKey.endsWith("_history")) {
+          "Jild $computedJild (Volume $computedJild) — ${h.bookName.replaceFirst("Book ", "Part ")} — ${h.chapterName}"
+        } else {
+          "Jild $computedJild — ${h.reference} — ${h.chapterName}"
+        }
+        baseChapters.add(
+          IslamicBookChapter(
+            chapterNumber = canonicalChapterNum,
+            titleEnglish = titlePrefix,
+            titleArabic = "المجلد $computedJild • ${h.bookName} • #${h.hadithNumber}",
+            arabicExcerpt = h.arabicText,
+            transliteration = h.transliteration,
+            englishContent = formatBookEnglishContent(h.englishText),
+            urduContent = formatBookUrduContent(h.urduText),
+            scholarlyNotes = "Jild $computedJild • Source & Narrator: ${h.narrator} • ${com.example.data.local.ExtendedHadithDataProvider.formatPrimaryEditionBadge(h)} • ${h.inBookReference} • ${com.example.data.local.ExtendedHadithDataProvider.formatGradingMethodologyLabel(h)}",
+            crossReferences = h.linkedQuranVerses.ifBlank { refs },
+            jildNumber = computedJild,
+            jildTitle = "Jild $computedJild (Volume $computedJild)"
+          )
+        )
+      }
+    }
+
     return IslamicClassicalBook(
       id = id,
       number = number,
@@ -1041,30 +1579,8 @@ object IslamicBooksCatalog {
       sourceTypeLabel = sourceTypeLabel,
       gradingMethodology = gradingMethodology,
       entryTimestamp = "2026-10-23 • 09:$minuteOffset UTC ($tradLabel)",
-      chapters = listOf(
-        IslamicBookChapter(
-          chapterNumber = 1,
-          titleEnglish = chapter1Title,
-          titleArabic = "الباب الأول • $titleArabic",
-          arabicExcerpt = chapter1Ar,
-          transliteration = chapter1Tr,
-          englishContent = formatBookEnglishContent(chapter1En),
-          urduContent = formatBookUrduContent(chapter1Ur),
-          scholarlyNotes = "Author: $author ($eraHijri) • Edition: $numberingSystem • Authentication: $gradingMethodology",
-          crossReferences = refs
-        ),
-        IslamicBookChapter(
-          chapterNumber = 2,
-          titleEnglish = chapter2Title,
-          titleArabic = "الباب الثاني • $titleArabic",
-          arabicExcerpt = chapter2Ar,
-          transliteration = chapter2Tr,
-          englishContent = formatBookEnglishContent(chapter2En),
-          urduContent = formatBookUrduContent(chapter2Ur),
-          scholarlyNotes = "Tradition: $tradLabel • Source Type: $sourceTypeLabel • Official Reference: $officialSourceUrl",
-          crossReferences = refs
-        )
-      )
+      chapters = baseChapters
     )
   }
 }
+

@@ -92,6 +92,7 @@ data class BayanUiState(
   val selectedEditionFilterMode: HadithEditionFilterMode = HadithEditionFilterMode.ALL_EDITIONS,
   val selectedHadithDetail: HadithEntity? = null,
   val isFetchingHadithByNumber: Boolean = false,
+  val hadithLookupErrorMessage: String? = null,
   val previewedQuranVerse: AyahEntity? = null,
   // Search state
   val searchQuery: String = "",
@@ -179,7 +180,9 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   val currentTranslations: StateFlow<List<TranslationEntity>> = _currentTranslations.asStateFlow()
 
   // All cached Hadiths for Tafsir verse-to-hadith cross-linking
-  val allHadithsForLinks: List<HadithEntity> = ExtendedHadithDataProvider.getExtendedHadiths()
+  val allHadithsForLinks: List<HadithEntity> by lazy {
+    ExtendedHadithDataProvider.getExtendedHadiths()
+  }
 
   private var surahAyahsJob: Job? = null
   private var collectionHadithsJob: Job? = null
@@ -266,16 +269,17 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   val searchTafsirResults: StateFlow<List<com.example.data.repository.AyahTafsirResult>> = _searchTafsirResults.asStateFlow()
 
   init {
-    viewModelScope.launch {
-      repository.initializeDatabaseIfNeeded()
-      loadDailyContent()
-      loadCollectionHadiths("bukhari")
-      refreshPrayerSchedule(forceRemote = false)
-      com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(getApplication())
-      _sunnahRemindersState.value =
-        com.example.data.prayer.SunnahReminderManager.ensureTodayCalculatedNotificationSentIfEnabled(getApplication())
-      refreshAuditReport(checkNetworkLive = false)
-      cleanupOldWavFiles()
+    viewModelScope.launch(Dispatchers.IO) {
+      runCatching { loadCollectionHadiths("bukhari") }
+      runCatching { repository.initializeDatabaseIfNeeded() }
+      runCatching { loadDailyContent() }
+      runCatching { refreshPrayerSchedule(forceRemote = false) }
+      runCatching { com.example.data.prayer.SunnahReminderManager.scheduleAllSunnahReminders(getApplication()) }
+      runCatching {
+        _sunnahRemindersState.value =
+          com.example.data.prayer.SunnahReminderManager.ensureTodayCalculatedNotificationSentIfEnabled(getApplication())
+      }
+      runCatching { cleanupOldWavFiles() }
     }
   }
 
@@ -397,6 +401,10 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
 
   // Quran Actions
   fun openSurahReader(surah: SurahEntity, highlightVerse: Int? = null) {
+    val activeAudioSurah = audioPlayerManager.audioState.value.surahNumber
+    if (activeAudioSurah != null && activeAudioSurah != surah.number) {
+      audioPlayerManager.stop()
+    }
     _uiState.value = _uiState.value.copy(
       selectedSurah = surah,
       isReaderOpen = true,
@@ -410,6 +418,12 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
       launch {
         repository.getAyahsBySurah(surah.number).collect { ayahs ->
           _currentAyahs.value = ayahs
+          if (ayahs.isNotEmpty()) {
+            audioPlayerManager.setSurahAyahWeights(
+              surahNumber = surah.number,
+              weights = ayahs.sortedBy { it.verseNumber }.map { it.textArabic.length.coerceAtLeast(12) }
+            )
+          }
         }
       }
       launch {
@@ -503,7 +517,19 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
 
   // Audio Playback
   fun playAyahRecitation(ayah: AyahEntity, surahName: String) {
-    audioPlayerManager.playAyah(ayah.surahNumber, ayah.verseNumber, surahName)
+    val openSurah = _uiState.value.selectedSurah
+    val targetSurahNumber = openSurah?.number?.takeIf {
+      _uiState.value.isReaderOpen && it == ayah.surahNumber
+    } ?: ayah.surahNumber
+    val targetSurahName = surahName.ifBlank { openSurah?.nameEnglish.orEmpty() }
+    val ayahs = _currentAyahs.value.filter { it.surahNumber == targetSurahNumber }
+    if (ayahs.isNotEmpty()) {
+      audioPlayerManager.setSurahAyahWeights(
+        surahNumber = targetSurahNumber,
+        weights = ayahs.sortedBy { it.verseNumber }.map { it.textArabic.length.coerceAtLeast(12) }
+      )
+    }
+    audioPlayerManager.playAyah(targetSurahNumber, ayah.verseNumber, targetSurahName)
   }
 
   fun setReciter(reciter: Reciter) {
@@ -535,9 +561,16 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
   fun selectHadithCollection(collectionKey: String) {
     _uiState.value = _uiState.value.copy(
       selectedCollectionKey = collectionKey,
-      selectedHadithDetail = null
+      selectedHadithDetail = null,
+      hadithLookupErrorMessage = null
     )
     loadCollectionHadiths(collectionKey)
+  }
+
+  fun clearHadithLookupError() {
+    if (_uiState.value.hadithLookupErrorMessage != null) {
+      _uiState.value = _uiState.value.copy(hadithLookupErrorMessage = null)
+    }
   }
 
   fun selectHadithEditionFilterMode(mode: HadithEditionFilterMode) {
@@ -546,23 +579,52 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
 
   private fun loadCollectionHadiths(collectionKey: String) {
     collectionHadithsJob?.cancel()
-    collectionHadithsJob = viewModelScope.launch {
-      repository.getHadithsByCollection(collectionKey).collect { list ->
-        _collectionHadiths.value = list
+    // Immediately provide verified catalog entries so UI never hangs or shows empty while Room/API loads
+    val fallbackCatalog = com.example.data.local.ExtendedHadithDataProvider.getExtendedHadiths()
+      .filter { it.collectionKey == collectionKey }
+    if (fallbackCatalog.isNotEmpty()) {
+      _collectionHadiths.value = fallbackCatalog.sortedBy { it.hadithNumber }
+    }
+    collectionHadithsJob = viewModelScope.launch(Dispatchers.IO) {
+      repository.getHadithsByCollection(collectionKey).collect { dbList ->
+        val merged = LinkedHashMap<Int, HadithEntity>()
+        for (h in dbList) {
+          merged[h.hadithNumber] = h
+        }
+        for (h in fallbackCatalog) {
+          if (!merged.containsKey(h.hadithNumber)) {
+            merged[h.hadithNumber] = h
+          }
+        }
+        _collectionHadiths.value = merged.values.sortedBy { it.hadithNumber }
       }
     }
   }
 
   fun lookupHadithByNumber(hadithNumber: Int, collectionKeyOverride: String? = null) {
-    val collectionKey = collectionKeyOverride ?: _uiState.value.selectedCollectionKey
+    val collectionKey = collectionKeyOverride?.takeIf { it.isNotBlank() } ?: _uiState.value.selectedCollectionKey
+    val bookMeta = com.example.data.local.ExtendedHadithDataProvider.primaryCollections.find {
+      it.key.equals(collectionKey, ignoreCase = true)
+    }
+    val bookName = bookMeta?.let {
+      com.example.data.local.ExtendedHadithDataProvider.cleanBookTitle(it.nameEnglish)
+    } ?: collectionKey
+
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isFetchingHadithByNumber = true)
+      _uiState.value = _uiState.value.copy(
+        selectedCollectionKey = collectionKey,
+        isFetchingHadithByNumber = true,
+        hadithLookupErrorMessage = null
+      )
       val hadith = repository.findOrFetchHadithByNumber(collectionKey, hadithNumber)
+      val verifiedHadith = hadith?.takeIf {
+        it.collectionKey.equals(collectionKey, ignoreCase = true) && it.hadithNumber == hadithNumber
+      }
       _uiState.value = _uiState.value.copy(
         isFetchingHadithByNumber = false,
-        selectedHadithDetail = hadith
+        selectedHadithDetail = verifiedHadith,
+        hadithLookupErrorMessage = if (verifiedHadith == null) "Hadith not found in $bookName" else null
       )
-      refreshAuditReport(checkNetworkLive = false)
     }
   }
 
@@ -572,7 +634,6 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
       _uiState.value = _uiState.value.copy(isFetchingHadithByNumber = true)
       repository.loadHadithBookSectionFromApi(collectionKey, bookNumber)
       _uiState.value = _uiState.value.copy(isFetchingHadithByNumber = false)
-      refreshAuditReport(checkNetworkLive = false)
     }
   }
 
@@ -584,7 +645,7 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
     _uiState.value = _uiState.value.copy(selectedHadithDetail = null)
   }
 
-  // Unified Smart Search (Offline 6,236 Quran Verses + Local & Live Sunnah.com Hadith Lookup)
+  // Unified Smart Search (Offline 6,236 Quran Verses + Local & Live Sunni/Shia Hadith & Sermon Lookup)
   fun onSearchQueryChanged(query: String) {
     _uiState.value = _uiState.value.copy(searchQuery = query)
     searchJob?.cancel()
@@ -596,15 +657,16 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
       return
     }
 
-    searchJob = viewModelScope.launch {
+    searchJob = viewModelScope.launch(Dispatchers.IO) {
+      kotlinx.coroutines.delay(120)
       _uiState.value = _uiState.value.copy(isSearchingRemote = true)
-      
+
       val ayahs = repository.searchAyahsSmart(query)
       val translationMatches = repository.searchTranslationsSmart(query)
-      
+
       // If translations matched but not ayahs, fetch the corresponding ayahs
       val extraAyahs = mutableListOf<AyahEntity>()
-      translationMatches.filter { it.sourceType == "QURAN" }.forEach { trans ->
+      translationMatches.filter { it.sourceType == "QURAN" }.take(30).forEach { trans ->
         val parts = trans.referenceKey.split(":")
         val sNum = parts.getOrNull(0)?.toIntOrNull()
         val vNum = parts.getOrNull(1)?.toIntOrNull()
@@ -619,10 +681,10 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
         rawQuery = query,
         activeCollectionKey = _uiState.value.selectedCollectionKey
       )
-      
+
       // Add Hadiths matched by translations
       val extraHadiths = mutableListOf<HadithEntity>()
-      translationMatches.filter { it.sourceType == "HADITH" }.forEach { trans ->
+      translationMatches.filter { it.sourceType == "HADITH" }.take(30).forEach { trans ->
         val parts = trans.referenceKey.split(":")
         val colKey = parts.getOrNull(0)
         val hNum = parts.getOrNull(1)?.toIntOrNull()
@@ -630,13 +692,13 @@ class BayanViewModel(application: Application) : AndroidViewModel(application) {
           repository.getHadith(colKey, hNum)?.let { extraHadiths.add(it) }
         }
       }
-      
+
       _searchHadithResults.value = (hadiths + extraHadiths).distinctBy { "${it.collectionKey}:${it.hadithNumber}" }
 
       // Real full-text search across Tafsir commentaries (Classical & Contemporary Sunni & Shia)
       val tafsirMatches = repository.searchTafsirSmart(query, traditionScope = "BOTH")
       _searchTafsirResults.value = tafsirMatches
-      
+
       _uiState.value = _uiState.value.copy(isSearchingRemote = false)
     }
   }

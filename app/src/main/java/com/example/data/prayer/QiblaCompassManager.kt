@@ -228,9 +228,25 @@ object QiblaCompassCalculator {
 
     val orientationAngles = FloatArray(3)
     SensorManager.getOrientation(remappedMatrix, orientationAngles)
-    val azimuthDeg = ((Math.toDegrees(orientationAngles[0].toDouble()).toFloat()) + 360f) % 360f
+    var azimuthDeg = ((Math.toDegrees(orientationAngles[0].toDouble()).toFloat()) + 360f) % 360f
     val pitchDeg = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
     val rollDeg = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+
+    // Tilt compensation when device is held steep in hand (>50° pitch) to avoid gimbal lock
+    if (abs(pitchDeg) > 50f) {
+      val tiltRemapped = FloatArray(9)
+      if (SensorManager.remapCoordinateSystem(
+          remappedMatrix,
+          SensorManager.AXIS_X,
+          SensorManager.AXIS_Z,
+          tiltRemapped
+        )
+      ) {
+        val tiltAngles = FloatArray(3)
+        SensorManager.getOrientation(tiltRemapped, tiltAngles)
+        azimuthDeg = ((Math.toDegrees(tiltAngles[0].toDouble()).toFloat()) + 360f) % 360f
+      }
+    }
     return Triple(azimuthDeg, pitchDeg, rollDeg)
   }
 
@@ -280,9 +296,25 @@ object QiblaCompassCalculator {
 
     val orientationAngles = FloatArray(3)
     SensorManager.getOrientation(remappedMatrix, orientationAngles)
-    val azimuthDeg = ((Math.toDegrees(orientationAngles[0].toDouble()).toFloat()) + 360f) % 360f
+    var azimuthDeg = ((Math.toDegrees(orientationAngles[0].toDouble()).toFloat()) + 360f) % 360f
     val pitchDeg = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
     val rollDeg = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+
+    // Tilt compensation when device is held steep in hand (>50° pitch) to avoid gimbal lock
+    if (abs(pitchDeg) > 50f) {
+      val tiltRemapped = FloatArray(9)
+      if (SensorManager.remapCoordinateSystem(
+          remappedMatrix,
+          SensorManager.AXIS_X,
+          SensorManager.AXIS_Z,
+          tiltRemapped
+        )
+      ) {
+        val tiltAngles = FloatArray(3)
+        SensorManager.getOrientation(tiltRemapped, tiltAngles)
+        azimuthDeg = ((Math.toDegrees(tiltAngles[0].toDouble()).toFloat()) + 360f) % 360f
+      }
+    }
     return Triple(azimuthDeg, pitchDeg, rollDeg)
   }
 
@@ -401,16 +433,16 @@ class QiblaSensorController(
       _state.value = _state.value.copy(isListening = false)
       return
     }
-    // Primary: Sensor.TYPE_ROTATION_VECTOR when available
+    // Primary: Sensor.TYPE_ROTATION_VECTOR with responsive SENSOR_DELAY_GAME rate
     rotationVectorSensor?.let {
-      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
     }
-    // Fallback + Magnetic Field Strength telemetry: Accelerometer + Magnetometer
+    // Fallback + Geomagnetic anchor & field strength telemetry: Accelerometer + Magnetometer
     accelerometer?.let {
-      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
     }
     magnetometer?.let {
-      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+      sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
     }
     _state.value = _state.value.copy(isListening = true)
   }
@@ -560,17 +592,35 @@ class QiblaSensorController(
 
   override fun onSensorChanged(event: SensorEvent?) {
     if (event == null) return
+    val displayRot = getDisplayRotation()
     when (event.sensor.type) {
       Sensor.TYPE_ROTATION_VECTOR -> {
         hasRotationVectorReading = true
-        processRotationVector(event.values, getDisplayRotation(), smooth = true)
+        // Cross-check against geomagnetic heading when both accelerometer and magnetometer are healthy
+        // to eliminate gyroscope yaw drift on Xiaomi/HyperOS & Samsung devices.
+        val acc = filteredGravity
+        val mag = filteredGeomagnetic
+        val current = _state.value
+        if (hasGravityReading && hasMagnetometerReading && acc != null && mag != null && !current.isMagneticInterferenceDetected) {
+          val rotOrientation = QiblaCompassCalculator.computeOrientationFromRotationVector(event.values, displayRot)
+          val magOrientation = QiblaCompassCalculator.computeOrientationFromSensors(acc, mag, displayRot)
+          if (rotOrientation != null && magOrientation != null) {
+            val driftDeg = abs(QiblaCompassCalculator.computeShortestSignedAngleDelta(rotOrientation.first, magOrientation.first))
+            if (driftDeg > 18f) {
+              // Anchor to geomagnetic sensor fusion when rotation vector has drifted
+              processSensorVectors(acc, mag, displayRot, smooth = true)
+              return
+            }
+          }
+        }
+        processRotationVector(event.values, displayRot, smooth = true)
       }
       Sensor.TYPE_ACCELEROMETER -> {
-        filteredGravity = QiblaCompassCalculator.lowPassFilter(event.values, filteredGravity, alpha = 0.20f)
+        filteredGravity = QiblaCompassCalculator.lowPassFilter(event.values, filteredGravity, alpha = 0.22f)
         hasGravityReading = true
       }
       Sensor.TYPE_MAGNETIC_FIELD -> {
-        filteredGeomagnetic = QiblaCompassCalculator.lowPassFilter(event.values, filteredGeomagnetic, alpha = 0.20f)
+        filteredGeomagnetic = QiblaCompassCalculator.lowPassFilter(event.values, filteredGeomagnetic, alpha = 0.22f)
         hasMagnetometerReading = true
         // Update magnetic field strength even when rotation vector is primary
         val mag = filteredGeomagnetic
@@ -592,7 +642,7 @@ class QiblaSensorController(
     if (!hasRotationVectorReading && hasGravityReading && hasMagnetometerReading) {
       val acc = filteredGravity ?: return
       val mag = filteredGeomagnetic ?: return
-      processSensorVectors(acc, mag, getDisplayRotation(), smooth = true)
+      processSensorVectors(acc, mag, displayRot, smooth = true)
     }
   }
 

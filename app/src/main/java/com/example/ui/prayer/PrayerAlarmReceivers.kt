@@ -235,30 +235,34 @@ class AzanForegroundService : Service() {
       prayerName: String,
       isSpecialFajr: Boolean
     ) {
-      ensureNotificationChannel(context)
-      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-      nm.notify(NOTIFICATION_ID, buildAlarmNotification(context, prayerName, isSpecialFajr))
+      runCatching {
+        ensureNotificationChannel(context)
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        nm.notify(NOTIFICATION_ID, buildAlarmNotification(context, prayerName, isSpecialFajr))
+      }
     }
 
     fun postSilentPrayerNotification(context: Context, prayerName: String) {
-      ensureNotificationChannel(context)
-      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-      val openIntent = PendingIntent.getActivity(
-        context,
-        0,
-        Intent(context, MainActivity::class.java),
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      )
-      val notif = NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
-        .setContentTitle("Time for $prayerName Prayer")
-        .setContentText("Hayya 'alas-Salah — Come to Prayer ($prayerName)")
-        .setContentIntent(openIntent)
-        .setAutoCancel(true)
-        .setSound(null)
-        .setSilent(true)
-        .build()
-      nm.notify(NOTIFICATION_ID + 1, notif)
+      runCatching {
+        ensureNotificationChannel(context)
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+        val openIntent = PendingIntent.getActivity(
+          context,
+          0,
+          Intent(context, MainActivity::class.java),
+          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
+          .setSmallIcon(R.drawable.ic_stat_bayan)
+          .setContentTitle("Time for $prayerName Prayer")
+          .setContentText("Hayya 'alas-Salah — Come to Prayer ($prayerName)")
+          .setContentIntent(openIntent)
+          .setAutoCancel(true)
+          .setSound(null)
+          .setSilent(true)
+          .build()
+        nm.notify(NOTIFICATION_ID + 1, notif)
+      }
     }
 
     fun buildAlarmNotification(
@@ -317,7 +321,7 @@ class AzanForegroundService : Service() {
       }
 
       return NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_stat_bayan)
         .setContentTitle(title)
         .setContentText(body)
         .setStyle(NotificationCompat.BigTextStyle().bigText("$body\nنماز نیند سے بہتر ہے"))
